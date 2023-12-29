@@ -5,7 +5,7 @@
 
  Translated to RDFlib from ontology http://www.semanticweb.org/directory-service-ontology#
 
- :Date 03/02/2021 07:16:48
+ :Date 03/02/2021 07:16:48 ###
 """
 from rdflib import URIRef
 from rdflib.namespace import ClosedNamespace

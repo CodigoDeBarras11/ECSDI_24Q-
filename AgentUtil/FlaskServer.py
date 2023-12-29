@@ -2,7 +2,7 @@
 """
 File: AgentUtil
 
-Created on 31/01/2014 9:31
+Created on 31/01/2014 9:31 ###
 
 Diferentes funciones comunes a los agentes implementados en ECSDI
 
