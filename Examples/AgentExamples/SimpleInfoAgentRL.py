@@ -6,7 +6,9 @@ Antes de ejecutar hay que añadir la raiz del proyecto a la variable PYTHONPATH
 
 Agente que se registra como agente de hoteles y espera peticiones
 
-@author: javier
+Es identico que SimpleInfoAgent pero reescrito como reglas
+
+@author: javier ###
 """
 
 from multiprocessing import Process, Queue
@@ -191,7 +193,6 @@ def comunicacion():
         # Si no es, respondemos que no hemos entendido el mensaje
         return build_message(Graph(), ACL['not-understood'], sender=InfoAgent.uri, msgcnt=mss_cnt).serialize(format='xml')
 
-
     perf = msgdic['performative']
 
     # REGLA 2: Si "perfomativa no es request" ENTONCES "Mensaje no entendido"
@@ -243,8 +244,6 @@ def agentbehavior1(cola):
             fin = True
         else:
             print(v)
-
-
 
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors

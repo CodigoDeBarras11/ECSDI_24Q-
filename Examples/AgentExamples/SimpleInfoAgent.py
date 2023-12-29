@@ -6,7 +6,7 @@ Antes de ejecutar hay que añadir la raiz del proyecto a la variable PYTHONPATH
 
 Agente que se registra como agente de hoteles y espera peticiones
 
-@author: javier
+@author: javier ###
 """
 
 from multiprocessing import Process, Queue

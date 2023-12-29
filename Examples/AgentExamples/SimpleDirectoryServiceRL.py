@@ -15,7 +15,7 @@ directory-service-ontology.owl
 
 Es identico que SimpleDirectoryAgent pero reescrito como reglas
 
-@author: javier
+@author: javier ###
 """
 
 from multiprocessing import Process, Queue

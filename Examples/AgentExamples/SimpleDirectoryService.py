@@ -14,7 +14,7 @@ Las acciones que se pueden usar estan definidas en la ontología
 directory-service-ontology.owl
 
 
-@author: javier
+@author: javier ###
 """
 
 from multiprocessing import Process, Queue
