@@ -101,27 +101,31 @@ Ejecucion del sistema
 
 Pasos:
 
- 1- Iniciar un DirectoryService y abrir el navegador en la pagina /info del agente (nombre.de.la.maquina:9000/info)
+ 1- Iniciar un DirectoryService y abrir el navegador en la pagina /info del
+   agente (nombre.de.la.maquina:9000/info)
 
-   $ python DirectoryService.py --port 9000
+   $ python3 DirectoryService.py --port 9000
 
- 2- Inicial un Logger y esperar a que se registre y abrir el navegador en la pagina /info del agente
+ 2- Inicial un Logger y esperar a que se registre y abrir el navegador en 
+   la pagina /info del agente
 
-  $ python Logger.py --port 9040 --dir http://nombre.de.la.maquina:9000
+  $ python3 Logger.py --port 9100 --dir http://nombre.de.la.maquina:9000
 
- 3- Iniciar una o mas copias de Solver, Arithmetic y LetterCounter (los agentes Solver tambien tienen una pagina /info
-     que se puede monitorizar). Los resolvedores especificos intentan registrarse en al menos dos solvers
+ 3- Iniciar una o mas copias de Solver, Arithmetic y LetterCounter (los agentes Solver 
+    tambien tienen una pagina /info que se puede monitorizar). Los resolvedores especificos
+   intentan registrarse en al menos dos solvers
 
-  $ python Solver.py --port 9010 --dir http://nombre.de.la.maquina:9000
-  $ python Arithmetic.py --port 9020 --dir http://nombre.de.la.maquina:9000
-  $ python LetterCounter.py --port 9030 --dir http://nombre.de.la.maquina:9000
+  $ python3 Solver.py --port 9010 --dir http://nombre.de.la.maquina:9000
+  $ python3 Arithmetic.py --port 9020 --dir http://nombre.de.la.maquina:9000
+  $ python3 LetterCounter.py --port 9030 --dir http://nombre.de.la.maquina:9000
 
  4- Inicial Client y abrir en el navegador las paginas /iface y /info
 
-  $ python Client.py --port 9001 --dir http://nombre.de.la.maquina:9000
+  $ python3 Client.py --port 9001 --dir http://nombre.de.la.maquina:9000
 
  5- Ejecutar problemas desde la pagina /iface del cliente
 
-Si se va a iniciar el sistema desde varias maquinas se han de ejecutar los agentes con el parametro --open
+Si se va a iniciar el sistema desde varias maquinas se han de ejecutar los agentes con 
+el parametro --open
 
 
