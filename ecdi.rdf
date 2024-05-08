@@ -1,0 +1,959 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#"
+     xml:base="urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://webprotege.stanford.edu/TPago -->
+
+    <rdfs:Datatype rdf:about="http://webprotege.stanford.edu/TPago">
+        <rdfs:label>TPago</rdfs:label>
+    </rdfs:Datatype>
+    
+
+
+    <!-- http://webprotege.stanford.edu/TPrioridad -->
+
+    <rdfs:Datatype rdf:about="http://webprotege.stanford.edu/TPrioridad">
+        <rdfs:label>TPrioridad</rdfs:label>
+    </rdfs:Datatype>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://webprotege.stanford.edu/buscado -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/buscado">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Busqueda"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosRecomendados"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Producto"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/buscado_por -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/buscado_por">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Busqueda"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Cliente"/>
+        <rdfs:comment>Un cliente puede tener cero o muchas busquedas</rdfs:comment>
+        <rdfs:comment>Una busqueda pertenece a un cliente</rdfs:comment>
+        <rdfs:label>buscado_por</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/busqueda_comprada -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/busqueda_comprada">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Compra"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Busqueda"/>
+        <rdfs:comment>Una busqueda solo puede tener una compra.</rdfs:comment>
+        <rdfs:comment>Una compra es de los productos de una busqueda.</rdfs:comment>
+        <rdfs:label>busqueda_comprada</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/compra_a_enviar -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/compra_a_enviar">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Compra"/>
+        <rdfs:comment>Un pedido solo pertenece a una compra</rdfs:comment>
+        <rdfs:comment>Una compra puede tener varios pedidos (si los productos son enviados separadamente). Una compra como minimo tiene un pedido.</rdfs:comment>
+        <rdfs:label>compra_a_enviar</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/destinatario -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/destinatario">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Transaccion"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Cliente"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:comment>Una transaccion es cobrada por un cliente o una tienda</rdfs:comment>
+        <rdfs:comment>Una transaccion solo tiene un destinatario, que puede ser el cliente o la tienda.</rdfs:comment>
+        <rdfs:label>destinatario</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/emisor -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/emisor">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Transaccion"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Cliente"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:comment>Una transaccion es pagada por un cliente o una tienda</rdfs:comment>
+        <rdfs:comment>Una transaccion solo tiene un emisor, que puede ser el cliente o la tienda.</rdfs:comment>
+        <rdfs:label>emisor</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/envio_devuelto -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/envio_devuelto">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Devolucion"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:comment>Un envio devuelto tiene un pedido o varios pedidos (que sean de la misma compra).</rdfs:comment>
+        <rdfs:comment>Un pedido puede ser devuelto como mucho en una devolucion.</rdfs:comment>
+        <rdfs:label>envio_devuelto</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/feedback_de -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/feedback_de">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Feedback"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:comment>Un feedback solo es de un producto.</rdfs:comment>
+        <rdfs:comment>Un producto puede tener muchos feedbacks.</rdfs:comment>
+        <rdfs:label>feedback_de</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/infoTienda -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/infoTienda">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InformacionTienda"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:label>infoTienda</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/info_entrega -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/info_entrega">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosEnviar"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/InfoUsuarioEntrega"/>
+        <rdfs:label>info_entrega</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/producto_almacen -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/producto_almacen">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/PeticionRegistrarProducto"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Stock"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:comment>Un producto puede tener muchos stocks.</rdfs:comment>
+        <rdfs:comment>Un stock solo pertenece a un producto.</rdfs:comment>
+        <rdfs:label>producto_almacen</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/producto_devuelto -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/producto_devuelto">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Devolucion"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/PeticionDevolucion"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoRecoger"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoReembolsado"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:comment>Una devolucion tiene 1 producto o muchos productos.</rdfs:comment>
+        <rdfs:comment>Una producto puede ser devuelto en muchas devolucones o en ninguna.</rdfs:comment>
+        <rdfs:label>producto_devuelto</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/producto_enviado -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/producto_enviado">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/PeticionTransporte"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoCobrado"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosEntregables"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosEnviar"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:comment>Un pedido puede tener uno o varios productos</rdfs:comment>
+        <rdfs:comment>Un producto puede tener uno o varios pedidos.</rdfs:comment>
+        <rdfs:label>producto_enviado</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/productos_comprar -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/productos_comprar">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Lista_Productos"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosComprar"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Busqueda"/>
+        <rdfs:label>productos_comprar</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/stock_de -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/stock_de">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Stock"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/CentroLogistico"/>
+        <rdfs:comment>Un centrologistico puede tener muchos stocks de productos</rdfs:comment>
+        <rdfs:comment>Un stock pertenece a un centrologistico.</rdfs:comment>
+        <rdfs:label>stock_de</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/valorada_por -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/valorada_por">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Feedback"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Cliente"/>
+        <rdfs:comment>Un cliente puede tener muchos feedbacks.</rdfs:comment>
+        <rdfs:comment>Un feedback es valorado por un cliente.</rdfs:comment>
+        <rdfs:label>valorada_por</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/vendido_por -->
+
+    <owl:ObjectProperty rdf:about="http://webprotege.stanford.edu/vendido_por">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:comment>Un producto tiene que ser vendido como mínimo por una Tienda</rdfs:comment>
+        <rdfs:comment>Una tienda puede tener muchos productos</rdfs:comment>
+        <rdfs:label>vendido_por</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://webprotege.stanford.edu/acceptado -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/acceptado">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoRegistrado"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/RespuestaDevolucion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>indica si la devolucion ha sido aceptada</rdfs:comment>
+        <rdfs:label>acceptado</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/cantidadDinero -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/cantidadDinero">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Transaccion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>cantidadDinero</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/cantidadProducto -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/cantidadProducto">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Stock"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>cantidadProducto</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/caracteristicas -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/caracteristicas">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/buscado"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>caracteristicas</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/descripcion -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/descripcion">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>descripcion</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/direccion -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/direccion">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/CentroLogistico"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>direccion</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/direccionEntrega -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/direccionEntrega">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InfoUsuarioEntrega"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>direccionEntrega</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/entrega_delegada -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/entrega_delegada">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:label>entrega_delegada</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/enviado -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/enviado">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:label>enviado</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/fechaHora -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/fechaHora">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Compra"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InfoEnvio"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InformacionProvisionalEntrega"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/RecordatorioPedirFeedback"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/RespuestaTransporte"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Transaccion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+        <rdfs:label>fechaHora</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/id -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/id">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Busqueda"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/CentroLogistico"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Compra"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Devolucion"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Feedback"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Transaccion"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Usuario"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>id</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/id_busqueda -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/id_busqueda">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/CompraAceptada"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/PeticionProductosComprar"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>id_busqueda</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/id_usuario -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/id_usuario">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/CompraAceptada"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/PeticionProductosComprar"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>id_usuario</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/metodoDevolucion -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/metodoDevolucion">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/RespuestaDevolucion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>metodoDevolucion</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/metodoPago -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/metodoPago">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InfoUsuarioEntrega"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/TPago"/>
+        <rdfs:comment>TPago (enumeration): tarjeta de credito, transferencia bancaria, etc</rdfs:comment>
+        <rdfs:label>metodoPago</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/motivo_devolucion -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/motivo_devolucion">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Devolucion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>motivo_devolucion</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/nombre -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/nombre">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/CentroLogistico"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Tienda"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Usuario"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>nombre</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/precio -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/precio">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Compra"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InfoEnvio"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InformacionProvisionalEntrega"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Producto"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoCobrado"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoEnviado"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductoReembolsado"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ProductosComprar"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/ReembolsarProductos"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+        <rdfs:label>precio</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/prioridadEntrega -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/prioridadEntrega">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/InfoUsuarioEntrega"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Pedido"/>
+        <rdfs:range rdf:resource="http://webprotege.stanford.edu/TPrioridad"/>
+        <rdfs:comment>TPrioridad (enumeration): 1 dia, 2 dias, 3 dias, &gt;3 dias</rdfs:comment>
+        <rdfs:label>prioridadEntrega</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://webprotege.stanford.edu/valoracion -->
+
+    <owl:DatatypeProperty rdf:about="http://webprotege.stanford.edu/valoracion">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/Feedback"/>
+        <rdfs:domain rdf:resource="http://webprotege.stanford.edu/RespuestaFeedback"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>valoracion</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://webprotege.stanford.edu/Busqueda -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Busqueda">
+        <rdfs:label>Busqueda</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/CentroLogistico -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/CentroLogistico">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label>CentroLogistico</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Cliente -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Cliente">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Usuario"/>
+        <rdfs:label>Cliente</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Compra -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Compra">
+        <rdfs:label>Compra</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/CompraAceptada -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/CompraAceptada">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>CompraAceptada</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Devolucion -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Devolucion">
+        <rdfs:label>Devolucion</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Feedback -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Feedback">
+        <rdfs:label>Feedback</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/InfoEnvio -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/InfoEnvio">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>InfoEnvio</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/InfoUsuarioEntrega -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/InfoUsuarioEntrega">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>InfoUsuarioEntrega</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/InformacionProvisionalEntrega -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/InformacionProvisionalEntrega">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>InformacionProvisionalEntrega</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/InformacionTienda -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/InformacionTienda">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>InformacionTienda</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Lista_Productos -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Lista_Productos">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>Lista_Productos</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Mensajes -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Mensajes">
+        <rdfs:label>Mensajes</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Pedido -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Pedido">
+        <rdfs:label>Pedido</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PedirInfoTienda -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PedirInfoTienda">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PedirInfoTienda</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PeticionDevolucion -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PeticionDevolucion">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PeticionDevolucion</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PeticionFeedback -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PeticionFeedback">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PeticionFeedback</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PeticionProductosComprar -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PeticionProductosComprar">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PeticionProductosComprar</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PeticionRegistrarProducto -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PeticionRegistrarProducto">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PeticionRegistrarProducto</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PeticionTransporte -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PeticionTransporte">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PeticionTransporte</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/PreguntaUsuarioInfoEntrega -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/PreguntaUsuarioInfoEntrega">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>PreguntaUsuarioInfoEntrega</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Producto -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Producto">
+        <rdfs:label>Producto</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductoCobrado -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductoCobrado">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductoCobrado</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductoEnviado -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductoEnviado">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductoEnviado</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductoRecoger -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductoRecoger">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductoRecoger</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductoReembolsado -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductoReembolsado">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductoReembolsado</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductoRegistrado -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductoRegistrado">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductoRegistrado</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductosComprar -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductosComprar">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductosComprar</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductosEntregables -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductosEntregables">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductosEntregables</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductosEnviar -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductosEnviar">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductosEnviar</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ProductosRecomendados -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ProductosRecomendados">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ProductosRecomendados</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RecordatorioOrganizarLotes -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RecordatorioOrganizarLotes">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RecordatorioOrganizarLotes</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RecordatorioPedirFeedback -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RecordatorioPedirFeedback">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RecordatorioPedirFeedback</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RecordatorioRecomendarProductos -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RecordatorioRecomendarProductos">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RecordatorioRecomendarProductos</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/ReembolsarProductos -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/ReembolsarProductos">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>ReembolsarProductos</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RespuestaDevolucion -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RespuestaDevolucion">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RespuestaDevolucion</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RespuestaFeedback -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RespuestaFeedback">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RespuestaFeedback</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RespuestaTransporte -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RespuestaTransporte">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+        <rdfs:label>RespuestaTransporte</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Stock -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Stock">
+        <rdfs:label>Stock</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Tienda -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Tienda">
+        <rdfs:label>Tienda</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Transaccion -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Transaccion">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label>Transaccion</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Transportista -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Transportista">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Usuario"/>
+        <rdfs:label>Transportista</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Usuario -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Usuario">
+        <rdfs:label>Usuario</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/buscado -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/buscado">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/Mensajes"/>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotations
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description rdf:about="http://webprotege.stanford.edu/R7v8dLv3N9PzHEuBLyHCoFj">
+        <rdfs:label>Producto</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://webprotege.stanford.edu/buscado">
+        <rdfs:comment>Un producto puede estar en cero o muchas busquedas</rdfs:comment>
+        <rdfs:comment>Una busqueda tiene uno o muchos productos</rdfs:comment>
+        <rdfs:label>PeticionBusqueda</rdfs:label>
+        <rdfs:label>buscado</rdfs:label>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.26.2023-07-17T20:34:13Z) https://github.com/owlcs/owlapi -->
+
