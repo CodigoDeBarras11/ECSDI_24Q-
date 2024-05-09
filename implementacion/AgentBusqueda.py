@@ -23,7 +23,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph
+from rdflib import Namespace, Graph, RDF, Literal
 from flask import Flask, request
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -66,6 +66,9 @@ else:
 print('DS Hostname =', hostaddr)
 
 
+#ATRIBUTOS DEL AGENTE ------------------------------------------------------
+
+
 agn = Namespace("http://www.agentes.org#")
 
 # Contador de mensajes
@@ -91,6 +94,11 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+
+
+#FUNCIONES DEL AGENTE ------------------------------------------------------
+
+
 
 
 @app.route("/comm")
@@ -181,8 +189,84 @@ def agentbehavior1(cola):
     :return:
     """
     global dsgraph
-    dsgraph.parse('Examples/InfoSources/product.ttl',format='turtle')
+    dsgraph.parse('product.ttl',format='turtle')
     pass
+
+
+
+def search_products(product_class, min_price=None, max_price=None, min_weight=None, max_weight=None):
+    
+    products_graph = Graph()
+    products_graph.parse("product.ttl", format="turtle")
+
+
+    query = """
+    PREFIX pont: <http://www.products.org/ontology/>
+    PREFIX pontp: <http://www.products.org/ontology/property/>
+    PREFIX pontr: <http://www.products.org/ontology/resource/>
+
+    SELECT ?product ?name ?price ?weight ?brand
+    WHERE {
+        ?product rdf:type pont:%s .
+        ?product pontp:nombre ?name .
+        ?product pontp:precio ?price .
+        ?product pontp:peso ?weight .
+        ?product pontp:tieneMarca ?brand_uri .
+        ?brand_uri pontp:nombre ?brand .
+    """ % product_class
+
+
+    if min_price is not None:
+        query += f"FILTER(?price >= {min_price})\n"
+    if max_price is not None:
+        query += f"FILTER(?price <= {max_price})\n"
+    if min_weight is not None:
+        query += f"FILTER(?weight >= {min_weight})\n"
+    if max_weight is not None:
+        query += f"FILTER(?weight <= {max_weight})\n"
+
+    query += "}"
+
+    results = products_graph.query(query)
+
+    products = []
+    for row in results:
+        product = {
+            "name": str(row.name),
+            "price": float(row.price),
+            "weight": float(row.weight),
+            "brand": str(row.brand)
+        }
+        products.append(product)
+
+    print("Products:")
+    for product in products:
+        print(product)
+
+    return products
+
+
+def send_message_custom(products):
+   
+    content = Graph()
+    content.bind('pontp', Namespace("http://www.products.org/ontology/property/"))
+    for product in products:
+        product_uri = agn[product['name']]  
+        content.add((product_uri, RDF.type, agn.Product))
+        content.add((product_uri, agn.nombre, Literal(product['name'])))
+        content.add((product_uri, agn.precio, Literal(product['price'])))
+        content.add((product_uri, agn.peso, Literal(product['weight'])))
+        content.add((product_uri, agn.tieneMarca, Literal(product['brand'])))  
+
+
+    msg = build_message(Graph(), ACL.inform, sender=AgenteBusqueda.uri, content=content, msgcnt=mss_cnt)
+
+    port2 = 9011
+
+    #msg = "hola"
+    response = send_message(msg, 'http://{}:{}/comm'.format(hostname, port2))
+
+    #mss_cnt += 1
 
 
 if __name__ == '__main__':
@@ -194,18 +278,20 @@ if __name__ == '__main__':
     solverid = hostaddr.split('.')[0] + '-' + str(port)
     mess = 'REGISTER|'+solverid+',BUSQUEDA,'+solveradd
     done = False
-    while not done:
+    """while not done:
         try:
             resp = requests.get(diraddress + '/message', params={'message': mess}).text
             done = True
         except ConnectionError:
             pass
-
+    
     if 'OK' in resp:
         print(f'SOLVER {solverid} successfully registered')
-    # Ponemos en marcha el servidor
+    """# Ponemos en marcha el servidor
+    products = search_products("Blender", min_price=None, max_price=None, min_weight=None, max_weight=None)
+    send_message_custom(products)
     app.run(host=hostname, port=port)
-
+    
     # Esperamos a que acaben los behaviors
     ab1.join()
     print('The End')
