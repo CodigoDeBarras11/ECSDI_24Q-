@@ -13,22 +13,55 @@ Asume que el agente de registro esta en el puerto 9000
 
 @author: javier
 """
-
+from os import getcwd, path
+import sys
+sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
 import socket
+import argparse
+import logging
 
 from rdflib import Namespace, Graph
 from flask import Flask
-
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from docs.ecsdi import ECSDI
 
 __author__ = 'javier'
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+# parsing de los parametros de la linea de comandos
+args = parser.parse_args()
+
+if not args.verbose:
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
 
 # Configuration stuff
-hostname = socket.gethostname()
-port = 9010
+if args.port is None:
+    port = 9010
+else:
+    port = args.port
+
+if args.dir is None:
+    raise NameError('A Directory Service addess is needed')
+else:
+    diraddress = args.dir
+
+if args.open:
+    hostname = '0.0.0.0'
+    hostaddr = gethostname()
+else:
+    hostaddr = hostname = socket.gethostname()
+
+print('DS Hostname =', hostaddr)
+
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -93,6 +126,8 @@ def agentbehavior1(cola):
 
     :return:
     """
+    global dsgraph
+    dsgraph.parse('Examples/InfoSources/product.ttl',format='turtle')
     pass
 
 
