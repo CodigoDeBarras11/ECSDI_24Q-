@@ -1,16 +1,16 @@
 """
-.. module:: ecsdi
+.. module:: ecdicompleto2
 
  Translated by owl2rdflib
 
  Translated to RDFlib from ontology urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8
 
- :Date 09/05/2024 10:42:54
+ :Date 09/05/2024 10:41:34
 """
 from rdflib import URIRef
 from rdflib.namespace import ClosedNamespace
 
-ECSDI =  ClosedNamespace(
+ECDICOMPLETO2 =  ClosedNamespace(
     uri=URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8'),
     terms=[
         # Classes

@@ -6,7 +6,8 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @base <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#> .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> rdf:type owl:Ontology .
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> rdf:type owl:Ontology ;
+                                       rdfs:label "EcsdiOnt" .
 
 #################################################################
 #    Datatypes
