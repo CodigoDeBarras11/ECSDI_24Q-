@@ -166,4 +166,4 @@ if __name__ == '__main__':
     print('DS Hostname =', hostaddr)
 
     # Ponemos en marcha el servidor Flask
-    app.run(host=hostname, port=port, debug=False, use_reloader=False)
+    app.run(host=hostname, port=port, debug=True, use_reloader=False)

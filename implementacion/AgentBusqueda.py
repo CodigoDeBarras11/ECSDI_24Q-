@@ -119,9 +119,9 @@ def comunicacion():
     logger.info('Peticion de informacion recibida')
 
     # Extraemos el mensaje y creamos un grafo con el
-    message = request.args['content']
+    message = request.args['detalls']
     gm = Graph()
-    gm.parse(data=message, format='xml')
+    b1 = ECSDI.term['Busca']
 
     msgdic = get_message_properties(gm)
 
@@ -194,7 +194,7 @@ def agentbehavior1(cola):
 
 
 
-def search_products(product_class, min_price=None, max_price=None, min_weight=None, max_weight=None):
+def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     
     products_graph = Graph()
     products_graph.parse("product.ttl", format="turtle")
@@ -239,15 +239,16 @@ def search_products(product_class, min_price=None, max_price=None, min_weight=No
         }
         products.append(product)
 
-    print("Products:")
+    '''print("Products:")
     for product in products:
-        print(product)
+        print(product)'''
 
     return products
 
 
 def send_message_custom(products):
    
+    global mss_cnt
     content = Graph()
     content.bind('pontp', Namespace("http://www.products.org/ontology/property/"))
     for product in products:
@@ -265,8 +266,8 @@ def send_message_custom(products):
 
     #msg = "hola"
     response = send_message(msg, 'http://{}:{}/comm'.format(hostname, port2))
-
-    #mss_cnt += 1
+    
+    mss_cnt += 1
 
 
 if __name__ == '__main__':
@@ -278,7 +279,7 @@ if __name__ == '__main__':
     solverid = hostaddr.split('.')[0] + '-' + str(port)
     mess = 'REGISTER|'+solverid+',BUSQUEDA,'+solveradd
     done = False
-    """while not done:
+    while not done:
         try:
             resp = requests.get(diraddress + '/message', params={'message': mess}).text
             done = True
@@ -287,10 +288,11 @@ if __name__ == '__main__':
     
     if 'OK' in resp:
         print(f'SOLVER {solverid} successfully registered')
-    """# Ponemos en marcha el servidor
+    # Ponemos en marcha el servidor
+    app.run(host=hostname, port=port)
     products = search_products("Blender", min_price=None, max_price=None, min_weight=None, max_weight=None)
     send_message_custom(products)
-    app.run(host=hostname, port=port)
+   
     
     # Esperamos a que acaben los behaviors
     ab1.join()
