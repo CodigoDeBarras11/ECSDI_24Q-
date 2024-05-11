@@ -119,16 +119,21 @@ def comunicacion():
     logger.info('Peticion de informacion recibida')
 
     # Extraemos el mensaje y creamos un grafo con el
-    product_type = request.args['product_type']
-    min_price = float(request.args.get('min_price'))
-    max_price = float(request.args.get('max_price'))
-    min_weight = float(request.args.get('min_weight'))
-    max_weight = float(request.args.get('max_weight'))
+    product_type = request.args.get('product_type')
+    min_price = request.args.get('min_price')
+    if(min_price): min_price = float(min_price)
+    max_price = request.args.get('max_price')
+    if(max_price): max_price = float(max_price)
+    min_weight = request.args.get('min_weight')
+    if(min_weight): min_weight = float(min_weight)
+    max_weight = request.args.get('max_weight')
+    if(max_weight): max_weight = float(max_weight)
     #return [product_type,min_price, max_price, min_weight, max_weight]
     gm = Graph()
     b1 = ECSDI.Busqueda
     if product_type or min_price or max_price or  min_weight or max_weight:
         products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+        return products
     else: return "Tienes que poner algun filtro"
     send_message_custom(products)
     msgdic = get_message_properties(gm)
@@ -190,24 +195,24 @@ def tidyup():
     pass
 
 
-def agentbehavior1(cola):
+def cargar_productos():
     """
     Un comportamiento del agente
 
     :return:
     """
-    global dsgraph
-    dsgraph.parse('product.ttl',format='turtle')
-    pass
+    products_graph = Graph()
+    products_graph.parse("product.ttl", format="turtle")
+    return products_graph
 
 
 
 def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     
-    products_graph = Graph()
-    products_graph.parse("product.ttl", format="turtle")
-
-
+    global dsgraph
+    logger.info(product_class)
+    if not product_class: product_class = "Product"
+    elif product_class not in("Blender", "Product"): return ["El tipo de producto especificado no es valido"] # esto es una solucion provisional
     query = """
     PREFIX pont: <http://www.products.org/ontology/>
     PREFIX pontp: <http://www.products.org/ontology/property/>
@@ -235,7 +240,7 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
 
     query += "}"
 
-    results = products_graph.query(query)
+    results = dsgraph.query(query)
 
     products = []
     for row in results:
@@ -250,7 +255,6 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
     '''print("Products:")
     for product in products:
         print(product)'''
-
     return products
 
 
@@ -281,9 +285,11 @@ def send_message_custom(products):
 
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
+    '''ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
+    ab1.join()'''
     # Registramos el solver en el servicio de directorio
+    dsgraph = cargar_productos()
     app.run(host=hostname, port=port, debug=True)
     '''solveradd = 'http://'+hostaddr+':'+str(port)
     solverid = hostaddr.split('.')[0] + '-' + str(port)
@@ -303,5 +309,5 @@ if __name__ == '__main__':
    
     
     # Esperamos a que acaben los behaviors
-    ab1.join()
+    
     print('The End')
