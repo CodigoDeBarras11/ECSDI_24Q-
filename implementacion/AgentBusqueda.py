@@ -119,12 +119,13 @@ def comunicacion():
     logger.info('Peticion de informacion recibida')
 
     # Extraemos el mensaje y creamos un grafo con el
-    message = request.args['detalls']
+    message = request.args['content']
     gm = Graph()
-    b1 = ECSDI.term['Busca']
-
+    b1 = ECSDI.Busqueda
+    products = search_products("Blender", min_price=None, max_price=None, min_weight=None, max_weight=None)
+    send_message_custom(products)
     msgdic = get_message_properties(gm)
-
+    logger.info(msgdic)
     # Comprobamos que sea un mensaje FIPA ACL
     if msgdic is None:
         # Si no es, respondemos que no hemos entendido el mensaje
@@ -260,12 +261,13 @@ def send_message_custom(products):
         content.add((product_uri, agn.tieneMarca, Literal(product['brand'])))  
 
 
-    msg = build_message(Graph(), ACL.inform, sender=AgenteBusqueda.uri, content=content, msgcnt=mss_cnt)
-
+    msg = build_message(Graph(), ACL.inform, sender=AgenteBusqueda.uri, receiver=agn.AgenteSimple, content=content, msgcnt=mss_cnt)
+    
     port2 = 9011
-
+    address = 'http://{}:{}/comm'.format(hostname, port2)
     #msg = "hola"
-    response = send_message(msg, 'http://{}:{}/comm'.format(hostname, port2))
+    logger.info(type(msg))
+    r = requests.get(address, params={'content': msg})
     
     mss_cnt += 1
 
@@ -275,7 +277,8 @@ if __name__ == '__main__':
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
     # Registramos el solver en el servicio de directorio
-    solveradd = 'http://'+hostaddr+':'+str(port)
+    app.run(host=hostname, port=port, debug=True)
+    '''solveradd = 'http://'+hostaddr+':'+str(port)
     solverid = hostaddr.split('.')[0] + '-' + str(port)
     mess = 'REGISTER|'+solverid+',BUSQUEDA,'+solveradd
     done = False
@@ -288,10 +291,8 @@ if __name__ == '__main__':
     
     if 'OK' in resp:
         print(f'SOLVER {solverid} successfully registered')
-    # Ponemos en marcha el servidor
-    app.run(host=hostname, port=port)
-    products = search_products("Blender", min_price=None, max_price=None, min_weight=None, max_weight=None)
-    send_message_custom(products)
+    # Ponemos en marcha el servidor'''
+    
    
     
     # Esperamos a que acaben los behaviors
