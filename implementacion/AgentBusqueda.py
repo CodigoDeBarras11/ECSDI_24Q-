@@ -62,7 +62,6 @@ if args.open:
     hostaddr = gethostname()
 else:
     hostaddr = hostname = socket.gethostname()
-    
 
 print('DS Hostname =', hostaddr)
 
@@ -120,10 +119,17 @@ def comunicacion():
     logger.info('Peticion de informacion recibida')
 
     # Extraemos el mensaje y creamos un grafo con el
-    message = request.args['content']
+    product_type = request.args['product_type']
+    min_price = float(request.args.get('min_price'))
+    max_price = float(request.args.get('max_price'))
+    min_weight = float(request.args.get('min_weight'))
+    max_weight = float(request.args.get('max_weight'))
+    #return [product_type,min_price, max_price, min_weight, max_weight]
     gm = Graph()
     b1 = ECSDI.Busqueda
-    products = search_products("Blender", min_price=None, max_price=None, min_weight=None, max_weight=None)
+    if product_type or min_price or max_price or  min_weight or max_weight:
+        products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+    else: return "Tienes que poner algun filtro"
     send_message_custom(products)
     msgdic = get_message_properties(gm)
     logger.info(msgdic)
