@@ -62,6 +62,7 @@ if args.open:
     hostaddr = gethostname()
 else:
     hostaddr = hostname = socket.gethostname()
+    
 
 print('DS Hostname =', hostaddr)
 
