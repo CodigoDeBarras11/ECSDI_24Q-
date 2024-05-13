@@ -98,7 +98,24 @@ app = Flask(__name__)
 
 #FUNCIONES DEL AGENTE ------------------------------------------------------
 
-
+@app.route("/search")
+def comunicacion():
+    product_type = request.args.get('product_type')
+    min_price = request.args.get('min_price')
+    if(min_price): min_price = float(min_price)
+    max_price = request.args.get('max_price')
+    if(max_price): max_price = float(max_price)
+    min_weight = request.args.get('min_weight')
+    if(min_weight): min_weight = float(min_weight)
+    max_weight = request.args.get('max_weight')
+    if(max_weight): max_weight = float(max_weight)
+    #return [product_type,min_price, max_price, min_weight, max_weight]
+    gm = Graph()
+    b1 = ECSDI.Busqueda
+    if product_type or min_price or max_price or  min_weight or max_weight:
+        products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+        return products
+    else: return "Tienes que poner algun filtro"
 
 
 @app.route("/comm")
@@ -119,7 +136,7 @@ def comunicacion():
     logger.info('Peticion de informacion recibida')
 
     # Extraemos el mensaje y creamos un grafo con el
-    product_type = request.args.get('product_type')
+    '''product_type = request.args.get('product_type')
     min_price = request.args.get('min_price')
     if(min_price): min_price = float(min_price)
     max_price = request.args.get('max_price')
@@ -134,7 +151,9 @@ def comunicacion():
     if product_type or min_price or max_price or  min_weight or max_weight:
         products = search_products(product_type, min_price, max_price, min_weight, max_weight)
         return products
-    else: return "Tienes que poner algun filtro"
+    else: return "Tienes que poner algun filtro"'''
+    gm = Graph()
+    products = None
     send_message_custom(products)
     msgdic = get_message_properties(gm)
     logger.info(msgdic)
