@@ -34,9 +34,43 @@ from docs.ecsdi import ECSDI
 
 __author__ = 'javier'
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+# parsing de los parametros de la linea de comandos
+args = parser.parse_args()
+
+if not args.verbose:
+    logger = config_logger(1, 'compra')
+
+
 # Configuration stuff
-hostname = socket.gethostname()
-port = 9011
+if args.port is None:
+    port = 9020
+else:
+    port = args.port
+
+if args.dir is None:
+    raise NameError('A Directory Service addess is needed')
+else:
+    diraddress = args.dir
+
+if args.open:
+    hostname = '0.0.0.1'
+    hostaddr = gethostname()
+else:
+    hostaddr = hostname = socket.gethostname()
+print('DS Hostname =', hostaddr)
+
+
+
+#ATRIBUTOS DEL AGENTE ------------------------------------------------------
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -45,7 +79,7 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteSimple',
+AgentePersonal = Agent('AgenteCompra',
                        agn.AgenteSimple,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
@@ -64,6 +98,10 @@ cola1 = Queue()
 
 app = Flask(__name__)
 
+
+
+
+#FUNCIONES DEL AGENTE ------------------------------------------------------
 
 @app.route("/comm")
 def comunicacion():
