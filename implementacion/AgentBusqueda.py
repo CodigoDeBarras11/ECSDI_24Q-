@@ -24,7 +24,7 @@ import argparse
 from AgentUtil.Logging import config_logger
 
 from rdflib import Namespace, Graph, RDF, Literal
-from flask import Flask, request
+from flask import Flask, request, render_template_string
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
@@ -98,8 +98,24 @@ app = Flask(__name__)
 
 #FUNCIONES DEL AGENTE ------------------------------------------------------
 
+@app.route("/accept_purchase", methods=["POST"])
+def accept_purchase():
+    # Lógica de aceptar la compra
+    # Puedes acceder a datos adicionales enviados desde el formulario utilizando request
+    # Por ejemplo, request.form['producto_id'] para obtener el ID del producto aceptado
+    # Luego, redirigir al AgenteCompra o realizar cualquier otra acción necesaria
+    return 'Redirige a agente de compra'
+    #return redirect(url_for("agente_compra"))
+
+@app.route("/reject_purchase", methods=["POST"])
+def reject_purchase():
+    # Lógica de rechazar la compra
+    return 'Recarga la página para cercar productos'
+    #return "Compra Rechazada"
+
+
 @app.route("/search")
-def comunicacion():
+def comunicacion1():
     product_type = request.args.get('product_type')
     min_price = request.args.get('min_price')
     if(min_price): min_price = float(min_price)
@@ -114,12 +130,38 @@ def comunicacion():
     b1 = ECSDI.Busqueda
     if product_type or min_price or max_price or  min_weight or max_weight:
         products = search_products(product_type, min_price, max_price, min_weight, max_weight)
-        return products
+        
+        return render_template_string("""
+        <h1>Productos Encontrados:</h1>
+        <table border="1">
+            <tr>
+                <th>Nombre</th>
+                <th>Peso</th>
+                <th>Precio</th>
+                <th>Marca</th>
+            </tr>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['name'] }}</td>
+                <td>{{ product['weight'] }}</td>
+                <td>{{ product['price'] }}</td>
+                <td>{{ product['brand'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <form action="/accept_purchase" method="POST">
+            <input type="submit" value="Aceptar Compra para todos los productos">
+        </form>
+        <form action="/reject_purchase" method="POST">
+            <input type="submit" value="Rechazar Compra">
+        </form>
+    """, products=products)
+
     else: return "Tienes que poner algun filtro"
 
 
 @app.route("/comm")
-def comunicacion():
+def comunicacion2():
     """
     Entrypoint de comunicacion del agente
     Simplemente retorna un objeto fijo que representa una
