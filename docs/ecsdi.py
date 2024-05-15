@@ -5,7 +5,7 @@
 
  Translated to RDFlib from ontology urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8
 
- :Date 09/05/2024 10:42:54
+ :Date 15/05/2024 18:18:03
 """
 from rdflib import URIRef
 from rdflib.namespace import ClosedNamespace
@@ -18,8 +18,6 @@ ECSDI =  ClosedNamespace(
         'CentroLogistico',
         'Cliente',
         'Compra',
-        'CompraAceptada',
-        'Devolucion',
         'Feedback',
         'InfoEnvio',
         'InfoUsuarioEntrega',
@@ -29,16 +27,15 @@ ECSDI =  ClosedNamespace(
         'Mensajes',
         'Pedido',
         'PedirInfoTienda',
+        'PeticionBusqueda',
         'PeticionDevolucion',
         'PeticionFeedback',
-        'PeticionProductosComprar',
         'PeticionRegistrarProducto',
         'PeticionTransporte',
         'PreguntaUsuarioInfoEntrega',
         'Producto',
         'ProductoCobrado',
         'ProductoEnviado',
-        'ProductoRecoger',
         'ProductoReembolsado',
         'ProductoRegistrado',
         'ProductosComprar',
@@ -52,17 +49,16 @@ ECSDI =  ClosedNamespace(
         'RespuestaDevolucion',
         'RespuestaFeedback',
         'RespuestaTransporte',
-        'Stock',
         'Tienda',
         'Transaccion',
         'Transportista',
         'Usuario',
-        'buscado',
+        'PeticionCompra',
+        'Peticion_agente',
 
         # Object properties
         'buscado',
         'buscado_por',
-        'busqueda_comprada',
         'compra_a_enviar',
         'destinatario',
         'emisor',
@@ -70,19 +66,16 @@ ECSDI =  ClosedNamespace(
         'feedback_de',
         'infoTienda',
         'info_entrega',
-        'producto_almacen',
         'producto_devuelto',
         'producto_enviado',
         'productos_comprar',
-        'stock_de',
         'valorada_por',
         'vendido_por',
+        'productos',
 
         # Data properties
         'acceptado',
         'cantidadDinero',
-        'cantidadProducto',
-        'caracteristicas',
         'descripcion',
         'direccion',
         'direccionEntrega',
@@ -90,7 +83,6 @@ ECSDI =  ClosedNamespace(
         'enviado',
         'fechaHora',
         'id',
-        'id_busqueda',
         'id_usuario',
         'metodoDevolucion',
         'metodoPago',
@@ -100,7 +92,12 @@ ECSDI =  ClosedNamespace(
         'precio',
         'prioridadEntrega',
         'valoracion',
-        'tieneMarca'
+        'tieneMarca',
+        'max_peso',
+        'max_precio',
+        'min_peso',
+        'min_precio',
+        'tipoproducto'
 
         # Named Individuals
     ]
