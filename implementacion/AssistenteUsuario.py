@@ -4,6 +4,11 @@ import requests
 import socket
 app = Flask(__name__)
 @app.route('/busca', methods=['GET', 'POST'])
+def compra():
+    form = SearchForm(request.form)
+    return render_template('compra.html', form = form)
+
+@app.route('/busca', methods=['GET', 'POST'])
 def busca():
     form = SearchForm(request.form)
     if request.method == 'POST' and form.validate():

@@ -1,9 +1,3 @@
-{% extends 'base.html'%}
-{% block header %}
-  <h1>{% block title %}Busca{% endblock %}</h1>
-{% endblock %}
-
-{% block content %}
 {% from "formutils.html" import render_field %}
 <form method=post style="align-self: center;">
   <dl>
@@ -15,4 +9,3 @@
   </dl>
   <p><input type=submit value=Search>
 </form>
-{% endblock %}

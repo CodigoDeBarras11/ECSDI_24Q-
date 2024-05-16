@@ -20,4 +20,6 @@
  </tr>
 {% endfor %}
 </table>
+<form action="{{ url_for('compra') }}" method='GET'><button>Comprar</button></form>
+<form action="{{ url_for('busca') }}" method='GET'><button>Volver a buscar</button></form>
 {% endblock %}

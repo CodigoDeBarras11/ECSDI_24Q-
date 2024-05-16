@@ -192,7 +192,6 @@ def comunicacion():
     b1 = ECSDI.Busqueda
     if product_type or min_price or max_price or  min_weight or max_weight:
         products = search_products(product_type, min_price, max_price, min_weight, max_weight)
-        logger.info(products)
         return products
     else: return "Tienes que poner algun filtro"
     gm = Graph()
