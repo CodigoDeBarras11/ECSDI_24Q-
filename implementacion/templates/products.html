@@ -1,4 +1,10 @@
-{% extends 'base.html''%}
+{% extends 'base.html'%}
+{% block header %}
+  <h1>{% block title %}Index{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<table>
 <tr>
     <th>name</th>
     <th>price</th>
@@ -14,3 +20,4 @@
  </tr>
 {% endfor %}
 </table>
+{% endblock %}

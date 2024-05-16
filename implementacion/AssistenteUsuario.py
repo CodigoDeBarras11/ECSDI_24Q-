@@ -1,12 +1,16 @@
 from formularios.formbusca import SearchForm
 from flask import Flask, render_template, request, redirect, url_for
-
+import requests
+import socket
 app = Flask(__name__)
-@app.route('/busca')
+@app.route('/busca', methods=['GET', 'POST'])
 def busca():
     form = SearchForm(request.form)
     if request.method == 'POST' and form.validate():
-        return render_template('products.html')
+        hostname = socket.gethostname()
+        address = 'http://{}:{}/comm'.format(hostname, 9010)
+        productos = requests.get(address, params=form.data).json()
+        return render_template('products.html', products = productos)
     return render_template('search.html', form=form)
     
 
