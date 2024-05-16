@@ -1,0 +1,11 @@
+{% from "formutils.html" import render_field %}
+<form method=post style="align-self: center;">
+  <dl>
+    {{ render_field(form.product_class) }}
+    {{ render_field(form.min_price) }}
+    {{ render_field(form.max_price) }}
+    {{ render_field(form.min_weight) }}
+    {{ render_field(form.max_weight) }}
+  </dl>
+  <p><input type=submit value=Search>
+</form>
