@@ -1,11 +1,15 @@
+{% extends 'base.html'%}
+{% block header %}
+  <h1>{% block title %}Compra{% endblock %}</h1>
+{% endblock %}
+{% block content %}
 {% from "formutils.html" import render_field %}
-<form method=post style="align-self: center;">
+<form method=post>
   <dl>
-    {{ render_field(form.product_class) }}
-    {{ render_field(form.min_price) }}
-    {{ render_field(form.max_price) }}
-    {{ render_field(form.min_weight) }}
-    {{ render_field(form.max_weight) }}
+    {{ render_field(form.shiping_adress) }}
+    {{ render_field(form.payment_method) }}
+    {{ render_field(form.shiping_priority) }}
   </dl>
   <p><input type=submit value=Search>
 </form>
+{% endblock %}

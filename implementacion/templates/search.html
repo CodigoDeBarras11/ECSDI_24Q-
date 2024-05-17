@@ -2,10 +2,9 @@
 {% block header %}
   <h1>{% block title %}Busca{% endblock %}</h1>
 {% endblock %}
-
 {% block content %}
 {% from "formutils.html" import render_field %}
-<form method=post style="align-self: center;">
+<form method=post>
   <dl>
     {{ render_field(form.product_class) }}
     {{ render_field(form.min_price) }}

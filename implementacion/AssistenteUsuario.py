@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import requests
 import socket
 app = Flask(__name__)
-@app.route('/busca', methods=['GET', 'POST'])
+@app.route('/compra', methods=['GET', 'POST'])
 def compra():
     form = SearchForm(request.form)
     return render_template('compra.html', form = form)

@@ -6,3 +6,4 @@ numpy
 matplotlib
 pif
 flask-wtf
+babel
