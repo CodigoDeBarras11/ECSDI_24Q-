@@ -25,18 +25,22 @@ import argparse
 from AgentUtil.Logging import config_logger
 
 from rdflib import Namespace, Graph, RDF, Literal
-from flask import Flask, request
+from flask import Flask, request, render_template_string, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 
-__author__ = 'javier'
+
+
+__author__ = 'Pepe'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9011
+#print("fwefwef")
+#print(hostname)
+port = 9012
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -45,8 +49,8 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteSimple',
-                       agn.AgenteSimple,
+AgenteContabilidad = Agent('AgenteContabilidad',
+                       agn.AgenteContabilidad,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
@@ -61,58 +65,155 @@ dsgraph = Graph()
 
 cola1 = Queue()
 
-
+# Flask stuff
 app = Flask(__name__)
 
+
+def get_count():
+    global mss_cnt
+    mss_cnt += 1
+    return mss_cnt
+
+
+def get_term(uri):
+    """
+    Extracts the term from a given URI.
+
+    :param uri: The URI from which to extract the term.
+    :return: The extracted term.
+    """
+    common_prefix = 'urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8'
+    return uri.replace(common_prefix, '').replace(':', '')
 
 @app.route("/comm")
 def comunicacion():
     """
-    Entrypoint for communication
+    Communication Entrypoint
     """
-    global dsgraph
-    global mss_cnt
 
+    global dsGraph
 
-    message = request.args.get('content', '')  #
+    print("CCCCCCCCCCCCCCCCCCCCCCCCCC")
+    message = request.args['content']
+    print("DDDDDDDDDDDDDDDDDDDDDDDDDDD")
+    gm = Graph()
+    print("EEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    print("------------------------------------")
     print(message)
+    print("------------------------------------")
+    #message_without_declaration = message.replace('<?xml version="1.0" encoding="utf-8"?>', '')
+    #print("------------------------------------")
+    #print(message_without_declaration)
+    #print("------------------------------------")
+    gm.parse(data=message, format='xml') #el mensaje que envio es el problema(el grafo vamos)
+    print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
 
-    return "p"
+    msgdic = get_message_properties(gm)
+    print(msgdic)
 
+    gr = None
+
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteContabilidad.uri, msgcnt=get_count())
+    else:
+        # Obtenemos la performativa
+        if msgdic['performative'] != ACL.request:
+            print("pepepepepepepe")
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(Graph(),
+                               ACL['not-understood'],
+                               sender=DirectoryAgent.uri,
+                               msgcnt=get_count())
+        else:
+            print("uuuuuuuuuuuuu")
+            # Obtenemos la performativa
+            perf = msgdic['performative']
+
+            if perf != ACL.request:
+                # Si no es un request, respondemos que no hemos entendido el mensaje
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteContabilidad.uri, msgcnt=get_count())
+            else:
+                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+                # de registro
+                receiver_uri = msgdic['receiver'] #receiver_uri
+                # Averiguamos el tipo de la accion
+                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+                
+                print("///////////////////////////")
+                print(receiver_uri)
+                print()
+                print(accion)
+                print("///////////////////////////")
+                
+
+                if accion == ECSDI.Compra:
+                    a = "fe"
+                    print("AVESTRUZ")
+                    print(gm.value(subject=receiver_uri, predicate=ECSDI.precio))
+
+                """# Accion de transferencia
+                if accion == ECSDI.ReembolsarProductos: #esto son clases
+                    # Content of the message
+                    #hay que cambiar
+                    for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
+                        gm.remove((item, None, None))
+                    gr = gm
+                
+                elif accion == ECSDI.ProductosComprar:
+                    #hay que cambiar
+                    for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
+                        gm.remove((item, None, None))
+                    gr = gm
+
+                # No habia ninguna accion en el mensaje
+                else:
+                    gr = build_message(Graph(),
+                                       ACL['not-understood'],
+                                       sender=DirectoryAgent.uri,
+                                       msgcnt=get_count())"""
+                return Response(status=200)
+
+    return Response(status=200)
 
 
 @app.route("/Stop")
 def stop():
     """
-    Entrypoint that stops the agent
+    Entrypoint que para el agente
+
+    :return:
     """
     tidyup()
     shutdown_server()
-    return "Stopping Server"
+    return "Parando Servidor"
 
 
 def tidyup():
     """
-    Actions to be taken before stopping the agent
+    Acciones previas a parar el agente
+
     """
     pass
 
 
 def agentbehavior1(cola):
     """
-    Agent's behavior
+    Un comportamiento del agente
+
+    :return:
     """
     pass
 
 
 if __name__ == '__main__':
-    # Launch the behaviors
+    # Ponemos en marcha los behaviors
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
 
-    # Launch the server
+    # Ponemos en marcha el servidor
     app.run(host=hostname, port=port)
 
-    # Wait for the behaviors to finish
+    # Esperamos a que acaben los behaviors
     ab1.join()
     print('The End')
