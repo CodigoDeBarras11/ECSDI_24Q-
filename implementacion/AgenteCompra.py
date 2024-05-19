@@ -111,11 +111,12 @@ def agentbehavior1(cola):
     #poner el hostname, no hardocoded
 
     # Create a RDF graph for the message content
-    action = ECSDI.Compra
     price = "11"
+    buyer_id = "user7"
     content_graph = Graph()
-    content_graph.add((receiver_uri, RDF.type, action))
+    content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
     content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
+    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
     #content_graph.add((content, RDF.type, ECSDI.Compra))
     #content_graph.add((receiver_uri, ECSDI.productos_comprar, Literal("11")))
     

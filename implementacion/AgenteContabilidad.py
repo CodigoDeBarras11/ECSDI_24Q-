@@ -85,6 +85,46 @@ def get_term(uri):
     common_prefix = 'urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8'
     return uri.replace(common_prefix, '').replace(':', '')
 
+
+def update_money(user_id, amount, accion):
+   
+    g = Graph()
+
+    ns = Namespace("http://example.org/")
+    g.bind("ex", ns)
+
+    g.parse("bd/banco.ttl", format="ttl")
+
+    user_exists = False
+    for s, p, o in g:
+        #print(f"Triple: {s}, {p}, {o}")
+        print("------------------")
+        print(str(s))
+        print(str(ns[user_id]))
+        print("------------------")
+        if str(s) == str(ns[user_id]):
+            user_exists = True
+            print("pppppppppppppppppppp")
+            existing_amount = int(o)
+            print("aaaaaaaaaaaaaaaaaaaaaaaa")
+            if existing_amount is not None:
+                amount = int(amount)
+                if accion == "compra": new_amount = existing_amount + amount
+                else: new_amount = existing_amount - amount
+                print(new_amount)
+                g.remove((s, p, o))
+                g.add((s, p, Literal(str(new_amount))))
+                break
+
+    if not user_exists:
+        subject = ns[user_id]
+        predicate = ECSDI.precio
+        object_value = Literal(amount)
+        g.add((subject, predicate, object_value))
+
+    g.serialize("bd/banco.ttl", format="ttl")
+
+
 @app.route("/comm")
 def comunicacion():
     """
@@ -147,31 +187,40 @@ def comunicacion():
                 print("///////////////////////////")
                 
 
-                if accion == ECSDI.Compra:
-                    a = "fe"
+                if accion == ECSDI.ProductoEnviado:
                     print("AVESTRUZ")
                     print(gm.value(subject=receiver_uri, predicate=ECSDI.precio))
-
-                """# Accion de transferencia
-                if accion == ECSDI.ReembolsarProductos: #esto son clases
-                    # Content of the message
-                    #hay que cambiar
-                    for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
-                        gm.remove((item, None, None))
-                    gr = gm
+                    print(gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario))
+                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                    retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                    
+                    update_money(user_id, retirar, "compra")
                 
-                elif accion == ECSDI.ProductosComprar:
-                    #hay que cambiar
-                    for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
-                        gm.remove((item, None, None))
-                    gr = gm
 
+                elif accion == ECSDI.DevolucionAceptada: #añair a la ontologia
+                    print("AVESTRUZ")
+                    update_money(user_id, retirar, "reembolso")
+                    """# Accion de transferencia
+                    if accion == ECSDI.ReembolsarProductos: #esto son clases
+                        # Content of the message
+                        #hay que cambiar
+                        for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
+                            gm.remove((item, None, None))
+                        gr = gm
+                    
+                    elif accion == ECSDI.ProductosComprar:
+                        #hay que cambiar
+                        for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
+                            gm.remove((item, None, None))
+                        gr = gm
+                    """
                 # No habia ninguna accion en el mensaje
                 else:
                     gr = build_message(Graph(),
-                                       ACL['not-understood'],
-                                       sender=DirectoryAgent.uri,
-                                       msgcnt=get_count())"""
+                                ACL['not-understood'],
+                                sender=AgenteContabilidad.uri,
+                                msgcnt=get_count())
+                
                 return Response(status=200)
 
     return Response(status=200)

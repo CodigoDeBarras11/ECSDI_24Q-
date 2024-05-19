@@ -1,0 +1,17 @@
+@prefix ex: <http://example.org/> .
+@prefix ns1: <urn:webprotege:ontology:> .
+
+ex:user1 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "11" .
+
+ex:user2 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "33" .
+
+ex:user3 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "1111" .
+
+ex:user4 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "1111" .
+
+ex:user5 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "11111111" .
+
+ex:user6 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "-11" .
+
+ex:user7 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "-22" .
+
