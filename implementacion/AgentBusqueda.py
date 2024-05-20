@@ -47,10 +47,7 @@ if not args.verbose:
     logger = config_logger(1, 'busqueda')
 
 # Configuration stuff
-if args.port is None:
     port = 9010
-else:
-    port = args.port
 
 if args.dir is None:
     raise NameError('A Directory Service addess is needed')
@@ -77,7 +74,7 @@ mss_cnt = 0
 # Datos del Agente
 
 AgenteBusqueda = Agent('AgenteBusqueda',
-                       agn.AgenteSimple,
+                       agn.AgenteBusqueda,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
@@ -175,30 +172,11 @@ def comunicacion():
     """
     global dsgraph
     global mss_cnt
-
-
     # Extraemos el mensaje y creamos un grafo con el
-    product_type = request.args.get('product_class')
-    min_price = request.args.get('min_price')
-    if(min_price): min_price = float(min_price)
-    max_price = request.args.get('max_price')
-    if(max_price): max_price = float(max_price)
-    min_weight = request.args.get('min_weight')
-    if(min_weight): min_weight = float(min_weight)
-    max_weight = request.args.get('max_weight')
-    if(max_weight): max_weight = float(max_weight)
-    logger.info([product_type,min_price, max_price, min_weight, max_weight])
     gm = Graph()
-    b1 = ECSDI.Busqueda
-    if product_type or min_price or max_price or  min_weight or max_weight:
-        products = search_products(product_type, min_price, max_price, min_weight, max_weight)
-        return products
-    else: return "Tienes que poner algun filtro"
-    gm = Graph()
-    products = None
-    send_message_custom(products)
+    gm = gm.parse(data=request.args.get('content'), format='xml')
     msgdic = get_message_properties(gm)
-    logger.info(msgdic)
+    #print(msgdic)
     # Comprobamos que sea un mensaje FIPA ACL
     if msgdic is None:
         # Si no es, respondemos que no hemos entendido el mensaje
@@ -220,14 +198,38 @@ def comunicacion():
             if 'content' in msgdic:
                 content = msgdic['content']
                 accion = gm.value(subject=content, predicate=RDF.type)
+                if accion == ECSDI.PeticionBusqueda:
+                    #if (accion, ECSDI.tipoproducto) in gm:
+                    product_type = str(gm.value(subject=content, predicate=ECSDI.tipoproducto))
+                    #if (accion, ECSDI.max_precio) in gm:
+                    max_price= str(gm.value(subject=content, predicate=ECSDI.max_precio))
+                    #if (accion, ECSDI.min_precio) in gm:
+                    min_price =str(gm.value(subject=content, predicate=ECSDI.min_precio))
+                    #if (accion, ECSDI.max_peso) in gm:
+                    max_weight= str(gm.value(subject=content, predicate=ECSDI.max_peso))
+                    #if (accion, ECSDI.min_peso) in gm:
+                    min_weight= str(gm.value(subject=content, predicate=ECSDI.min_peso))
+                if(min_price != 'None'): min_price = float(min_price)
+                else: min_price = None
+                if(max_price != 'None'): max_price = float(max_price)
+                else: max_price = None
+                if(min_weight != 'None'): min_weight = float(min_weight)
+                else: min_weight = None
+                if(max_weight != 'None'): max_weight = float(max_weight)
+                else: max_weight = None
+                logger.info([product_type,min_price, max_price, min_weight, max_weight])
+                gm = Graph()
+                b1 = ECSDI.Busqueda
+                products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+                return products
 
-            # Aqui realizariamos lo que pide la accion
-            # Por ahora simplemente retornamos un Inform-done
-            gr = build_message(Graph(),
-                               ACL['inform'],
-                               sender=AgenteBusqueda.uri,
-                               msgcnt=mss_cnt,
-                               receiver=msgdic['sender'], )
+    # Aqui realizariamos lo que pide la accion
+    # Por ahora simplemente retornamos un Inform-done
+    '''gr = build_message(Graph(),
+                        ACL['inform'],
+                        sender=AgenteBusqueda.uri,
+                        msgcnt=mss_cnt,
+                        receiver=msgdic['sender'], )'''
     mss_cnt += 1
 
     logger.info('Respondemos a la peticion')
@@ -266,6 +268,10 @@ def cargar_productos():
     products_graph.parse("product.ttl", format="turtle")
     return products_graph
 
+def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
+    grafobusquedas = Graph()
+    grafobusquedas.parse("busquedas.ttl", format="turtle")
+    grafobusquedas.serialize("busquedas.ttl", format="turtle")
 
 
 def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
@@ -326,11 +332,11 @@ def send_message_custom(products):
     content.bind('pontp', Namespace("http://www.products.org/ontology/property/"))
     for product in products:
         product_uri = agn[product['name']]  
-        content.add((product_uri, RDF.type, agn.Product))
-        content.add((product_uri, agn.nombre, Literal(product['name'])))
-        content.add((product_uri, agn.precio, Literal(product['price'])))
-        content.add((product_uri, agn.peso, Literal(product['weight'])))
-        content.add((product_uri, agn.tieneMarca, Literal(product['brand'])))  
+        content.objects((product_uri, RDF.type, agn.Product))
+        content.objects((product_uri, agn.nombre, Literal(product['name'])))
+        content.objects((product_uri, agn.precio, Literal(product['price'])))
+        content.objects((product_uri, agn.peso, Literal(product['weight'])))
+        content.objects((product_uri, agn.tieneMarca, Literal(product['brand'])))  
 
 
     msg = build_message(Graph(), ACL.inform, sender=AgenteBusqueda.uri, receiver=agn.AgenteSimple, content=content, msgcnt=mss_cnt)

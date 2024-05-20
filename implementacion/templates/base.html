@@ -14,11 +14,12 @@
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('index') }}">FlaskApp</a>
-    </nav>
+                            <a href="{{ url_for('index') }}">Home</a>
+                            <a href="{{ url_for('login') }}">Login</a>
+            </nav>
     <hr>
     <div class="content">
         {% block content %} {% endblock %}
-    </div>
+        </div>
 </body>
 </html>
