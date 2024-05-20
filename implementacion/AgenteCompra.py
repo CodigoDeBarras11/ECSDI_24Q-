@@ -25,12 +25,13 @@ import argparse
 from AgentUtil.Logging import config_logger
 
 from rdflib import Namespace, Graph, RDF, Literal
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
+
 
 __author__ = 'Pepe'
 
@@ -64,15 +65,89 @@ cola1 = Queue()
 # Flask stuff
 app = Flask(__name__)
 
+def get_count():
+    global mss_cnt
+    mss_cnt += 1
+    return mss_cnt
 
 @app.route("/comm")
 def comunicacion():
     """
     Entrypoint de comunicacion
     """
-    global dsgraph
-    global mss_cnt
-    pass
+    
+    global dsGraph
+
+    print("CCCCCCCCCCCCCCCCCCCCCCCCCC")
+    message = request.args['content']
+    print("DDDDDDDDDDDDDDDDDDDDDDDDDDD")
+    gm = Graph()
+    print("EEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    print("------------------------------------")
+    print(message)
+    print("------------------------------------")
+    #message_without_declaration = message.replace('<?xml version="1.0" encoding="utf-8"?>', '')
+    #print("------------------------------------")
+    #print(message_without_declaration)
+    #print("------------------------------------")
+    gm.parse(data=message, format='xml') #el mensaje que envio es el problema(el grafo vamos)
+    print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+
+    msgdic = get_message_properties(gm)
+    print(msgdic)
+
+    gr = None
+
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+    else:
+        # Obtenemos la performativa
+        if msgdic['performative'] != ACL.request:
+            print("pepepepepepepe")
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(Graph(),
+                               ACL['not-understood'],
+                               sender=DirectoryAgent.uri,
+                               msgcnt=get_count())
+        else:
+            print("uuuuuuuuuuuuu")
+            # Obtenemos la performativa
+            perf = msgdic['performative']
+
+            if perf != ACL.request:
+                # Si no es un request, respondemos que no hemos entendido el mensaje
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+            else:
+                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+                # de registro
+                receiver_uri = msgdic['receiver'] #receiver_uri
+                # Averiguamos el tipo de la accion
+                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+                
+                print("///////////////////////////")
+                print(receiver_uri)
+                print()
+                print(accion)
+                print("///////////////////////////")
+                
+
+                if accion == ECSDI.Compra:
+                    print("AVESTRUZ")
+                    
+                  
+
+                  
+                # No habia ninguna accion en el mensaje
+                else:
+                    gr = build_message(Graph(),
+                                ACL['not-understood'],
+                                sender=AgenteCompra.uri,
+                                msgcnt=get_count())
+                
+                return Response(status=200)
+
+    return Response(status=200)
 
 
 @app.route("/Stop")
