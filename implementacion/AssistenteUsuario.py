@@ -12,7 +12,7 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 hostname = socket.gethostname()
 agn = Namespace("http://www.agentes.org#")
-users = Namespace("http://www.users.org#")
+users = ECSDI.Cliente
 AgenteBusqueda = Agent('AgenteBusqueda',
                        agn.AgenteBusqueda,
                        'http://%s:9010/comm' % hostname,
@@ -39,6 +39,7 @@ def compra():
 
 @app.route('/busca', methods=['GET', 'POST'])
 def busca():
+    if not usuario: redirect(url_for(login))
     form = formbusca.SearchForm(request.form)
     if request.method == 'POST' and form.validate():
         product_type = form.data.get('product_class')
@@ -60,6 +61,7 @@ def busca():
         gm.add((peticionbusquda, ECSDI.min_precio, Literal(min_price)))
         gm.add((peticionbusquda, ECSDI.max_peso, Literal(max_weight)))
         gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
+        gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
         msg = build_message(gm, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteBusqueda.uri, content=peticionbusquda, msgcnt=mss_cnt)
         productos = send_message(msg,AgenteBusqueda.address, False) 
         #requests.get(address, params=form.data).json()
@@ -77,24 +79,15 @@ def getuserref(username:str):
     if path.exists("usuarios.ttl"):
         users_graph.parse("usuarios.ttl", format="turtle")
         us = users_graph.value(predicate=ECSDI.nombre, object= Literal(username))
-        '''res = users_graph.query("""
-            SELECT DISTINCT ?id ?name
-            WHERE {
-            ?u rdf:type ecsdi:Cliente .
-            ?u ecdi:id ?id .
-            ?u ecdi:nombre ?name .
-            FILTER (?name = %s)
-            }
-            """% username, initNs = {'ecsdi': ECSDI})'''
     else:
         users_graph.bind('ECSDI', ECSDI)
         users_graph.add((agn.userid, XSD.positiveInteger, Literal(0)))
     if not us:
         userid = users_graph.value(subject=agn.userid, predicate=XSD.positiveInteger)
-        us = users[userid]
-        users_graph.add((users[userid], RDF.type, ECSDI.Cliente))
-        users_graph.add((users[userid], ECSDI.id, Literal(userid)))
-        users_graph.add((users[userid], ECSDI.nombre, Literal(username)))
+        us = users + '/'+str(userid)
+        users_graph.add((us, RDF.type, ECSDI.Cliente))
+        users_graph.add((us, ECSDI.id, Literal(userid)))
+        users_graph.add((us, ECSDI.nombre, Literal(username)))
         users_graph.set((agn.userid, XSD.positiveInteger,Literal(userid+1)))
     users_graph.serialize("usuarios.ttl", format="turtle")
     return us

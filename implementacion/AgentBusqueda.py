@@ -23,7 +23,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal
+from rdflib import Namespace, Graph, RDF, Literal, XSD
 from flask import Flask, request, render_template_string
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -67,6 +67,7 @@ print('DS Hostname =', hostaddr)
 
 
 agn = Namespace("http://www.agentes.org#")
+busquedas = ECSDI.Busqueda
 
 # Contador de mensajes
 mss_cnt = 0
@@ -123,9 +124,6 @@ def comunicacion1():
     if(min_weight): min_weight = float(min_weight)
     max_weight = request.args.get('max_weight')
     if(max_weight): max_weight = float(max_weight)
-    #return [product_type,min_price, max_price, min_weight, max_weight]
-    gm = Graph()
-    b1 = ECSDI.Busqueda
     if product_type or min_price or max_price or  min_weight or max_weight:
         products = search_products(product_type, min_price, max_price, min_weight, max_weight)
         
@@ -173,9 +171,9 @@ def comunicacion():
     global dsgraph
     global mss_cnt
     # Extraemos el mensaje y creamos un grafo con el
-    gm = Graph()
-    gm = gm.parse(data=request.args.get('content'), format='xml')
-    msgdic = get_message_properties(gm)
+    grafobusquedas = Graph()
+    grafobusquedas = grafobusquedas.parse(data=request.args.get('content'), format='xml')
+    msgdic = get_message_properties(grafobusquedas)
     #print(msgdic)
     # Comprobamos que sea un mensaje FIPA ACL
     if msgdic is None:
@@ -197,31 +195,32 @@ def comunicacion():
             # Averiguamos el tipo de la accion
             if 'content' in msgdic:
                 content = msgdic['content']
-                accion = gm.value(subject=content, predicate=RDF.type)
+                accion = grafobusquedas.value(subject=content, predicate=RDF.type)
                 if accion == ECSDI.PeticionBusqueda:
-                    #if (accion, ECSDI.tipoproducto) in gm:
-                    product_type = str(gm.value(subject=content, predicate=ECSDI.tipoproducto))
-                    #if (accion, ECSDI.max_precio) in gm:
-                    max_price= str(gm.value(subject=content, predicate=ECSDI.max_precio))
-                    #if (accion, ECSDI.min_precio) in gm:
-                    min_price =str(gm.value(subject=content, predicate=ECSDI.min_precio))
-                    #if (accion, ECSDI.max_peso) in gm:
-                    max_weight= str(gm.value(subject=content, predicate=ECSDI.max_peso))
-                    #if (accion, ECSDI.min_peso) in gm:
-                    min_weight= str(gm.value(subject=content, predicate=ECSDI.min_peso))
-                if(min_price != 'None'): min_price = float(min_price)
-                else: min_price = None
-                if(max_price != 'None'): max_price = float(max_price)
-                else: max_price = None
-                if(min_weight != 'None'): min_weight = float(min_weight)
-                else: min_weight = None
-                if(max_weight != 'None'): max_weight = float(max_weight)
-                else: max_weight = None
-                logger.info([product_type,min_price, max_price, min_weight, max_weight])
-                gm = Graph()
-                b1 = ECSDI.Busqueda
-                products = search_products(product_type, min_price, max_price, min_weight, max_weight)
-                return products
+                    #if (accion, ECSDI.tipoproducto) in grafobusquedas:
+                    product_type = str(grafobusquedas.value(subject=content, predicate=ECSDI.tipoproducto))
+                    #if (accion, ECSDI.max_precio) in grafobusquedas:
+                    max_price= str(grafobusquedas.value(subject=content, predicate=ECSDI.max_precio))
+                    #if (accion, ECSDI.min_precio) in grafobusquedas:
+                    min_price =str(grafobusquedas.value(subject=content, predicate=ECSDI.min_precio))
+                    #if (accion, ECSDI.max_peso) in grafobusquedas:
+                    max_weight= str(grafobusquedas.value(subject=content, predicate=ECSDI.max_peso))
+                    #if (accion, ECSDI.min_peso) in grafobusquedas:
+                    min_weight= str(grafobusquedas.value(subject=content, predicate=ECSDI.min_peso))
+                    user = str(grafobusquedas.value(subject=content, predicate=ECSDI.buscado_por))
+                    if(min_price != 'None'): min_price = float(min_price)
+                    else: min_price = None
+                    if(max_price != 'None'): max_price = float(max_price)
+                    else: max_price = None
+                    if(min_weight != 'None'): min_weight = float(min_weight)
+                    else: min_weight = None
+                    if(max_weight != 'None'): max_weight = float(max_weight)
+                    else: max_weight = None
+                    logger.info([product_type,min_price, max_price, min_weight, max_weight, user])
+                    products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+                    registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
+                    return products
+            gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 
     # Aqui realizariamos lo que pide la accion
     # Por ahora simplemente retornamos un Inform-done
@@ -270,7 +269,22 @@ def cargar_productos():
 
 def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     grafobusquedas = Graph()
-    grafobusquedas.parse("busquedas.ttl", format="turtle")
+    if path.exists("busquedas.ttl"): grafobusquedas.parse("busquedas.ttl", format="turtle")
+    else :
+        grafobusquedas.bind('ECSDI', ECSDI)
+        grafobusquedas.add((agn.searchid, XSD.positiveInteger, Literal(0)))
+    search_id = grafobusquedas.value(subject=agn.searchid, predicate=XSD.positiveInteger)
+    busqueda = busquedas+'/'+str(search_id)
+    grafobusquedas.add((busqueda, RDF.type, ECSDI.PeticionBusqueda))
+    grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
+    grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
+    grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
+    grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
+    grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
+    user = ECSDI.Cliente + '/'+ user.split('/')[-1]
+    print(user)
+    grafobusquedas.add((busqueda, ECSDI.buscado_por, user))
+    grafobusquedas.set((agn.searchid, XSD.positiveInteger, Literal(search_id+1)))
     grafobusquedas.serialize("busquedas.ttl", format="turtle")
 
 

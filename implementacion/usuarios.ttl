@@ -3,7 +3,7 @@
 
 <http://www.agentes.org#userid> xsd:positiveInteger 1 .
 
-<http://www.users.org#0> a ECSDI:Cliente ;
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> a ECSDI:Cliente ;
     ECSDI:id 0 ;
     ECSDI:nombre "pafoli" .
 
