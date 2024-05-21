@@ -10,14 +10,18 @@ from rdflib import Namespace, Graph, RDF, Literal, XSD
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
+
 hostname = socket.gethostname()
 agn = Namespace("http://www.agentes.org#")
-users = ECSDI.Cliente
 AgenteBusqueda = Agent('AgenteBusqueda',
                        agn.AgenteBusqueda,
                        'http://%s:9010/comm' % hostname,
                        'http://%s:9010/Stop' % hostname)
 
+AgenteCompra = Agent('AgenteCompra',
+                       agn.AgenteCompra,
+                       'http://%s:9020/comm' % (hostname),
+                       'http://%s:9020/Stop' % (hostname))
 # Directory agent address
 DirectoryAgent = Agent('DirectoryAgent',
                        agn.Directory,
@@ -30,16 +34,31 @@ usuario = None
 mss_cnt = 0
 @app.route('/compra', methods=['GET', 'POST'])
 def compra():
+    form = request.form
+    products = form.getlist('products')
+    n = len(products)
+    for i in range(n):
+        #print(i)
+        products[i] = products[i].split(sep=',')
+        products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3])}
+        #products[i] = json.loads(products[i])
+    print(products[0])
+    #return products
+    if request.method == 'PUT' and form.validate():
+        productos = requests.get(AgenteCompra.address, params=form.data).json()
+    return redirect(url_for('envio'))
+    
+@app.route('/envio', methods=['GET', 'POST'])
+def envio():
     form = formcompra.BuyForm(request.form)
-    if request.method == 'POST' and form.validate():
-        hostname = socket.gethostname()
-        address = 'http://{}:{}/comm'.format(hostname, 9010)
-        productos = requests.get(address, params=form.data).json()
-    return render_template('compra.html', form = form)
+    if request.method == 'PUT' and form.validate():
+        id  = 0
+        #productos = requests.get(AgenteCompra.address, params=form.data).json()
+    return render_template('envio.html', form = formcompra.BuyForm())
 
 @app.route('/busca', methods=['GET', 'POST'])
 def busca():
-    if not usuario: redirect(url_for(login))
+    if not usuario: return redirect(url_for('login'))
     form = formbusca.SearchForm(request.form)
     if request.method == 'POST' and form.validate():
         product_type = form.data.get('product_class')
@@ -53,8 +72,8 @@ def busca():
         if(max_weight): max_weight = float(max_weight)
         gm = Graph()
         gm.bind('ECSDI', ECSDI)
-        print(form.data)
         peticionbusquda =  agn.peticionbusqueda
+        print(peticionbusquda)
         gm.add((peticionbusquda, RDF.type, ECSDI.PeticionBusqueda))
         gm.add((peticionbusquda, ECSDI.tipoproducto, Literal(product_type)))
         gm.add((peticionbusquda, ECSDI.max_precio, Literal(max_price)))
@@ -63,11 +82,13 @@ def busca():
         gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
         gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
         msg = build_message(gm, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteBusqueda.uri, content=peticionbusquda, msgcnt=mss_cnt)
-        productos = send_message(msg,AgenteBusqueda.address, False) 
-        #requests.get(address, params=form.data).json()
-        return render_template('products.html', products=productos.json())
+        productos = send_message(msg,AgenteBusqueda.address, False).json()
+        for producto in productos:
+            producto['data'] =  producto['name'] + ','+ str(producto['price'])+ ',' + str(producto['weight']) + ','+producto['brand']
+            #'''{"name":'''+producto['name']+''',"price":'''+str(producto['price'])+''',"weight":'''+str(producto['weight'])+''',"brand":'''+producto['brand']+"}"
+            
+        return render_template('products.html', products=productos)
     return render_template('search.html', form=form)
-    
 
 @app.route('/options')
 def index():
@@ -84,7 +105,7 @@ def getuserref(username:str):
         users_graph.add((agn.userid, XSD.positiveInteger, Literal(0)))
     if not us:
         userid = users_graph.value(subject=agn.userid, predicate=XSD.positiveInteger)
-        us = users + '/'+str(userid)
+        us = ECSDI.Cliente + '/'+str(userid)
         users_graph.add((us, RDF.type, ECSDI.Cliente))
         users_graph.add((us, ECSDI.id, Literal(userid)))
         users_graph.add((us, ECSDI.nombre, Literal(username)))

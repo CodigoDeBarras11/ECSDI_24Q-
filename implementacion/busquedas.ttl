@@ -5,6 +5,7 @@
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/0> a ECSDI:PeticionBusqueda ;
     ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> ;
+    ECSDI:id 0 ;
     ECSDI:max_peso "None" ;
     ECSDI:max_precio "None" ;
     ECSDI:min_peso 0e+00 ;
