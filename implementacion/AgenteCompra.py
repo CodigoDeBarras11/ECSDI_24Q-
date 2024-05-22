@@ -24,7 +24,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal
+from rdflib import Namespace, Graph, RDF, Literal, XSD
 from flask import Flask, request, render_template_string, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -65,36 +65,60 @@ cola1 = Queue()
 # Flask stuff
 app = Flask(__name__)
 
+
 def get_count():
     global mss_cnt
     mss_cnt += 1
     return mss_cnt
+
+
+def registrar_fecha_compra(user_id, product_id): #cuandos envia
+    grafo_compras = Graph()
+    grafo_compras.parse("compras.ttl", format="turtle")
+
+
+def registrar_compra(user_id, product_id):
+    grafo_compras = Graph()
+    
+    if path.exists("compras.ttl"): grafo_compras.parse("compras.ttl", format="turtle")
+    else :
+        grafo_compras.add((agn.compra_id, XSD.positiveInteger, Literal(0)))
+    
+    grafo_compras.bind('ECSDI', ECSDI)
+    last_id = grafo_compras.value(subject=agn.compra_id, predicate=XSD.positiveInteger)
+    compra = ECSDI.compras +'/'+ str(last_id)
+    grafo_compras.add((compra, RDF.type, ECSDI.Compra))
+    grafo_compras.add((compra, ECSDI.id, Literal(id)))
+    """
+    if product_class != 'None':
+        grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
+    if max_price:
+        grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
+    if min_price not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
+    if max_weight:
+        grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
+    if min_weight not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
+    """
+    user = ECSDI.Cliente + '/'+ user.split('/')[-1]
+    grafo_compras.add((compra, ECSDI.comprado_por, user))
+    grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
+    grafo_compras.serialize("busquedas.ttl", format="turtle")
 
 @app.route("/comm")
 def comunicacion():
     """
     Entrypoint de comunicacion
     """
-    
+
     global dsGraph
+    global mss_cnt
 
-    print("CCCCCCCCCCCCCCCCCCCCCCCCCC")
     message = request.args['content']
-    print("DDDDDDDDDDDDDDDDDDDDDDDDDDD")
     gm = Graph()
-    print("EEEEEEEEEEEEEEEEEEEEEEEEEEE")
-    print("------------------------------------")
-    print(message)
-    print("------------------------------------")
-    #message_without_declaration = message.replace('<?xml version="1.0" encoding="utf-8"?>', '')
-    #print("------------------------------------")
-    #print(message_without_declaration)
-    #print("------------------------------------")
-    gm.parse(data=message, format='xml') #el mensaje que envio es el problema(el grafo vamos)
-    print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-
+    gm.parse(data=message, format='xml') 
     msgdic = get_message_properties(gm)
-    print(msgdic)
 
     gr = None
 
@@ -104,14 +128,12 @@ def comunicacion():
     else:
         # Obtenemos la performativa
         if msgdic['performative'] != ACL.request:
-            print("pepepepepepepe")
             # Si no es un request, respondemos que no hemos entendido el mensaje
             gr = build_message(Graph(),
                                ACL['not-understood'],
                                sender=DirectoryAgent.uri,
                                msgcnt=get_count())
         else:
-            print("uuuuuuuuuuuuu")
             # Obtenemos la performativa
             perf = msgdic['performative']
 
@@ -124,20 +146,65 @@ def comunicacion():
                 receiver_uri = msgdic['receiver'] #receiver_uri
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
-                
-                print("///////////////////////////")
-                print(receiver_uri)
-                print()
-                print(accion)
-                print("///////////////////////////")
-                
 
                 if accion == ECSDI.Compra:
-                    print("AVESTRUZ")
-                    
-                  
+                    # Define the receiver agent's URI and address
+                    registrar_compra()
 
-                  
+
+                elif accion == ECSDI.PeticionDevolucion:
+                    # Define the receiver agent's URI and address
+                    agn = Namespace("http://www.agentes.org#")
+                    receiver_uri = agn.AgenteDevolucion
+                    receiver_address = "http://{hostname}:9013/comm"  
+
+                    devolucion = False
+                    #chequear en la base de datos si la devolucion se acepta o no
+                    
+                    if devolucion == False:
+                        # Create a RDF graph for the message content
+                        price = "11"
+                        buyer_id = "user7"
+                        content_graph = Graph()
+                        content_graph.add((receiver_uri, RDF.type, ECSDI.DevolucionDenegada))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
+                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
+
+                        # Build the message
+                        msg_graph = build_message(
+                            gmess=content_graph,
+                            perf=ACL.request,
+                            sender=AgenteCompra.uri,
+                            receiver=receiver_uri,
+                            msgcnt=mss_cnt
+                        )
+                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                        # Increment the message counter
+                        mss_cnt += 1
+
+                    else:
+                        # Create a RDF graph for the message content
+                        price = "11"
+                        buyer_id = "user7"
+                        content_graph = Graph()
+                        content_graph.add((receiver_uri, RDF.type, ECSDI.DevolucionAceptada))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
+                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
+
+                        # Build the message
+                        msg_graph = build_message(
+                            gmess=content_graph,
+                            perf=ACL.request,
+                            sender=AgenteCompra.uri,
+                            receiver=receiver_uri,
+                            msgcnt=mss_cnt
+                        )
+                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                        # Increment the message counter
+                        mss_cnt += 1
+
                 # No habia ninguna accion en el mensaje
                 else:
                     gr = build_message(Graph(),
@@ -176,58 +243,6 @@ def agentbehavior1(cola):
 
     :return:
     """
-    global mss_cnt
-    global AgenteCompra
-
-    # Define the receiver agent's URI and address
-    agn = Namespace("http://www.agentes.org#")
-    receiver_uri = agn.AgenteContabilidad
-    receiver_address = "http://DESKTOP-C2NM81C:9012/comm"  # Replace with the actual address
-    #poner el hostname, no hardocoded
-
-    # Create a RDF graph for the message content
-    price = "11"
-    buyer_id = "user7"
-    content_graph = Graph()
-    content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
-    content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
-    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
-    #content_graph.add((content, RDF.type, ECSDI.Compra))
-    #content_graph.add((receiver_uri, ECSDI.productos_comprar, Literal("11")))
-    
-
-    #print(content_graph)
-    print('**********************************')
-    print("Content Graph:")
-    for triple in content_graph:
-        print("-------------")
-        print(triple)
-        print("-------------")
-    print('**********************************')
-
-    # Build the message
-    msg_graph = build_message(
-        gmess=content_graph,
-        perf=ACL.request,
-        sender=AgenteCompra.uri,
-        receiver=receiver_uri,
-        msgcnt=mss_cnt
-    )
-    #print(msg_graph)
-    #print('**********************************')
-    print("\nMessage Graph:")
-    for triple in msg_graph:
-        print("-------------")
-        print(triple)
-        print("-------------")
-    print('**********************************')
-    # Send the message
-    response_graph = send_message(gmess=msg_graph, address=receiver_address)
-
-    # Increment the message counter
-    mss_cnt += 1
-
-   
 
 
 if __name__ == '__main__':

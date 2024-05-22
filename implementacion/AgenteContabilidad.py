@@ -38,8 +38,6 @@ __author__ = 'Pepe'
 
 # Configuration stuff
 hostname = socket.gethostname()
-#print("fwefwef")
-#print(hostname)
 port = 9012
 
 agn = Namespace("http://www.agentes.org#")
@@ -75,43 +73,22 @@ def get_count():
     return mss_cnt
 
 
-def get_term(uri):
-    """
-    Extracts the term from a given URI.
-
-    :param uri: The URI from which to extract the term.
-    :return: The extracted term.
-    """
-    common_prefix = 'urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8'
-    return uri.replace(common_prefix, '').replace(':', '')
-
-
 def update_money(user_id, amount, accion):
    
     g = Graph()
-
-    ns = Namespace("http://example.org/")
+    ns = Namespace("http://example.org/") #cambiar
     g.bind("ex", ns)
-
     g.parse("bd/banco.ttl", format="ttl")
 
     user_exists = False
     for s, p, o in g:
-        #print(f"Triple: {s}, {p}, {o}")
-        print("------------------")
-        print(str(s))
-        print(str(ns[user_id]))
-        print("------------------")
         if str(s) == str(ns[user_id]):
             user_exists = True
-            print("pppppppppppppppppppp")
             existing_amount = int(o)
-            print("aaaaaaaaaaaaaaaaaaaaaaaa")
             if existing_amount is not None:
                 amount = int(amount)
                 if accion == "compra": new_amount = existing_amount + amount
                 else: new_amount = existing_amount - amount
-                print(new_amount)
                 g.remove((s, p, o))
                 g.add((s, p, Literal(str(new_amount))))
                 break
@@ -125,6 +102,12 @@ def update_money(user_id, amount, accion):
     g.serialize("bd/banco.ttl", format="ttl")
 
 
+def get_graph_data(gm, receiver_uri):
+    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+    money = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+
+    return user_id, money
+
 @app.route("/comm")
 def comunicacion():
     """
@@ -133,23 +116,10 @@ def comunicacion():
 
     global dsGraph
 
-    print("CCCCCCCCCCCCCCCCCCCCCCCCCC")
     message = request.args['content']
-    print("DDDDDDDDDDDDDDDDDDDDDDDDDDD")
     gm = Graph()
-    print("EEEEEEEEEEEEEEEEEEEEEEEEEEE")
-    print("------------------------------------")
-    print(message)
-    print("------------------------------------")
-    #message_without_declaration = message.replace('<?xml version="1.0" encoding="utf-8"?>', '')
-    #print("------------------------------------")
-    #print(message_without_declaration)
-    #print("------------------------------------")
-    gm.parse(data=message, format='xml') #el mensaje que envio es el problema(el grafo vamos)
-    print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-
+    gm.parse(data=message, format='xml') 
     msgdic = get_message_properties(gm)
-    print(msgdic)
 
     gr = None
 
@@ -159,14 +129,12 @@ def comunicacion():
     else:
         # Obtenemos la performativa
         if msgdic['performative'] != ACL.request:
-            print("pepepepepepepe")
             # Si no es un request, respondemos que no hemos entendido el mensaje
             gr = build_message(Graph(),
                                ACL['not-understood'],
                                sender=DirectoryAgent.uri,
                                msgcnt=get_count())
         else:
-            print("uuuuuuuuuuuuu")
             # Obtenemos la performativa
             perf = msgdic['performative']
 
@@ -179,41 +147,16 @@ def comunicacion():
                 receiver_uri = msgdic['receiver'] #receiver_uri
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
-                
-                print("///////////////////////////")
-                print(receiver_uri)
-                print()
-                print(accion)
-                print("///////////////////////////")
-                
-
+            
                 if accion == ECSDI.ProductoEnviado:
-                    print("AVESTRUZ")
-                    print(gm.value(subject=receiver_uri, predicate=ECSDI.precio))
-                    print(gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario))
-                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                    
+                    user_id, retirar = get_graph_data(gm, receiver_uri)
                     update_money(user_id, retirar, "compra")
                 
 
                 elif accion == ECSDI.DevolucionAceptada: #añair a la ontologia
-                    print("AVESTRUZ")
-                    update_money(user_id, retirar, "reembolso")
-                    """# Accion de transferencia
-                    if accion == ECSDI.ReembolsarProductos: #esto son clases
-                        # Content of the message
-                        #hay que cambiar
-                        for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
-                            gm.remove((item, None, None))
-                        gr = gm
-                    
-                    elif accion == ECSDI.ProductosComprar:
-                        #hay que cambiar
-                        for item in gm.subjects(RDF.type, ACL.FipaAclMessage):
-                            gm.remove((item, None, None))
-                        gr = gm
-                    """
+                    user_id, ingresar = get_graph_data(gm, receiver_uri)
+                    update_money(user_id, ingresar, "reembolso")
+                
                 # No habia ninguna accion en el mensaje
                 else:
                     gr = build_message(Graph(),
