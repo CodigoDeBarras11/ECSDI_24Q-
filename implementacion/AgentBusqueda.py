@@ -24,7 +24,7 @@ import argparse
 from AgentUtil.Logging import config_logger
 
 from rdflib import Namespace, Graph, RDF, Literal, XSD
-from flask import Flask, request, render_template_string
+from flask import Flask, request, jsonify
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
@@ -96,7 +96,7 @@ app = Flask(__name__)
 
 #FUNCIONES DEL AGENTE ------------------------------------------------------
 
-@app.route("/accept_purchase", methods=["POST"])
+'''@app.route("/accept_purchase", methods=["POST"])
 def accept_purchase():
     # Lógica de aceptar la compra
     # Puedes acceder a datos adicionales enviados desde el formulario utilizando request
@@ -154,6 +154,54 @@ def comunicacion1():
     """, products=products)
 
     else: return "Tienes que poner algun filtro"
+
+def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
+    
+    global dsgraph
+    logger.info(product_class)
+    if not product_class: product_class = "Product"
+    elif product_class not in("Blender", "Product"): return ["El tipo de producto especificado no es valido"] # esto es una solucion provisional
+    query = """
+    PREFIX pont: <http://www.products.org/ontology/>
+    PREFIX pontp: <http://www.products.org/ontology/property/>
+    PREFIX pontr: <http://www.products.org/ontology/resource/>
+
+    SELECT ?product ?name ?price ?weight ?brand
+    WHERE {
+        ?product rdf:type pont:%s .
+        ?product pontp:nombre ?name .
+        ?product pontp:precio ?price .
+        ?product pontp:peso ?weight .
+        ?product pontp:tieneMarca ?brand_uri .
+        ?brand_uri pontp:nombre ?brand .
+    """ % product_class
+
+
+    if min_price is not None:
+        query += f"FILTER(?price >= {min_price})\n"
+    if max_price is not None:
+        query += f"FILTER(?price <= {max_price})\n"
+    if min_weight is not None:
+        query += f"FILTER(?weight >= {min_weight})\n"
+    if max_weight is not None:
+        query += f"FILTER(?weight <= {max_weight})\n"
+
+    query += "}"
+
+    results = dsgraph.query(query)
+
+    products = []
+    for row in results:
+        product = {
+            "name": str(row.name),
+            "price": float(row.price),
+            "weight": float(row.weight),
+            "brand": str(row.brand)
+        }
+        products.append(product)
+
+    return products    
+'''
 
 
 @app.route("/comm")
@@ -217,10 +265,13 @@ def comunicacion():
                     if(max_weight != 'None'): max_weight = float(max_weight)
                     else: max_weight = None
                     logger.info([product_type,min_price, max_price, min_weight, max_weight, user])
-                    products = search_products(product_type, min_price, max_price, min_weight, max_weight)
+                    json = False
+                    products = search_products(product_type, min_price, max_price, min_weight, max_weight, not json)
                     registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
-                    return products
-            gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
+                    if json: return jsonify(products)
+                    else: gr = products
+                else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
+            else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 
     # Aqui realizariamos lo que pide la accion
     # Por ahora simplemente retornamos un Inform-done
@@ -275,13 +326,18 @@ def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:
     grafobusquedas.bind('ECSDI', ECSDI)
     search_id = grafobusquedas.value(subject=agn.searchid, predicate=XSD.positiveInteger)
     busqueda = busquedas+'/'+str(search_id)
-    grafobusquedas.add((busqueda, RDF.type, ECSDI.PeticionBusqueda))
+    grafobusquedas.add((busqueda, RDF.type, ECSDI.Busqueda))
     grafobusquedas.add((busqueda, ECSDI.id, Literal(search_id)))
-    grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
-    grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
-    grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
-    grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
-    grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
+    if product_class != 'None':
+        grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
+    if max_price:
+        grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
+    if min_price not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
+    if max_weight:
+        grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
+    if min_weight not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
     user = ECSDI.Cliente + '/'+ user.split('/')[-1]
     #print(user)
     grafobusquedas.add((busqueda, ECSDI.buscado_por, user))
@@ -289,28 +345,28 @@ def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:
     grafobusquedas.serialize("busquedas.ttl", format="turtle")
 
 
-def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
-    
+def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None, xml:bool = True):
     global dsgraph
-    logger.info(product_class)
-    if not product_class: product_class = "Product"
-    elif product_class not in("Blender", "Product"): return ["El tipo de producto especificado no es valido"] # esto es una solucion provisional
+    dsgraph=cargar_productos()
+    
+
     query = """
-    PREFIX pont: <http://www.products.org/ontology/>
-    PREFIX pontp: <http://www.products.org/ontology/property/>
-    PREFIX pontr: <http://www.products.org/ontology/resource/>
+    PREFIX ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-    SELECT ?product ?name ?price ?weight ?brand
+    SELECT ?product ?id ?name ?price ?weight ?brand
     WHERE {
-        ?product rdf:type pont:%s .
-        ?product pontp:nombre ?name .
-        ?product pontp:precio ?price .
-        ?product pontp:peso ?weight .
-        ?product pontp:tieneMarca ?brand_uri .
-        ?brand_uri pontp:nombre ?brand .
-    """ % product_class
+        ?product rdf:type ECSDI:Producto .
+        ?product ECSDI:tipoproducto ?tipo .
+        ?product ECSDI:id ?id .
+        ?product ECSDI:nombre ?name .
+        ?product ECSDI:precio ?price .
+        ?product ECSDI:peso ?weight .
+        ?product ECSDI:tieneMarca ?brand .
 
+    """ 
 
+    query += f"FILTER(?tipo = '{product_class}')\n"
     if min_price is not None:
         query += f"FILTER(?price >= {min_price})\n"
     if max_price is not None:
@@ -319,28 +375,43 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
         query += f"FILTER(?weight >= {min_weight})\n"
     if max_weight is not None:
         query += f"FILTER(?weight <= {max_weight})\n"
-
     query += "}"
 
     results = dsgraph.query(query)
-
+    product_graph = Graph()
     products = []
     for row in results:
+        prod = row.product
+        product_graph.add((prod, RDF.type, ECSDI.Producto))
+        nombre = str(row.name)
+        if nombre:
+            product_graph.add((prod, ECSDI.nombre, Literal(nombre)))
+        id = int(row.id)
+        if nombre:
+            product_graph.add((prod, ECSDI.id, Literal(id)))
+        precio = float(row.price)
+        if precio:
+            product_graph.add((prod, ECSDI.precio, Literal(precio)))
+        peso = float(row.weight),
+        if peso:
+            product_graph.add((prod, ECSDI.peso, Literal(peso)))
+        tieneMarca = str(row.brand)
+        if tieneMarca:
+            product_graph.add((prod, ECSDI.tieneMarca, Literal(tieneMarca)))
         product = {
             "name": str(row.name),
             "price": float(row.price),
             "weight": float(row.weight),
             "brand": str(row.brand)
+            #'xml' : 
         }
         products.append(product)
 
-    '''print("Products:")
-    for product in products:
-        print(product)'''
-    return products
+    if not xml: return products
+    else: return product_graph
 
 
-def send_message_custom(products):
+'''def send_message_custom(products):
    
     global mss_cnt
     content = Graph()
@@ -362,16 +433,12 @@ def send_message_custom(products):
     logger.info(type(msg))
     r = requests.get(address, params={'content': msg})
     
-    mss_cnt += 1
+    mss_cnt += 1'''
 
 
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors
-    '''ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-    ab1.join()'''
     # Registramos el solver en el servicio de directorio
-    dsgraph = cargar_productos()
     app.run(host=hostname, port=port, debug=True)
     '''solveradd = 'http://'+hostaddr+':'+str(port)
     solverid = hostaddr.split('.')[0] + '-' + str(port)

@@ -43,7 +43,7 @@ def compra():
         products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3])}
         #products[i] = json.loads(products[i])
     print(products[0])
-    #return products
+    return products
     if request.method == 'PUT' and form.validate():
         productos = requests.get(AgenteCompra.address, params=form.data).json()
     return redirect(url_for('envio'))
@@ -82,11 +82,29 @@ def busca():
         gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
         gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
         msg = build_message(gm, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteBusqueda.uri, content=peticionbusquda, msgcnt=mss_cnt)
-        productos = send_message(msg,AgenteBusqueda.address, False).json()
-        for producto in productos:
-            producto['data'] =  producto['name'] + ','+ str(producto['price'])+ ',' + str(producto['weight']) + ','+producto['brand']
-            #'''{"name":'''+producto['name']+''',"price":'''+str(producto['price'])+''',"weight":'''+str(producto['weight'])+''',"brand":'''+producto['brand']+"}"
-            
+        json = False
+        productos = send_message(msg,AgenteBusqueda.address, not json)
+        products = []
+        if json:
+            products = productos.json()
+            for producto in productos:
+                producto['data'] =  producto['name'] + ','+ str(producto['price'])+ ',' + str(producto['weight']) + ','+producto['brand']
+                #'''{"name":'''+producto['name']+''',"price":'''+str(producto['price'])+''',"weight":'''+str(producto['weight'])+''',"brand":'''+producto['brand']+"}"
+        #print(productos[0])
+        else:
+            #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
+            for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
+                
+                product = {
+                    "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
+                    "price": float(str(productos.value(subject=prod, predicate=ECSDI.precio))),
+                    "weight": float(str(productos.value(subject=prod, predicate=ECSDI.peso))),
+                    "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca))
+                    #'xml' : 
+                }
+                prod
+                products.append(producto)
+
         return render_template('products.html', products=productos)
     return render_template('search.html', form=form)
 
