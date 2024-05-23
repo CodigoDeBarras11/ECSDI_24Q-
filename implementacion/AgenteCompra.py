@@ -15,6 +15,7 @@ Asume que el agente de registro esta en el puerto 9000
 """
 
 from os import getcwd, path
+import os
 import sys
 
 import requests
@@ -78,33 +79,29 @@ def registrar_fecha_compra(user_id, product_id): #cuandos envia
 
 
 def registrar_compra(user_id, product_id):
+    
     grafo_compras = Graph()
     
-    if path.exists("compras.ttl"): grafo_compras.parse("compras.ttl", format="turtle")
-    else :
-        grafo_compras.add((agn.compra_id, XSD.positiveInteger, Literal(0)))
-    
-    grafo_compras.bind('ECSDI', ECSDI)
-    last_id = grafo_compras.value(subject=agn.compra_id, predicate=XSD.positiveInteger)
-    compra = ECSDI.compras +'/'+ str(last_id)
-    grafo_compras.add((compra, RDF.type, ECSDI.Compra))
-    grafo_compras.add((compra, ECSDI.id, Literal(id)))
-    """
-    if product_class != 'None':
-        grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
-    if max_price:
-        grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
-    if min_price not in ('None', 0, None):
-        grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
-    if max_weight:
-        grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
-    if min_weight not in ('None', 0, None):
-        grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
-    """
-    user = ECSDI.Cliente + '/'+ user.split('/')[-1]
-    grafo_compras.add((compra, ECSDI.comprado_por, user))
-    grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
-    grafo_compras.serialize("busquedas.ttl", format="turtle")
+    file_path = "bd/compras.ttl"
+    if not os.path.exists(file_path):
+        grafo_compras.add((agn.last_id, XSD.positiveInteger, Literal(0)))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True) 
+        grafo_compras.serialize(file_path, format="turtle")
+
+    else:    
+        grafo_compras.parse("bd/compras.ttl", format="turtle")
+        grafo_compras.bind('ECSDI', ECSDI)
+        last_id = grafo_compras.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+        compra = ECSDI.Compra +'/'+ str(last_id+1)
+        grafo_compras.add((compra, RDF.type, ECSDI.Compra))
+        grafo_compras.add((compra, ECSDI.id, Literal(last_id+1)))
+        comprador = ECSDI.Cliente + '/'+ str(user_id)
+        grafo_compras.add((compra, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia comprado_por
+        producto = ECSDI.Producto + '/' + str(product_id)
+        grafo_compras.add((compra, ECSDI.Producto, producto))
+        grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
+        grafo_compras.serialize("bd/compras.ttl", format="turtle")
+        
 
 @app.route("/comm")
 def comunicacion():
@@ -243,6 +240,7 @@ def agentbehavior1(cola):
 
     :return:
     """
+    registrar_compra(4, 11)
 
 
 if __name__ == '__main__':
