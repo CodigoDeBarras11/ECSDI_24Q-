@@ -1,0 +1,16 @@
+@prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.agentes.org#searchid> xsd:positiveInteger 3.
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/1> a ECSDI:Transportista ;
+    ECSDI:id 1 ;
+    ECSDI:nombre "Juan" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/2> a ECSDI:Transportista ;
+    ECSDI:id 1 ;
+    ECSDI:nombre "Ana" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/3> a ECSDI:Transportista ;
+    ECSDI:id 1 ;
+    ECSDI:nombre "Mario" .
