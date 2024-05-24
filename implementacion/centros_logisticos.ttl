@@ -1,0 +1,23 @@
+@prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.agentes.org#searchid> xsd:positiveInteger 3.
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1> a ECSDI:CentroLogistico ;
+    ECSDI:id 1 ;
+    ECSDI:nombre "Centro Barcelona" ;
+    ECSDI:latitud 20 ;
+    ECSDI:longitud 20 .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/2> a ECSDI:CentroLogistico ;
+    ECSDI:id 2 ;
+    ECSDI:nombre "Centro Sabadell" ;
+    ECSDI:latitud 100 ;
+    ECSDI:longitud 50 .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3> a ECSDI:CentroLogistico ;
+    ECSDI:id 3 ;
+    ECSDI:nombre "Centro Terrassa" ;
+    ECSDI:latitud 200 ;
+    ECSDI:longitud 130 .
+   
