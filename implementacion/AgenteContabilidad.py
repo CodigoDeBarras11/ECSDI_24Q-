@@ -22,9 +22,10 @@ sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
 import socket
 import argparse
+import os
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal
+from rdflib import Namespace, Graph, RDF, Literal, XSD
 from flask import Flask, request, render_template_string, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -75,31 +76,43 @@ def get_count():
 
 def update_money(user_id, amount, accion):
    
-    g = Graph()
-    ns = Namespace("http://example.org/") #cambiar
-    g.bind("ex", ns)
-    g.parse("bd/banco.ttl", format="ttl")
+    grafo_banco = Graph()
 
-    user_exists = False
-    for s, p, o in g:
-        if str(s) == str(ns[user_id]):
-            user_exists = True
-            existing_amount = int(o)
-            if existing_amount is not None:
-                amount = int(amount)
-                if accion == "compra": new_amount = existing_amount + amount
-                else: new_amount = existing_amount - amount
-                g.remove((s, p, o))
-                g.add((s, p, Literal(str(new_amount))))
+    file_path = "bd/banco.ttl"
+    if not os.path.exists(file_path):
+        grafo_banco.add((agn.last_id, XSD.positiveInteger, Literal(0)))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True) 
+        grafo_banco.serialize(file_path, format="turtle")
+
+    else:
+        grafo_banco.parse("bd/banco.ttl", format="ttl")
+        grafo_banco.bind('ECSDI', ECSDI)
+        last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+
+        user_exists = False
+        for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Compra)):
+            vendido_por = grafo_banco.value(subject=s, predicate=ECSDI.vendido_por)
+            vendido_por = str(vendido_por).split('/')[-1]
+            if vendido_por == str(user_id):
+                user_exists = True
+                cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
+                cuenta_int = int(cuenta)
+                if accion == "compra": new_amount = cuenta_int + amount
+                else: new_amount = cuenta_int - amount
+                grafo_banco.remove((s, ECSDI.precio, cuenta))
+                grafo_banco.add((s, ECSDI.precio, Literal(str(new_amount))))
                 break
 
-    if not user_exists:
-        subject = ns[user_id]
-        predicate = ECSDI.precio
-        object_value = Literal(amount)
-        g.add((subject, predicate, object_value))
+        if not user_exists:
+            banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por banco
+            grafo_banco.add((banco, RDF.type, ECSDI.Compra))
+            grafo_banco.add((banco, ECSDI.id, Literal(last_id+1)))
+            comprador = ECSDI.Cliente + '/'+ str(user_id)
+            grafo_banco.add((banco, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia cuenta
+            grafo_banco.add((banco, ECSDI.precio, Literal(amount)))
+            grafo_banco.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
 
-    g.serialize("bd/banco.ttl", format="ttl")
+        grafo_banco.serialize("bd/banco.ttl", format="ttl")
 
 
 def get_graph_data(gm, receiver_uri):
@@ -195,6 +208,7 @@ def agentbehavior1(cola):
 
     :return:
     """
+    update_money(3, 11, "compra")
     pass
 
 

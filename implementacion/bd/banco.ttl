@@ -1,17 +1,15 @@
-@prefix ex: <http://example.org/> .
-@prefix ns1: <urn:webprotege:ontology:> .
+@prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ex:user1 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "11" .
+<http://www.agentes.org#last_id> xsd:positiveInteger 4 .
 
-ex:user2 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "33" .
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> a ECSDI:Compra ;
+    ECSDI:id 1 ;
+    ECSDI:precio 23 ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> .
 
-ex:user3 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "1111" .
-
-ex:user4 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "1111" .
-
-ex:user5 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "11111111" .
-
-ex:user6 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "-11" .
-
-ex:user7 ns1:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8precio "0" .
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/4> a ECSDI:Compra ;
+    ECSDI:id 4 ;
+    ECSDI:precio "44" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/3> .
 

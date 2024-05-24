@@ -92,6 +92,7 @@ def registrar_compra(user_id, product_id):
         grafo_compras.parse("bd/compras.ttl", format="turtle")
         grafo_compras.bind('ECSDI', ECSDI)
         last_id = grafo_compras.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+        
         compra = ECSDI.Compra +'/'+ str(last_id+1)
         grafo_compras.add((compra, RDF.type, ECSDI.Compra))
         grafo_compras.add((compra, ECSDI.id, Literal(last_id+1)))
@@ -100,6 +101,7 @@ def registrar_compra(user_id, product_id):
         producto = ECSDI.Producto + '/' + str(product_id)
         grafo_compras.add((compra, ECSDI.Producto, producto))
         grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
+        
         grafo_compras.serialize("bd/compras.ttl", format="turtle")
         
 
