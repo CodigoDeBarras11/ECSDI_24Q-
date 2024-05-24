@@ -84,42 +84,35 @@ def update_money(user_id, amount, accion):
         os.makedirs(os.path.dirname(file_path), exist_ok=True) 
         grafo_banco.serialize(file_path, format="turtle")
 
-    else:
-        grafo_banco.parse("bd/banco.ttl", format="ttl")
-        grafo_banco.bind('ECSDI', ECSDI)
-        last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+    grafo_banco.parse("bd/banco.ttl", format="ttl")
+    grafo_banco.bind('ECSDI', ECSDI)
 
-        user_exists = False
-        for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Compra)):
-            vendido_por = grafo_banco.value(subject=s, predicate=ECSDI.vendido_por)
-            vendido_por = str(vendido_por).split('/')[-1]
-            if vendido_por == str(user_id):
-                user_exists = True
-                cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
-                cuenta_int = int(cuenta)
-                if accion == "compra": new_amount = cuenta_int + amount
-                else: new_amount = cuenta_int - amount
-                grafo_banco.remove((s, ECSDI.precio, cuenta))
-                grafo_banco.add((s, ECSDI.precio, Literal(str(new_amount))))
-                break
+    user_exists = False
+    for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Transaccion)): #usar transaccion
+        vendido_por = grafo_banco.value(subject=s, predicate=ECSDI.vendido_por)
+        vendido_por = str(vendido_por).split('/')[-1]
+        if vendido_por == str(user_id):
+            user_exists = True
+            cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
+            cuenta_int = int(cuenta)
+            if accion == "compra": new_amount = cuenta_int + amount
+            else: new_amount = cuenta_int - amount
+            grafo_banco.remove((s, ECSDI.precio, cuenta))
+            grafo_banco.add((s, ECSDI.precio, Literal(str(new_amount))))
+            break
 
-        if not user_exists:
-            banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por banco
-            grafo_banco.add((banco, RDF.type, ECSDI.Compra))
-            grafo_banco.add((banco, ECSDI.id, Literal(last_id+1)))
-            comprador = ECSDI.Cliente + '/'+ str(user_id)
-            grafo_banco.add((banco, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia cuenta
-            grafo_banco.add((banco, ECSDI.precio, Literal(amount)))
-            grafo_banco.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
+    if not user_exists:
+        last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
+        banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por banco
+        grafo_banco.add((banco, RDF.type, ECSDI.Compra)) 
+        grafo_banco.add((banco, ECSDI.id, Literal(last_id+1)))
+        comprador = ECSDI.Cliente + '/'+ str(user_id)
+        grafo_banco.add((banco, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia cuenta
+        grafo_banco.add((banco, ECSDI.precio, Literal(amount)))
+        grafo_banco.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
 
-        grafo_banco.serialize("bd/banco.ttl", format="ttl")
+    grafo_banco.serialize("bd/banco.ttl", format="ttl")
 
-
-def get_graph_data(gm, receiver_uri):
-    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-    money = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-
-    return user_id, money
 
 @app.route("/comm")
 def comunicacion():
@@ -162,12 +155,14 @@ def comunicacion():
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
             
                 if accion == ECSDI.ProductoEnviado:
-                    user_id, retirar = get_graph_data(gm, receiver_uri)
+                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                    retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
                     update_money(user_id, retirar, "compra")
                 
 
-                elif accion == ECSDI.DevolucionAceptada: #añair a la ontologia
-                    user_id, ingresar = get_graph_data(gm, receiver_uri)
+                elif accion == ECSDI.RespuestaDevolucion:
+                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                    ingresar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
                     update_money(user_id, ingresar, "reembolso")
                 
                 # No habia ninguna accion en el mensaje

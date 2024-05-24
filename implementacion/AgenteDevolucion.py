@@ -32,7 +32,7 @@ from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 
-__author__ = 'javier'
+__author__ = 'daniel'
 
 # Configuration stuff
 hostname = socket.gethostname()
@@ -64,6 +64,7 @@ cola1 = Queue()
 
 app = Flask(__name__)
 
+
 def get_count():
     global mss_cnt
     mss_cnt += 1
@@ -78,7 +79,7 @@ def comunicacion():
 
     message = request.args['content']
     gm = Graph()
-    gm.parse(data=message, format='xml') #el mensaje que envio es el problema(el grafo vamos)
+    gm.parse(data=message, format='xml') 
     msgdic = get_message_properties(gm)
 
     gr = None
@@ -104,29 +105,25 @@ def comunicacion():
             else:
                 # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
                 # de registro
-                receiver_uri = msgdic['receiver'] #receiver_uri
+                receiver_uri = msgdic['receiver']
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
                 if accion == ECSDI.PeticionDevolucion:
-                    print("AVESTRUZ")
-
+                    #PeticionCompra recibo del asistente virtual
                     #checkear con AgenteCompra cuando se compro
+                    receiver_uri = msgdic['receiver'] 
+                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                    product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
 
-                elif accion == ECSDI.DevolucionAceptada:
-                    agn = Namespace("http://www.agentes.org#")
-                    receiver_uri = agn.AgenteDevolucion
-                    receiver_address = "http://DESKTOP-C2NM81C:9012/comm"  # Replace with the actual address
-                    #poner el hostname, no hardocoded
+                    receiver_uri = agn.AgenteCompra
+                    receiver_address = "http://{hostname}:9011/comm"  
 
-                    # Create a RDF graph for the message content
-                    price = "11"
-                    buyer_id = "user7"
                     content_graph = Graph()
-                    content_graph.add((receiver_uri, RDF.type, ECSDI.DevolucionAceptada))
-                    content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
-                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
-
+                    content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
+                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
+                    content_graph.add((receiver_uri, ECSDI.id, Literal(product_id)))
+                    
                     # Build the message
                     msg_graph = build_message(
                         gmess=content_graph,
@@ -138,12 +135,42 @@ def comunicacion():
 
                     response_graph = send_message(gmess=msg_graph, address=receiver_address)
 
-                    # Increment the message counter
-                    mss_cnt += 1
                 
-                elif accion == ECSDI.DevolucionDenegada:
-                    print("AVESTRUZ")
+                elif accion == ECSDI.RespuestaDevolucion:
+                    #comunicar respuest al asisten viertual
+                
+                    receiver_uri = msgdic['receiver'] 
+                    respuesta = gm.value(subject=receiver_uri, predicate=ECSDI.acceptado)
 
+                    if respuesta == True:
+                        buyer_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                        price = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                        receiver_uri = agn.AgenteContabilidad
+                        receiver_address = "http://{hostname}:9012/comm"  
+                    
+                        content_graph = Graph()
+                        content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
+                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
+
+                        #comnunicar al agente virtual que se ha aceptado
+
+                        msg_graph = build_message(
+                            gmess=content_graph,
+                            perf=ACL.request,
+                            sender=AgenteDevolucion.uri,
+                            receiver=receiver_uri,
+                            msgcnt=mss_cnt
+                        )
+
+                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                        mss_cnt += 1
+
+                    else: 
+                        print("fewf")
+                        #comnunicar al agente virtual que se ha aceptado
+                
                 # No habia ninguna accion en el mensaje
                 else:
                     gr = build_message(Graph(),
