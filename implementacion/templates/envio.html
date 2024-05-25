@@ -1,14 +1,14 @@
 {% extends 'base.html'%}
 {% block header %}
-  <h1>{% block title %}Compra{% endblock %}</h1>
+  <h1>{% block title %}Info Envio{% endblock %}</h1>
 {% endblock %}
 {% block content %}
 {% from "formutils.html" import render_field %}
 <form method=post action="{{ url_for('envio') }}">
   <dl>
-    {{ render_field(form.shiping_adress) }}
+    {{ render_field(form.shiping_latitude) }}
+    {{ render_field(form.shiping_longitude) }}
     {{ render_field(form.payment_method) }}
-    {{ render_field(form.payment_account) }}
     {{ render_field(form.shiping_priority) }}
   </dl>
   <p><input type=submit value=Submit>

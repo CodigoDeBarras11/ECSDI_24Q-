@@ -387,7 +387,7 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
         if nombre:
             product_graph.add((prod, ECSDI.nombre, Literal(nombre)))
         id = int(row.id)
-        if nombre:
+        if id:
             product_graph.add((prod, ECSDI.id, Literal(id)))
         precio = float(row.price)
         if precio:

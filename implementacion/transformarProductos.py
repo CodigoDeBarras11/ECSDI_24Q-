@@ -10,7 +10,7 @@ product_graph = Graph()
 products_graph = Graph()
 us = None
 if path.exists("product.ttl"):
-    product_graph.parse("product.ttl", format="turtle")
+    product_graph.parse("product_ori.ttl", format="turtle")
 else:raise FileNotFoundError()
 
 products_graph.bind('ECSDI', ECSDI)
@@ -68,4 +68,7 @@ for i in range(counters["max"]):
             if tieneMarca:
                 products_graph.add((prod, ECSDI.tieneMarca, Literal(tieneMarca)))
             productid += 1
-products_graph.serialize("products.rdf", format="xml")
+agn = Namespace("http://www.agentes.org#")
+products_graph.add((agn.productid, XSD.positiveInteger, Literal(productid)))
+products_graph.serialize("product.ttl", format="turtle")
+print(productid)

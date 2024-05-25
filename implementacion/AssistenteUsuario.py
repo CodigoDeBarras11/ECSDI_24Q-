@@ -1,7 +1,7 @@
 from os import getcwd, path
 import sys
 sys.path.append(path.dirname(getcwd()))
-from formularios import formbusca, formcompra, formlogin
+from formularios import formbusca, formcompra, formlogin, formproduct, shopform
 from flask import Flask, render_template, request, redirect, url_for,Blueprint
 import requests
 import socket
@@ -32,21 +32,74 @@ DirectoryAgent = Agent('DirectoryAgent',
 app = Flask(__name__)
 usuario = None
 mss_cnt = 0
+
+def createorUpdateproduct(product):
+    product_graph = Graph()
+    product_graph.parse("product.ttl", format="turtle")
+    prod = product_graph.value(predicate=ECSDI.nombre, object= Literal(product['product_name']))
+    if not prod:
+        productid = int(product_graph.value(subject=agn.productid, predicate=XSD.positiveInteger))
+        prod = ECSDI.Producto + '/' + str(productid)
+        product_graph.add((prod, ECSDI.id, Literal(productid)))
+        product_graph.add((prod, ECSDI.nombre, Literal(product['product_name'])))
+        if product['product_type']:
+            product_graph.add((prod, ECSDI.tipoproducto, Literal(product['product_type'])))
+        if product['product_price']:
+            product_graph.add((prod, ECSDI.precio, Literal(product['product_price'])))
+        if  product['product_weight']:
+            product_graph.add((prod, ECSDI.peso, Literal(product['product_weight'])))
+        if  product['product_brand']:
+            product_graph.add((prod, ECSDI.tieneMarca, Literal(product['product_brand'])))
+        product_graph.add((prod, ECSDI.vendido_por, usuario))
+        product_graph.set((agn.productid, XSD.positiveInteger, Literal(productid+1)))
+    else:
+        if product['product_type']:
+            product_graph.set((prod, ECSDI.tipoproducto, Literal(product['product_type'])))
+        if product['product_price']:
+            product_graph.set((prod, ECSDI.precio, Literal(product['product_price'])))
+        if  product['product_weight']:
+            product_graph.set((prod, ECSDI.peso, Literal(product['product_weight'])))
+        if  product['product_brand']:
+            product_graph.set((prod, ECSDI.tieneMarca, Literal(product['product_brand'])))
+    product_graph.serialize("product.ttl", format="turtle")
+
+@app.route('/addProduct', methods=['GET', 'POST'])
+def anadirProducto():
+    if not usuario: return redirect(url_for('loginShop'))
+    form = formproduct.ProductForm(request.form)
+    print(form.data)
+    if request.method == 'POST' and form.validate():
+        createorUpdateproduct(form.data)
+        return redirect(url_for('index'))
+    return render_template('addProduct.html', form = form)
+    
+
 @app.route('/compra', methods=['GET', 'POST'])
 def compra():
+    if not usuario: return redirect(url_for('loginUser'))
     form = request.form
     products = form.getlist('products')
+    product_graph = Graph()
     n = len(products)
     for i in range(n):
-        #print(i)
         products[i] = products[i].split(sep=',')
-        products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3])}
-        #products[i] = json.loads(products[i])
-    print(products[0])
-    return products
+        products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": int(products[i][4])}
+        prod = ECSDI.Producto + '/' + str(products[i]['id'])
+        if products[i]['name']:
+            product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
+        if products[i]['id']:
+            product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
+        if products[i]['price']:
+            product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
+        if  products[i]['weight']:
+            product_graph.add((prod, ECSDI.peso, Literal(products[i]['weight'])))
+        if  products[i]['brand']:
+            product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
+    #print(products[0])
+    #return products
     if request.method == 'PUT' and form.validate():
         productos = requests.get(AgenteCompra.address, params=form.data).json()
-    return redirect(url_for('envio'))
+    return render_template("envio.html")
     
 @app.route('/envio', methods=['GET', 'POST'])
 def envio():
@@ -54,11 +107,11 @@ def envio():
     if request.method == 'PUT' and form.validate():
         id  = 0
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
-    return render_template('envio.html', form = formcompra.BuyForm())
+    return render_template('envio.html', form = form)
 
 @app.route('/busca', methods=['GET', 'POST'])
 def busca():
-    if not usuario: return redirect(url_for('login'))
+    if not usuario: return redirect(url_for('loginUser'))
     form = formbusca.SearchForm(request.form)
     if request.method == 'POST' and form.validate():
         product_type = form.data.get('product_class')
@@ -94,21 +147,25 @@ def busca():
         else:
             #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
             for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
-                
                 product = {
+                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
                     "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
-                    "price": float(str(productos.value(subject=prod, predicate=ECSDI.precio))),
-                    "weight": float(str(productos.value(subject=prod, predicate=ECSDI.peso))),
+                    "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
+                    "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
                     "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca))
-                    #'xml' : 
                 }
-                prod
-                products.append(producto)
+                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ str(product['id'])
+                if product['id'] == 'None': print(product['data'])
+                products.append(product)
 
-        return render_template('products.html', products=productos)
+        return render_template('products.html', products=products)
     return render_template('search.html', form=form)
 
-@app.route('/options')
+@app.route('/userOptions')
+def userIndex():
+    return render_template('user.html')
+
+@app.route('/')
 def index():
     return render_template('index.html')
 
@@ -131,6 +188,26 @@ def getuserref(username:str):
     users_graph.serialize("usuarios.ttl", format="turtle")
     return us
 
+def getshopref(shopname:str, delegado:bool = True):
+    shop_graph = Graph()
+    shop = None
+    if path.exists("tienda.ttl"):
+        shop_graph.parse("tienda.ttl", format="turtle")
+        shop = shop_graph.value(predicate=ECSDI.nombre, object= Literal(shopname))
+    else:
+        shop_graph.bind('ECSDI', ECSDI)
+        shop_graph.add((agn.shopid, XSD.positiveInteger, Literal(0)))
+    if not shop:
+        shopid = shop_graph.value(subject=agn.shopid, predicate=XSD.positiveInteger)
+        shop = ECSDI.Tienda + '/'+str(shopid)
+        shop_graph.add((shop, RDF.type, ECSDI.Cliente))
+        shop_graph.add((shop, ECSDI.id, Literal(shopid)))
+        shop_graph.add((shop, ECSDI.entrega_delegada, Literal(delegado)))
+        shop_graph.add((shop, ECSDI.nombre, Literal(shopname)))
+        shop_graph.set((agn.shopid, XSD.positiveInteger,Literal(shopid+1)))
+    shop_graph.serialize("tienda.ttl", format="turtle")
+    return shop
+
 def tidyup():
     """
     Acciones previas a parar el agente
@@ -149,16 +226,28 @@ def stop():
     shutdown_server()
     return "Parando Servidor"
 
-@app.route('/', methods=['GET', 'POST'])
-def login():
+@app.route('/userlogin', methods=['GET', 'POST'])
+def loginUser():
     form = formlogin.LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         name = form.data.get('name')
         global usuario
         usuario = getuserref(name)
         print(usuario)
-        return redirect(url_for('index'))
+        return redirect(url_for('userIndex'))
     return render_template('login.html', form = form)
+
+@app.route('/shoplogin', methods=['GET', 'POST'])
+def loginShop():
+    form = shopform.ShopForm(request.form)
+    if request.method == 'POST' and form.validate():
+        name = form.data.get('shop_name')
+        delegado = form.data.get('entrega_delegada')
+        global usuario
+        usuario = getshopref(name, delegado)
+        print(usuario)
+        return redirect(url_for('anadirProducto'))
+    return render_template('shoplogin.html', form = form)
 
 app.run()
 
