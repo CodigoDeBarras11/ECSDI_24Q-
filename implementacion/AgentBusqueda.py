@@ -49,16 +49,18 @@ if not args.verbose:
 # Configuration stuff
     port = 9010
 
-if args.dir is None:
-    raise NameError('A Directory Service addess is needed')
-else:
-    diraddress = args.dir
+
 
 if args.open:
     hostname = '0.0.0.0'
     hostaddr = gethostname()
 else:
     hostaddr = hostname = socket.gethostname()
+
+if args.dir is None:
+    diraddress = 'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
 
 print('DS Hostname =', hostaddr)
 
@@ -82,8 +84,8 @@ AgenteBusqueda = Agent('AgenteBusqueda',
 # Directory agent address
 DirectoryAgent = Agent('DirectoryAgent',
                        agn.Directory,
-                       'http://%s:9000/Register' % hostname,
-                       'http://%s:9000/Stop' % hostname)
+                       'http://%s:9000/message' % diraddress,
+                       'http://%s:9000/Stop' % diraddress)
 
 # Global triplestore graph
 dsgraph = Graph()
@@ -265,11 +267,9 @@ def comunicacion():
                     if(max_weight != 'None'): max_weight = float(max_weight)
                     else: max_weight = None
                     logger.info([product_type,min_price, max_price, min_weight, max_weight, user])
-                    json = False
-                    products = search_products(product_type, min_price, max_price, min_weight, max_weight, not json)
+                    products = search_products(product_type, min_price, max_price, min_weight, max_weight)
                     registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
-                    if json: return jsonify(products)
-                    else: gr = products
+                    gr = products
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 
@@ -345,7 +345,7 @@ def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:
     grafobusquedas.serialize("busquedas.ttl", format="turtle")
 
 
-def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None, xml:bool = True):
+def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     global dsgraph
     dsgraph=cargar_productos()
     
@@ -363,7 +363,6 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
         ?product ECSDI:precio ?price .
         ?product ECSDI:peso ?weight .
         ?product ECSDI:tieneMarca ?brand .
-
     """ 
 
     query += f"FILTER(?tipo = '{product_class}')\n"
@@ -379,7 +378,7 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
 
     results = dsgraph.query(query)
     product_graph = Graph()
-    products = []
+    print(len(results))
     for row in results:
         prod = row.product
         product_graph.add((prod, RDF.type, ECSDI.Producto))
@@ -398,17 +397,10 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
         tieneMarca = str(row.brand)
         if tieneMarca:
             product_graph.add((prod, ECSDI.tieneMarca, Literal(tieneMarca)))
-        product = {
-            "name": str(row.name),
-            "price": float(row.price),
-            "weight": float(row.weight),
-            "brand": str(row.brand)
-            #'xml' : 
-        }
-        products.append(product)
-
-    if not xml: return products
-    else: return product_graph
+        vendedor = dsgraph.value(subject=prod, predicate=ECSDI.vendido_por)
+        if vendedor:
+            product_graph.add((prod, ECSDI.vendido_por, vendedor))
+    return product_graph
 
 
 '''def send_message_custom(products):
@@ -439,10 +431,9 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors
     # Registramos el solver en el servicio de directorio
-    app.run(host=hostname, port=port, debug=True)
-    '''solveradd = 'http://'+hostaddr+':'+str(port)
+    solveradd = f'http://{hostaddr}:{port}'
     solverid = hostaddr.split('.')[0] + '-' + str(port)
-    mess = 'REGISTER|'+solverid+',BUSQUEDA,'+solveradd
+    mess = f'REGISTER|{solverid},BUSCA,{solveradd}'
     done = False
     while not done:
         try:
@@ -450,9 +441,22 @@ if __name__ == '__main__':
             done = True
         except ConnectionError:
             pass
-    
+    print('DS Hostname =', hostaddr)
+
     if 'OK' in resp:
-        print(f'SOLVER {solverid} successfully registered')
+        print(f'BUSCA {solverid} successfully registered')
+        # Buscamos el logger si existe en el registro
+        '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]'''
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{solverid}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
     # Ponemos en marcha el servidor'''
     
    

@@ -10,29 +10,42 @@ from rdflib import Namespace, Graph, RDF, Literal, XSD
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
+from AgentUtil.Util import gethostname
+import argparse
 
-hostname = socket.gethostname()
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+
+# parsing de los parametros de la linea de comandos
+args = parser.parse_args()
+if args.open:
+    hostname = '0.0.0.0'
+    hostaddr = gethostname()
+else:
+    hostaddr = hostname = socket.gethostname()
+
+if args.dir is None:
+    diraddress =  'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
+
 agn = Namespace("http://www.agentes.org#")
-AgenteBusqueda = Agent('AgenteBusqueda',
-                       agn.AgenteBusqueda,
-                       'http://%s:9010/comm' % hostname,
-                       'http://%s:9010/Stop' % hostname)
-
-AgenteCompra = Agent('AgenteCompra',
-                       agn.AgenteCompra,
-                       'http://%s:9020/comm' % (hostname),
-                       'http://%s:9020/Stop' % (hostname))
-# Directory agent address
-DirectoryAgent = Agent('DirectoryAgent',
-                       agn.Directory,
-                       'http://%s:9000/Register' % hostname,
-                       'http://%s:9000/Stop' % hostname)
+AssistenteUsuario = Agent('AssistenteUsuario',
+                       agn.AssistenteUsuario,
+                       'http://%s:5000/comm' % hostname,
+                       'http://%s:5000/Stop' % hostname)
 
 
 app = Flask(__name__)
 usuario = None
 mss_cnt = 0
-
+port = 5000
 def createorUpdateproduct(product):
     product_graph = Graph()
     product_graph.parse("product.ttl", format="turtle")
@@ -78,29 +91,39 @@ def anadirProducto():
 def compra():
     if not usuario: return redirect(url_for('loginUser'))
     form = request.form
-    products = form.getlist('products')
-    product_graph = Graph()
-    n = len(products)
-    for i in range(n):
-        products[i] = products[i].split(sep=',')
-        products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": int(products[i][4])}
-        prod = ECSDI.Producto + '/' + str(products[i]['id'])
-        if products[i]['name']:
-            product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
-        if products[i]['id']:
-            product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
-        if products[i]['price']:
-            product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
-        if  products[i]['weight']:
-            product_graph.add((prod, ECSDI.peso, Literal(products[i]['weight'])))
-        if  products[i]['brand']:
-            product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
-    #print(products[0])
-    #return products
-    if request.method == 'PUT' and form.validate():
-        productos = requests.get(AgenteCompra.address, params=form.data).json()
-    return render_template("envio.html")
-    
+    products = None
+    if request.method == 'POST':
+        products = form.getlist('products')
+        product_graph = Graph()
+        n = len(products)
+        for i in range(n):
+            products[i] = products[i].split(sep=',')
+            if(len(products[i]) > 5): vendedor = products[i][5]
+            else: vendedor = ECSDI.Tienda + '/0'
+            products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": int(products[i][4])}
+            prod = ECSDI.Producto + '/' + str(products[i]['id'])
+            product_graph.add((prod, RDF.type, ECSDI.Producto))
+            if products[i]['name']:
+                product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
+            if products[i]['id']:
+                product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
+            if products[i]['price']:
+                product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
+            if  products[i]['weight']:
+                product_graph.add((prod, ECSDI.peso, Literal(products[i]['weight'])))
+            if  products[i]['brand']:
+                product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
+           
+            product_graph.add((prod, ECSDI.vendido_por, vendedor))
+        return products
+        peticionCompra = agn.peticionCompra
+        product_graph.add((prod, RDF.type, ECSDI.PeticionCompra))
+        product_graph.add((prod, RDF.type, ECSDI.PeticionCompra))
+        msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteCompra.uri, content=peticionCompra, msgcnt=mss_cnt)
+        response = send_message(msg, AgenteCompra.address)
+        return render_template("envio.html")
+    return render_template('products.html', products=products)
+
 @app.route('/envio', methods=['GET', 'POST'])
 def envio():
     form = formcompra.BuyForm(request.form)
@@ -134,30 +157,25 @@ def busca():
         gm.add((peticionbusquda, ECSDI.max_peso, Literal(max_weight)))
         gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
         gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
-        msg = build_message(gm, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteBusqueda.uri, content=peticionbusquda, msgcnt=mss_cnt)
-        json = False
-        productos = send_message(msg,AgenteBusqueda.address, not json)
+        msg = build_message(gm, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteBusqueda, content=peticionbusquda, msgcnt=mss_cnt)
+        searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
+        if 'OK' in searchadd:
+            busqueda = searchadd[4:]
+        productos = send_message(msg,busqueda)
         products = []
-        if json:
-            products = productos.json()
-            for producto in productos:
-                producto['data'] =  producto['name'] + ','+ str(producto['price'])+ ',' + str(producto['weight']) + ','+producto['brand']
-                #'''{"name":'''+producto['name']+''',"price":'''+str(producto['price'])+''',"weight":'''+str(producto['weight'])+''',"brand":'''+producto['brand']+"}"
-        #print(productos[0])
-        else:
-            #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
-            for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
-                product = {
-                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
-                    "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
-                    "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
-                    "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
-                    "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca))
-                }
-                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ str(product['id'])
-                if product['id'] == 'None': print(product['data'])
-                products.append(product)
-
+        #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
+        for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
+            product = {
+                "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
+                "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
+                "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
+                "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
+                "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
+                "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
+            }
+            product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ str(product['id']) 
+            if(product['vendedor']): product['data'] +=',' + product['vendedor']
+            products.append(product)
         return render_template('products.html', products=products)
     return render_template('search.html', form=form)
 
@@ -200,7 +218,7 @@ def getshopref(shopname:str, delegado:bool = True):
     if not shop:
         shopid = shop_graph.value(subject=agn.shopid, predicate=XSD.positiveInteger)
         shop = ECSDI.Tienda + '/'+str(shopid)
-        shop_graph.add((shop, RDF.type, ECSDI.Cliente))
+        shop_graph.add((shop, RDF.type, ECSDI.Tienda))
         shop_graph.add((shop, ECSDI.id, Literal(shopid)))
         shop_graph.add((shop, ECSDI.entrega_delegada, Literal(delegado)))
         shop_graph.add((shop, ECSDI.nombre, Literal(shopname)))
@@ -249,5 +267,31 @@ def loginShop():
         return redirect(url_for('anadirProducto'))
     return render_template('shoplogin.html', form = form)
 
-app.run()
+solveradd = f'http://{hostaddr}:{port}'
+solverid = hostaddr.split('.')[0] + '-' + str(port)
+mess = f'REGISTER|{solverid},ASSISTANT,{solveradd}'
+
+done = False
+while not done:
+    try:
+        resp = requests.get(str(diraddress) + '/message', params={'message': mess}).text
+        done = True
+    except ConnectionError:
+        pass
+print('DS Hostname =', hostaddr)
+
+if 'OK' in resp:
+    print(f'ASSISTANT {solverid} successfully registered')
+    # Buscamos el logger si existe en el registro
+    '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+    if 'OK' in loggeradd:
+        logger = loggeradd[4:]'''
+
+    # Ponemos en marcha el servidor Flask
+    app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+    mess = f'UNREGISTER|{solverid}'
+    requests.get(diraddress + '/message', params={'message': mess})
+else:
+    print('Unable to register')
 
