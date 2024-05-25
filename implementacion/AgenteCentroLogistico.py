@@ -31,12 +31,14 @@ from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
+from rdflib.namespace import XSD
+from os import path
 
 __author__ = 'javier'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9011
+port = 9013
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -57,13 +59,17 @@ DirectoryAgent = Agent('DirectoryAgent',
                        'http://%s:9000/Stop' % hostname)
 
 # Global triplestore graph
-dsgraph = Graph()
+g = Graph()
 
 cola1 = Queue()
 
 
 app = Flask(__name__)
 
+
+
+# Imprimir el contenido del grafo
+print(g.serialize(format="turtle"))
 
 @app.route("/comm")
 def comunicacion():
@@ -76,6 +82,39 @@ def comunicacion():
 
     message = request.args.get('content', '')  #
     print(message)
+    gm = Graph()
+    gm.parse(data=message, format='xml') 
+    msgdic = get_message_properties(gm)
+
+    gr = None
+
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+    else:
+        if msgdic['performative'] != ACL.request:
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(Graph(),
+                               ACL['not-understood'],
+                               sender=DirectoryAgent.uri,
+                               msgcnt=get_count())
+        else:
+            perf = msgdic['performative']
+
+            if perf != ACL.request:
+                # Si no es un request, respondemos que no hemos entendido el mensaje
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+            
+            else:
+                receiver_uri = msgdic['receiver'] #receiver_uri
+                # Averiguamos el tipo de la accion
+                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+
+                #if accion == ECSDI.StockProductos:
+                
+                # Preparar lotes para enviar
+                #else: 
+
 
     return "p"
 
