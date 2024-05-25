@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#productid> xsd:positiveInteger 61 .
+<http://www.agentes.org#productid> xsd:positiveInteger 60 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0> a ECSDI:Producto ;
     ECSDI:id 0 ;
@@ -458,14 +458,6 @@
     ECSDI:precio 5.2e+01 ;
     ECSDI:tieneMarca "Marca_Blender_OHQ03B" ;
     ECSDI:tipoproducto "Blender" .
-
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/60> ECSDI:id 60 ;
-    ECSDI:nombre "prod1" ;
-    ECSDI:peso 2e+01 ;
-    ECSDI:precio 1e+01 ;
-    ECSDI:tieneMarca "NotBrand" ;
-    ECSDI:tipoproducto "Blender" ;
-    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/1> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/7> a ECSDI:Producto ;
     ECSDI:id 7 ;
