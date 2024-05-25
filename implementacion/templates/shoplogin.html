@@ -1,0 +1,14 @@
+
+{% block header %}
+  <title>{% block title %}Login{% endblock %}</title>
+{% endblock %}
+{% block content %}
+{% from "formutils.html" import render_field %}
+<form method=post>
+  <dl>
+    {{ render_field(form.shop_name) }}
+    {{ render_field(form.entrega_delegada) }}
+  </dl>
+  <p><input type=submit value=Accept>
+</form>
+{% endblock %}

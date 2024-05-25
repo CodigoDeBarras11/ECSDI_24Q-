@@ -47,28 +47,20 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
     return gmess
 
 
-def send_message(gmess, address):
+def send_message(gmess, address, parsed = True):
     """
     Envia un mensaje usando un GET y retorna la respuesta como
     un grafo RDF
     """
-
-    #print("PEPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
-    #print("------------------------------------")
-    #print(gmess)
+    
     msg = gmess.serialize(format='xml')
-    #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    #print("------------------------------------")
-    #print(msg)
-    #print("------------------------------------")
     r = requests.get(address, params={'content': msg})
-    #print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+    gr = Graph()
+    gr.parse(data=r.text, format='xml')
 
-    # Procesa la respuesta y la retorna como resultado como grafo
-    #gr = Graph()
-    #gr.parse(data=r.text, format='xml')
+    return gr
+    
 
-    #return gr
 
 def get_message_properties(msg):
     """

@@ -1,490 +1,493 @@
-@prefix pont: <http://www.products.org/ontology/> .
-@prefix pontp: <http://www.products.org/ontology/property/> .
-@prefix pontr: <http://www.products.org/ontology/resource/> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-pontp:nombre a <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
-    rdfs:domain pont:Blender,
-        pont:Computer,
-        pont:Phone ;
-    rdfs:range xsd:string .
-
-pontp:peso a <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
-    rdfs:domain pont:Blender,
-        pont:Computer,
-        pont:Phone ;
-    rdfs:range xsd:float .
-
-pontp:precio a <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
-    rdfs:domain pont:Blender,
-        pont:Computer,
-        pont:Phone ;
-    rdfs:range xsd:int .
-
-pontp:tieneMarca a <http://www.w3.org/2002/07/owl#ObjectProperty> ;
-    rdfs:domain pont:Blender,
-        pont:Computer,
-        pont:Phone ;
-    rdfs:range pont:Marca .
-
-pontr:Blender_0W3RP0 a pont:Blender ;
-    pontp:nombre "nombre_6A35QA" ;
-    pontp:peso 7.343731e+02 ;
-    pontp:precio 90 ;
-    pontp:tieneMarca pontr:Marca_Blender_W0VAZ7 .
-
-pontr:Blender_1AP89M a pont:Blender ;
-    pontp:nombre "nombre_BSMQ83" ;
-    pontp:peso 8.527503e+02 ;
-    pontp:precio 65 ;
-    pontp:tieneMarca pontr:Marca_Blender_N1F2PG .
-
-pontr:Blender_1WWJC4 a pont:Blender ;
-    pontp:nombre "nombre_EMC1HM" ;
-    pontp:peso 8.807122e+02 ;
-    pontp:precio 52 ;
-    pontp:tieneMarca pontr:Marca_Blender_OHQ03B .
-
-pontr:Blender_4SMJIS a pont:Blender ;
-    pontp:nombre "nombre_FE7DS8" ;
-    pontp:peso 5.820435e+02 ;
-    pontp:precio 71 ;
-    pontp:tieneMarca pontr:Marca_Blender_70YM1O .
-
-pontr:Blender_6A43KZ a pont:Blender ;
-    pontp:nombre "nombre_CXK8T1" ;
-    pontp:peso 7.755215e+02 ;
-    pontp:precio 47 ;
-    pontp:tieneMarca pontr:Marca_Blender_N1F2PG .
-
-pontr:Blender_8KYWO0 a pont:Blender ;
-    pontp:nombre "nombre_SP6POB" ;
-    pontp:peso 9.322109e+02 ;
-    pontp:precio 46 ;
-    pontp:tieneMarca pontr:Marca_Blender_7WXF8W .
-
-pontr:Blender_8TWU9D a pont:Blender ;
-    pontp:nombre "nombre_T6DT71" ;
-    pontp:peso 8.437366e+02 ;
-    pontp:precio 41 ;
-    pontp:tieneMarca pontr:Marca_Blender_70YM1O .
-
-pontr:Blender_8YGC9F a pont:Blender ;
-    pontp:nombre "nombre_91PF3G" ;
-    pontp:peso 9.420942e+02 ;
-    pontp:precio 81 ;
-    pontp:tieneMarca pontr:Marca_Blender_G1KZJV .
-
-pontr:Blender_CEEIX3 a pont:Blender ;
-    pontp:nombre "nombre_9QY2DH" ;
-    pontp:peso 9.731549e+02 ;
-    pontp:precio 48 ;
-    pontp:tieneMarca pontr:Marca_Blender_096STO .
-
-pontr:Blender_D7I39K a pont:Blender ;
-    pontp:nombre "nombre_4J7NWM" ;
-    pontp:peso 6.14487e+02 ;
-    pontp:precio 80 ;
-    pontp:tieneMarca pontr:Marca_Blender_18CPYT .
-
-pontr:Blender_KBC0RT a pont:Blender ;
-    pontp:nombre "nombre_JGS6ZI" ;
-    pontp:peso 9.586515e+02 ;
-    pontp:precio 59 ;
-    pontp:tieneMarca pontr:Marca_Blender_096STO .
-
-pontr:Blender_OWBEGP a pont:Blender ;
-    pontp:nombre "nombre_Z9UMBR" ;
-    pontp:peso 9.652016e+02 ;
-    pontp:precio 69 ;
-    pontp:tieneMarca pontr:Marca_Blender_G1KZJV .
-
-pontr:Blender_QERNLH a pont:Blender ;
-    pontp:nombre "nombre_6LLJZB" ;
-    pontp:peso 9.828679e+02 ;
-    pontp:precio 44 ;
-    pontp:tieneMarca pontr:Marca_Blender_7WXF8W .
-
-pontr:Blender_SCQ4QN a pont:Blender ;
-    pontp:nombre "nombre_RJLEVP" ;
-    pontp:peso 5.574757e+02 ;
-    pontp:precio 72 ;
-    pontp:tieneMarca pontr:Marca_Blender_G1KZJV .
-
-pontr:Blender_TZYDYJ a pont:Blender ;
-    pontp:nombre "nombre_RSYK8I" ;
-    pontp:peso 9.769866e+02 ;
-    pontp:precio 38 ;
-    pontp:tieneMarca pontr:Marca_Blender_N1F2PG .
-
-pontr:Blender_VMAOMN a pont:Blender ;
-    pontp:nombre "nombre_YPBSY9" ;
-    pontp:peso 7.834461e+02 ;
-    pontp:precio 73 ;
-    pontp:tieneMarca pontr:Marca_Blender_G1KZJV .
-
-pontr:Blender_VT38RY a pont:Blender ;
-    pontp:nombre "nombre_SFJ22D" ;
-    pontp:peso 8.345564e+02 ;
-    pontp:precio 80 ;
-    pontp:tieneMarca pontr:Marca_Blender_DPHPU2 .
-
-pontr:Blender_XN4TFQ a pont:Blender ;
-    pontp:nombre "nombre_NVD6RK" ;
-    pontp:peso 7.482916e+02 ;
-    pontp:precio 76 ;
-    pontp:tieneMarca pontr:Marca_Blender_18CPYT .
-
-pontr:Blender_XSB4GX a pont:Blender ;
-    pontp:nombre "nombre_XEU4YC" ;
-    pontp:peso 8.171964e+02 ;
-    pontp:precio 53 ;
-    pontp:tieneMarca pontr:Marca_Blender_70YM1O .
-
-pontr:Blender_ZM282L a pont:Blender ;
-    pontp:nombre "nombre_8EFPYI" ;
-    pontp:peso 7.274875e+02 ;
-    pontp:precio 86 ;
-    pontp:tieneMarca pontr:Marca_Blender_N1F2PG .
-
-pontr:Computer_0F49FD a pont:Computer ;
-    pontp:nombre "nombre_1AQTOI" ;
-    pontp:peso 2.327677e+03 ;
-    pontp:precio 1718 ;
-    pontp:tieneMarca pontr:Marca_Computer_YSJEYD .
-
-pontr:Computer_3A03RA a pont:Computer ;
-    pontp:nombre "nombre_SD2MGV" ;
-    pontp:peso 1.452971e+03 ;
-    pontp:precio 850 ;
-    pontp:tieneMarca pontr:Marca_Computer_KPFWTU .
-
-pontr:Computer_5V9CMM a pont:Computer ;
-    pontp:nombre "nombre_17WV3U" ;
-    pontp:peso 2.270375e+03 ;
-    pontp:precio 746 ;
-    pontp:tieneMarca pontr:Marca_Computer_9HV59Y .
-
-pontr:Computer_AL1H1P a pont:Computer ;
-    pontp:nombre "nombre_4VYLEZ" ;
-    pontp:peso 1.097116e+03 ;
-    pontp:precio 2607 ;
-    pontp:tieneMarca pontr:Marca_Computer_LA5GWH .
-
-pontr:Computer_C38LH4 a pont:Computer ;
-    pontp:nombre "nombre_ZVKVA7" ;
-    pontp:peso 1.509891e+03 ;
-    pontp:precio 2253 ;
-    pontp:tieneMarca pontr:Marca_Computer_9HV59Y .
-
-pontr:Computer_CDOYY0 a pont:Computer ;
-    pontp:nombre "nombre_J7CIC9" ;
-    pontp:peso 1.036604e+03 ;
-    pontp:precio 2779 ;
-    pontp:tieneMarca pontr:Marca_Computer_VPKJUF .
-
-pontr:Computer_D5Y8T5 a pont:Computer ;
-    pontp:nombre "nombre_UOO0O9" ;
-    pontp:peso 1.551366e+03 ;
-    pontp:precio 1944 ;
-    pontp:tieneMarca pontr:Marca_Computer_KPFWTU .
-
-pontr:Computer_F7PQYW a pont:Computer ;
-    pontp:nombre "nombre_MJMPAT" ;
-    pontp:peso 1.526078e+03 ;
-    pontp:precio 1035 ;
-    pontp:tieneMarca pontr:Marca_Computer_KPFWTU .
-
-pontr:Computer_HWKIZS a pont:Computer ;
-    pontp:nombre "nombre_BC3WMU" ;
-    pontp:peso 2.374123e+03 ;
-    pontp:precio 727 ;
-    pontp:tieneMarca pontr:Marca_Computer_CA0FW1 .
-
-pontr:Computer_LHNUC6 a pont:Computer ;
-    pontp:nombre "nombre_FXD2AC" ;
-    pontp:peso 2.100102e+03 ;
-    pontp:precio 639 ;
-    pontp:tieneMarca pontr:Marca_Computer_CA0FW1 .
-
-pontr:Computer_LI8HFO a pont:Computer ;
-    pontp:nombre "nombre_A77CYW" ;
-    pontp:peso 1.800011e+03 ;
-    pontp:precio 1432 ;
-    pontp:tieneMarca pontr:Marca_Computer_LA5GWH .
-
-pontr:Computer_MF7U2O a pont:Computer ;
-    pontp:nombre "nombre_ECS095" ;
-    pontp:peso 1.016822e+03 ;
-    pontp:precio 762 ;
-    pontp:tieneMarca pontr:Marca_Computer_YSJEYD .
-
-pontr:Computer_N0UJF4 a pont:Computer ;
-    pontp:nombre "nombre_JJCXI1" ;
-    pontp:peso 2.331003e+03 ;
-    pontp:precio 2528 ;
-    pontp:tieneMarca pontr:Marca_Computer_YSJEYD .
-
-pontr:Computer_NTM7J9 a pont:Computer ;
-    pontp:nombre "nombre_OF8LT0" ;
-    pontp:peso 1.616645e+03 ;
-    pontp:precio 2973 ;
-    pontp:tieneMarca pontr:Marca_Computer_VPKJUF .
-
-pontr:Computer_P997R7 a pont:Computer ;
-    pontp:nombre "nombre_FDBXVZ" ;
-    pontp:peso 2.233688e+03 ;
-    pontp:precio 2946 ;
-    pontp:tieneMarca pontr:Marca_Computer_AQDVTT .
-
-pontr:Computer_PEJAKQ a pont:Computer ;
-    pontp:nombre "nombre_CE347W" ;
-    pontp:peso 2.20119e+03 ;
-    pontp:precio 1773 ;
-    pontp:tieneMarca pontr:Marca_Computer_VPKJUF .
-
-pontr:Computer_S5RBPY a pont:Computer ;
-    pontp:nombre "nombre_PYQW3O" ;
-    pontp:peso 1.914892e+03 ;
-    pontp:precio 1806 ;
-    pontp:tieneMarca pontr:Marca_Computer_M7POW9 .
-
-pontr:Computer_T9E09H a pont:Computer ;
-    pontp:nombre "nombre_ISURN1" ;
-    pontp:peso 1.012422e+03 ;
-    pontp:precio 786 ;
-    pontp:tieneMarca pontr:Marca_Computer_KPFWTU .
-
-pontr:Computer_XZDXMK a pont:Computer ;
-    pontp:nombre "nombre_3UAU92" ;
-    pontp:peso 1.812444e+03 ;
-    pontp:precio 819 ;
-    pontp:tieneMarca pontr:Marca_Computer_KPFWTU .
-
-pontr:Computer_YK7TA0 a pont:Computer ;
-    pontp:nombre "nombre_Q87Q8N" ;
-    pontp:peso 1.541606e+03 ;
-    pontp:precio 1979 ;
-    pontp:tieneMarca pontr:Marca_Computer_LA5GWH .
-
-pontr:Marca_Blender_WWZ96T a pont:Marca ;
-    pontp:nombre "Marca_Blender_WWZ96T" .
-
-pontr:Marca_Computer_KEK0DO a pont:Marca ;
-    pontp:nombre "Marca_Computer_KEK0DO" .
-
-pontr:Marca_Computer_ZTD08J a pont:Marca ;
-    pontp:nombre "Marca_Computer_ZTD08J" .
-
-pontr:Marca_Phone_6SAV3Y a pont:Marca ;
-    pontp:nombre "Marca_Phone_6SAV3Y" .
-
-pontr:Phone_8JP4IW a pont:Phone ;
-    pontp:nombre "nombre_YVEJGQ" ;
-    pontp:peso 3.287103e+02 ;
-    pontp:precio 342 ;
-    pontp:tieneMarca pontr:Marca_Phone_C7CU1Y .
-
-pontr:Phone_9SYZW2 a pont:Phone ;
-    pontp:nombre "nombre_N69MVN" ;
-    pontp:peso 2.508431e+02 ;
-    pontp:precio 295 ;
-    pontp:tieneMarca pontr:Marca_Phone_14VJ4F .
-
-pontr:Phone_BGITJJ a pont:Phone ;
-    pontp:nombre "nombre_0C3767" ;
-    pontp:peso 2.114415e+02 ;
-    pontp:precio 418 ;
-    pontp:tieneMarca pontr:Marca_Phone_SLQAUN .
-
-pontr:Phone_CSVF3Y a pont:Phone ;
-    pontp:nombre "nombre_OST4OR" ;
-    pontp:peso 3.347464e+02 ;
-    pontp:precio 135 ;
-    pontp:tieneMarca pontr:Marca_Phone_BFUDB1 .
-
-pontr:Phone_E1CRWN a pont:Phone ;
-    pontp:nombre "nombre_WF5CIX" ;
-    pontp:peso 3.172493e+02 ;
-    pontp:precio 137 ;
-    pontp:tieneMarca pontr:Marca_Phone_14VJ4F .
-
-pontr:Phone_E4QQXP a pont:Phone ;
-    pontp:nombre "nombre_TTT620" ;
-    pontp:peso 3.829709e+02 ;
-    pontp:precio 539 ;
-    pontp:tieneMarca pontr:Marca_Phone_SLQAUN .
-
-pontr:Phone_ILRGN4 a pont:Phone ;
-    pontp:nombre "nombre_2GAAAF" ;
-    pontp:peso 3.816919e+02 ;
-    pontp:precio 515 ;
-    pontp:tieneMarca pontr:Marca_Phone_KZ6721 .
-
-pontr:Phone_JWN7F6 a pont:Phone ;
-    pontp:nombre "nombre_G72R2V" ;
-    pontp:peso 3.132584e+02 ;
-    pontp:precio 325 ;
-    pontp:tieneMarca pontr:Marca_Phone_AHPUVR .
-
-pontr:Phone_L4POM0 a pont:Phone ;
-    pontp:nombre "nombre_MNB0B3" ;
-    pontp:peso 3.444524e+02 ;
-    pontp:precio 396 ;
-    pontp:tieneMarca pontr:Marca_Phone_BFUDB1 .
-
-pontr:Phone_PSDFQQ a pont:Phone ;
-    pontp:nombre "nombre_15DN2Q" ;
-    pontp:peso 2.667032e+02 ;
-    pontp:precio 54 ;
-    pontp:tieneMarca pontr:Marca_Phone_14VJ4F .
-
-pontr:Phone_QS54KI a pont:Phone ;
-    pontp:nombre "nombre_N0508V" ;
-    pontp:peso 2.799625e+02 ;
-    pontp:precio 356 ;
-    pontp:tieneMarca pontr:Marca_Phone_PWUEZ3 .
-
-pontr:Phone_UE6PA6 a pont:Phone ;
-    pontp:nombre "nombre_NDFSDG" ;
-    pontp:peso 2.063181e+02 ;
-    pontp:precio 112 ;
-    pontp:tieneMarca pontr:Marca_Phone_6J8G8X .
-
-pontr:Phone_VFOC5K a pont:Phone ;
-    pontp:nombre "nombre_NMWHZ3" ;
-    pontp:peso 2.935851e+02 ;
-    pontp:precio 132 ;
-    pontp:tieneMarca pontr:Marca_Phone_C7CU1Y .
-
-pontr:Phone_W2VLPK a pont:Phone ;
-    pontp:nombre "nombre_S5FNFY" ;
-    pontp:peso 3.730632e+02 ;
-    pontp:precio 281 ;
-    pontp:tieneMarca pontr:Marca_Phone_9D3FNV .
-
-pontr:Phone_Y076PW a pont:Phone ;
-    pontp:nombre "nombre_XO5OWW" ;
-    pontp:peso 2.92067e+02 ;
-    pontp:precio 581 ;
-    pontp:tieneMarca pontr:Marca_Phone_6J8G8X .
-
-pontr:Phone_Y1QVEC a pont:Phone ;
-    pontp:nombre "nombre_93FNOB" ;
-    pontp:peso 2.508331e+02 ;
-    pontp:precio 562 ;
-    pontp:tieneMarca pontr:Marca_Phone_PWUEZ3 .
-
-pontr:Phone_Y8GIFE a pont:Phone ;
-    pontp:nombre "nombre_1RO76Y" ;
-    pontp:peso 3.516285e+02 ;
-    pontp:precio 574 ;
-    pontp:tieneMarca pontr:Marca_Phone_AHPUVR .
-
-pontr:Phone_Z3VPAR a pont:Phone ;
-    pontp:nombre "nombre_TR4NKV" ;
-    pontp:peso 3.495616e+02 ;
-    pontp:precio 307 ;
-    pontp:tieneMarca pontr:Marca_Phone_SLQAUN .
-
-pontr:Phone_Z9YEOU a pont:Phone ;
-    pontp:nombre "nombre_VZIGAW" ;
-    pontp:peso 2.036666e+02 ;
-    pontp:precio 304 ;
-    pontp:tieneMarca pontr:Marca_Phone_C7CU1Y .
-
-pontr:Phone_ZE4N8L a pont:Phone ;
-    pontp:nombre "nombre_CZ3Z5F" ;
-    pontp:peso 2.088658e+02 ;
-    pontp:precio 477 ;
-    pontp:tieneMarca pontr:Marca_Phone_SLQAUN .
-
-pontr:Marca_Blender_DPHPU2 a pont:Marca ;
-    pontp:nombre "Marca_Blender_DPHPU2" .
-
-pontr:Marca_Blender_OHQ03B a pont:Marca ;
-    pontp:nombre "Marca_Blender_OHQ03B" .
-
-pontr:Marca_Blender_W0VAZ7 a pont:Marca ;
-    pontp:nombre "Marca_Blender_W0VAZ7" .
-
-pontr:Marca_Computer_AQDVTT a pont:Marca ;
-    pontp:nombre "Marca_Computer_AQDVTT" .
-
-pontr:Marca_Computer_M7POW9 a pont:Marca ;
-    pontp:nombre "Marca_Computer_M7POW9" .
-
-pontr:Marca_Phone_9D3FNV a pont:Marca ;
-    pontp:nombre "Marca_Phone_9D3FNV" .
-
-pontr:Marca_Phone_KZ6721 a pont:Marca ;
-    pontp:nombre "Marca_Phone_KZ6721" .
-
-pontr:Marca_Blender_096STO a pont:Marca ;
-    pontp:nombre "Marca_Blender_096STO" .
-
-pontr:Marca_Blender_18CPYT a pont:Marca ;
-    pontp:nombre "Marca_Blender_18CPYT" .
-
-pontr:Marca_Blender_7WXF8W a pont:Marca ;
-    pontp:nombre "Marca_Blender_7WXF8W" .
-
-pontr:Marca_Computer_9HV59Y a pont:Marca ;
-    pontp:nombre "Marca_Computer_9HV59Y" .
-
-pontr:Marca_Computer_CA0FW1 a pont:Marca ;
-    pontp:nombre "Marca_Computer_CA0FW1" .
-
-pontr:Marca_Phone_6J8G8X a pont:Marca ;
-    pontp:nombre "Marca_Phone_6J8G8X" .
-
-pontr:Marca_Phone_AHPUVR a pont:Marca ;
-    pontp:nombre "Marca_Phone_AHPUVR" .
-
-pontr:Marca_Phone_BFUDB1 a pont:Marca ;
-    pontp:nombre "Marca_Phone_BFUDB1" .
-
-pontr:Marca_Phone_PWUEZ3 a pont:Marca ;
-    pontp:nombre "Marca_Phone_PWUEZ3" .
-
-pont:ElectronicDevice a <http://www.w3.org/2002/07/owl#Class> .
-
-pontr:Marca_Blender_70YM1O a pont:Marca ;
-    pontp:nombre "Marca_Blender_70YM1O" .
-
-pontr:Marca_Computer_LA5GWH a pont:Marca ;
-    pontp:nombre "Marca_Computer_LA5GWH" .
-
-pontr:Marca_Computer_VPKJUF a pont:Marca ;
-    pontp:nombre "Marca_Computer_VPKJUF" .
-
-pontr:Marca_Computer_YSJEYD a pont:Marca ;
-    pontp:nombre "Marca_Computer_YSJEYD" .
-
-pontr:Marca_Phone_14VJ4F a pont:Marca ;
-    pontp:nombre "Marca_Phone_14VJ4F" .
-
-pontr:Marca_Phone_C7CU1Y a pont:Marca ;
-    pontp:nombre "Marca_Phone_C7CU1Y" .
-
-pontr:Marca_Blender_G1KZJV a pont:Marca ;
-    pontp:nombre "Marca_Blender_G1KZJV" .
-
-pontr:Marca_Blender_N1F2PG a pont:Marca ;
-    pontp:nombre "Marca_Blender_N1F2PG" .
-
-pontr:Marca_Phone_SLQAUN a pont:Marca ;
-    pontp:nombre "Marca_Phone_SLQAUN" .
-
-pontr:Marca_Computer_KPFWTU a pont:Marca ;
-    pontp:nombre "Marca_Computer_KPFWTU" .
-
-pont:Blender rdfs:subClassOf pont:ElectronicDevice .
-
-pont:Computer rdfs:subClassOf pont:ElectronicDevice .
-
-pont:Phone rdfs:subClassOf pont:ElectronicDevice .
-
-pont:Marca a <http://www.w3.org/2002/07/owl#Class> .
+<http://www.agentes.org#productid> xsd:positiveInteger 61 .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0> a ECSDI:Producto ;
+    ECSDI:id 0 ;
+    ECSDI:nombre "nombre_6A35QA" ;
+    ECSDI:peso 7.343731e+02 ;
+    ECSDI:precio 9e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_W0VAZ7" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/1> a ECSDI:Producto ;
+    ECSDI:id 1 ;
+    ECSDI:nombre "nombre_1AQTOI" ;
+    ECSDI:peso 2.327677e+03 ;
+    ECSDI:precio 1.718e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_YSJEYD" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/10> a ECSDI:Producto ;
+    ECSDI:id 10 ;
+    ECSDI:nombre "nombre_4VYLEZ" ;
+    ECSDI:peso 1.097116e+03 ;
+    ECSDI:precio 2.607e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_LA5GWH" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/11> a ECSDI:Producto ;
+    ECSDI:id 11 ;
+    ECSDI:nombre "nombre_OST4OR" ;
+    ECSDI:peso 3.347464e+02 ;
+    ECSDI:precio 1.35e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_BFUDB1" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/12> a ECSDI:Producto ;
+    ECSDI:id 12 ;
+    ECSDI:nombre "nombre_CXK8T1" ;
+    ECSDI:peso 7.755215e+02 ;
+    ECSDI:precio 4.7e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_N1F2PG" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/13> a ECSDI:Producto ;
+    ECSDI:id 13 ;
+    ECSDI:nombre "nombre_ZVKVA7" ;
+    ECSDI:peso 1.509891e+03 ;
+    ECSDI:precio 2.253e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_9HV59Y" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/14> a ECSDI:Producto ;
+    ECSDI:id 14 ;
+    ECSDI:nombre "nombre_WF5CIX" ;
+    ECSDI:peso 3.172493e+02 ;
+    ECSDI:precio 1.37e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_14VJ4F" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/15> a ECSDI:Producto ;
+    ECSDI:id 15 ;
+    ECSDI:nombre "nombre_SP6POB" ;
+    ECSDI:peso 9.322109e+02 ;
+    ECSDI:precio 4.6e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_7WXF8W" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/16> a ECSDI:Producto ;
+    ECSDI:id 16 ;
+    ECSDI:nombre "nombre_J7CIC9" ;
+    ECSDI:peso 1.036604e+03 ;
+    ECSDI:precio 2.779e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_VPKJUF" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/17> a ECSDI:Producto ;
+    ECSDI:id 17 ;
+    ECSDI:nombre "nombre_TTT620" ;
+    ECSDI:peso 3.829709e+02 ;
+    ECSDI:precio 5.39e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_SLQAUN" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/18> a ECSDI:Producto ;
+    ECSDI:id 18 ;
+    ECSDI:nombre "nombre_T6DT71" ;
+    ECSDI:peso 8.437366e+02 ;
+    ECSDI:precio 4.1e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_70YM1O" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/19> a ECSDI:Producto ;
+    ECSDI:id 19 ;
+    ECSDI:nombre "nombre_UOO0O9" ;
+    ECSDI:peso 1.551366e+03 ;
+    ECSDI:precio 1.944e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_KPFWTU" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2> a ECSDI:Producto ;
+    ECSDI:id 2 ;
+    ECSDI:nombre "nombre_YVEJGQ" ;
+    ECSDI:peso 3.287103e+02 ;
+    ECSDI:precio 3.42e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_C7CU1Y" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/20> a ECSDI:Producto ;
+    ECSDI:id 20 ;
+    ECSDI:nombre "nombre_2GAAAF" ;
+    ECSDI:peso 3.816919e+02 ;
+    ECSDI:precio 5.15e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_KZ6721" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/21> a ECSDI:Producto ;
+    ECSDI:id 21 ;
+    ECSDI:nombre "nombre_91PF3G" ;
+    ECSDI:peso 9.420942e+02 ;
+    ECSDI:precio 8.1e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_G1KZJV" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/22> a ECSDI:Producto ;
+    ECSDI:id 22 ;
+    ECSDI:nombre "nombre_MJMPAT" ;
+    ECSDI:peso 1.526078e+03 ;
+    ECSDI:precio 1.035e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_KPFWTU" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/23> a ECSDI:Producto ;
+    ECSDI:id 23 ;
+    ECSDI:nombre "nombre_G72R2V" ;
+    ECSDI:peso 3.132584e+02 ;
+    ECSDI:precio 3.25e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_AHPUVR" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/24> a ECSDI:Producto ;
+    ECSDI:id 24 ;
+    ECSDI:nombre "nombre_9QY2DH" ;
+    ECSDI:peso 9.731549e+02 ;
+    ECSDI:precio 4.8e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_096STO" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/25> a ECSDI:Producto ;
+    ECSDI:id 25 ;
+    ECSDI:nombre "nombre_BC3WMU" ;
+    ECSDI:peso 2.374123e+03 ;
+    ECSDI:precio 7.27e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_CA0FW1" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/26> a ECSDI:Producto ;
+    ECSDI:id 26 ;
+    ECSDI:nombre "nombre_MNB0B3" ;
+    ECSDI:peso 3.444524e+02 ;
+    ECSDI:precio 3.96e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_BFUDB1" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/27> a ECSDI:Producto ;
+    ECSDI:id 27 ;
+    ECSDI:nombre "nombre_4J7NWM" ;
+    ECSDI:peso 6.14487e+02 ;
+    ECSDI:precio 8e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_18CPYT" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/28> a ECSDI:Producto ;
+    ECSDI:id 28 ;
+    ECSDI:nombre "nombre_FXD2AC" ;
+    ECSDI:peso 2.100102e+03 ;
+    ECSDI:precio 6.39e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_CA0FW1" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/29> a ECSDI:Producto ;
+    ECSDI:id 29 ;
+    ECSDI:nombre "nombre_15DN2Q" ;
+    ECSDI:peso 2.667032e+02 ;
+    ECSDI:precio 5.4e+01 ;
+    ECSDI:tieneMarca "Marca_Phone_14VJ4F" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3> a ECSDI:Producto ;
+    ECSDI:id 3 ;
+    ECSDI:nombre "nombre_BSMQ83" ;
+    ECSDI:peso 8.527503e+02 ;
+    ECSDI:precio 6.5e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_N1F2PG" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/30> a ECSDI:Producto ;
+    ECSDI:id 30 ;
+    ECSDI:nombre "nombre_JGS6ZI" ;
+    ECSDI:peso 9.586515e+02 ;
+    ECSDI:precio 5.9e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_096STO" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/31> a ECSDI:Producto ;
+    ECSDI:id 31 ;
+    ECSDI:nombre "nombre_A77CYW" ;
+    ECSDI:peso 1.800011e+03 ;
+    ECSDI:precio 1.432e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_LA5GWH" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/32> a ECSDI:Producto ;
+    ECSDI:id 32 ;
+    ECSDI:nombre "nombre_N0508V" ;
+    ECSDI:peso 2.799625e+02 ;
+    ECSDI:precio 3.56e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_PWUEZ3" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/33> a ECSDI:Producto ;
+    ECSDI:id 33 ;
+    ECSDI:nombre "nombre_Z9UMBR" ;
+    ECSDI:peso 9.652016e+02 ;
+    ECSDI:precio 6.9e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_G1KZJV" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/34> a ECSDI:Producto ;
+    ECSDI:id 34 ;
+    ECSDI:nombre "nombre_ECS095" ;
+    ECSDI:peso 1.016822e+03 ;
+    ECSDI:precio 7.62e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_YSJEYD" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/35> a ECSDI:Producto ;
+    ECSDI:id 35 ;
+    ECSDI:nombre "nombre_NDFSDG" ;
+    ECSDI:peso 2.063181e+02 ;
+    ECSDI:precio 1.12e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_6J8G8X" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/36> a ECSDI:Producto ;
+    ECSDI:id 36 ;
+    ECSDI:nombre "nombre_6LLJZB" ;
+    ECSDI:peso 9.828679e+02 ;
+    ECSDI:precio 4.4e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_7WXF8W" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/37> a ECSDI:Producto ;
+    ECSDI:id 37 ;
+    ECSDI:nombre "nombre_JJCXI1" ;
+    ECSDI:peso 2.331003e+03 ;
+    ECSDI:precio 2.528e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_YSJEYD" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/38> a ECSDI:Producto ;
+    ECSDI:id 38 ;
+    ECSDI:nombre "nombre_NMWHZ3" ;
+    ECSDI:peso 2.935851e+02 ;
+    ECSDI:precio 1.32e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_C7CU1Y" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/39> a ECSDI:Producto ;
+    ECSDI:id 39 ;
+    ECSDI:nombre "nombre_RJLEVP" ;
+    ECSDI:peso 5.574757e+02 ;
+    ECSDI:precio 7.2e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_G1KZJV" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/4> a ECSDI:Producto ;
+    ECSDI:id 4 ;
+    ECSDI:nombre "nombre_SD2MGV" ;
+    ECSDI:peso 1.452971e+03 ;
+    ECSDI:precio 8.5e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_KPFWTU" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/40> a ECSDI:Producto ;
+    ECSDI:id 40 ;
+    ECSDI:nombre "nombre_OF8LT0" ;
+    ECSDI:peso 1.616645e+03 ;
+    ECSDI:precio 2.973e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_VPKJUF" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/41> a ECSDI:Producto ;
+    ECSDI:id 41 ;
+    ECSDI:nombre "nombre_S5FNFY" ;
+    ECSDI:peso 3.730632e+02 ;
+    ECSDI:precio 2.81e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_9D3FNV" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/42> a ECSDI:Producto ;
+    ECSDI:id 42 ;
+    ECSDI:nombre "nombre_RSYK8I" ;
+    ECSDI:peso 9.769866e+02 ;
+    ECSDI:precio 3.8e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_N1F2PG" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/43> a ECSDI:Producto ;
+    ECSDI:id 43 ;
+    ECSDI:nombre "nombre_FDBXVZ" ;
+    ECSDI:peso 2.233688e+03 ;
+    ECSDI:precio 2.946e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_AQDVTT" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/44> a ECSDI:Producto ;
+    ECSDI:id 44 ;
+    ECSDI:nombre "nombre_XO5OWW" ;
+    ECSDI:peso 2.92067e+02 ;
+    ECSDI:precio 5.81e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_6J8G8X" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/45> a ECSDI:Producto ;
+    ECSDI:id 45 ;
+    ECSDI:nombre "nombre_YPBSY9" ;
+    ECSDI:peso 7.834461e+02 ;
+    ECSDI:precio 7.3e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_G1KZJV" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/46> a ECSDI:Producto ;
+    ECSDI:id 46 ;
+    ECSDI:nombre "nombre_CE347W" ;
+    ECSDI:peso 2.20119e+03 ;
+    ECSDI:precio 1.773e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_VPKJUF" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/47> a ECSDI:Producto ;
+    ECSDI:id 47 ;
+    ECSDI:nombre "nombre_93FNOB" ;
+    ECSDI:peso 2.508331e+02 ;
+    ECSDI:precio 5.62e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_PWUEZ3" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48> a ECSDI:Producto ;
+    ECSDI:id 48 ;
+    ECSDI:nombre "nombre_SFJ22D" ;
+    ECSDI:peso 8.345564e+02 ;
+    ECSDI:precio 8e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_DPHPU2" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/49> a ECSDI:Producto ;
+    ECSDI:id 49 ;
+    ECSDI:nombre "nombre_PYQW3O" ;
+    ECSDI:peso 1.914892e+03 ;
+    ECSDI:precio 1.806e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_M7POW9" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/5> a ECSDI:Producto ;
+    ECSDI:id 5 ;
+    ECSDI:nombre "nombre_N69MVN" ;
+    ECSDI:peso 2.508431e+02 ;
+    ECSDI:precio 2.95e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_14VJ4F" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/50> a ECSDI:Producto ;
+    ECSDI:id 50 ;
+    ECSDI:nombre "nombre_1RO76Y" ;
+    ECSDI:peso 3.516285e+02 ;
+    ECSDI:precio 5.74e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_AHPUVR" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/51> a ECSDI:Producto ;
+    ECSDI:id 51 ;
+    ECSDI:nombre "nombre_NVD6RK" ;
+    ECSDI:peso 7.482916e+02 ;
+    ECSDI:precio 7.6e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_18CPYT" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/52> a ECSDI:Producto ;
+    ECSDI:id 52 ;
+    ECSDI:nombre "nombre_ISURN1" ;
+    ECSDI:peso 1.012422e+03 ;
+    ECSDI:precio 7.86e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_KPFWTU" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/53> a ECSDI:Producto ;
+    ECSDI:id 53 ;
+    ECSDI:nombre "nombre_TR4NKV" ;
+    ECSDI:peso 3.495616e+02 ;
+    ECSDI:precio 3.07e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_SLQAUN" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/54> a ECSDI:Producto ;
+    ECSDI:id 54 ;
+    ECSDI:nombre "nombre_XEU4YC" ;
+    ECSDI:peso 8.171964e+02 ;
+    ECSDI:precio 5.3e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_70YM1O" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/55> a ECSDI:Producto ;
+    ECSDI:id 55 ;
+    ECSDI:nombre "nombre_3UAU92" ;
+    ECSDI:peso 1.812444e+03 ;
+    ECSDI:precio 8.19e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_KPFWTU" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/56> a ECSDI:Producto ;
+    ECSDI:id 56 ;
+    ECSDI:nombre "nombre_VZIGAW" ;
+    ECSDI:peso 2.036666e+02 ;
+    ECSDI:precio 3.04e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_C7CU1Y" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/57> a ECSDI:Producto ;
+    ECSDI:id 57 ;
+    ECSDI:nombre "nombre_8EFPYI" ;
+    ECSDI:peso 7.274875e+02 ;
+    ECSDI:precio 8.6e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_N1F2PG" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> a ECSDI:Producto ;
+    ECSDI:id 58 ;
+    ECSDI:nombre "nombre_Q87Q8N" ;
+    ECSDI:peso 1.541606e+03 ;
+    ECSDI:precio 1.979e+03 ;
+    ECSDI:tieneMarca "Marca_Computer_LA5GWH" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/59> a ECSDI:Producto ;
+    ECSDI:id 59 ;
+    ECSDI:nombre "nombre_CZ3Z5F" ;
+    ECSDI:peso 2.088658e+02 ;
+    ECSDI:precio 4.77e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_SLQAUN" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/6> a ECSDI:Producto ;
+    ECSDI:id 6 ;
+    ECSDI:nombre "nombre_EMC1HM" ;
+    ECSDI:peso 8.807122e+02 ;
+    ECSDI:precio 5.2e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_OHQ03B" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/60> ECSDI:id 60 ;
+    ECSDI:nombre "prod1" ;
+    ECSDI:peso 2e+01 ;
+    ECSDI:precio 1e+01 ;
+    ECSDI:tieneMarca "NotBrand" ;
+    ECSDI:tipoproducto "Blender" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/1> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/7> a ECSDI:Producto ;
+    ECSDI:id 7 ;
+    ECSDI:nombre "nombre_17WV3U" ;
+    ECSDI:peso 2.270375e+03 ;
+    ECSDI:precio 7.46e+02 ;
+    ECSDI:tieneMarca "Marca_Computer_9HV59Y" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/8> a ECSDI:Producto ;
+    ECSDI:id 8 ;
+    ECSDI:nombre "nombre_0C3767" ;
+    ECSDI:peso 2.114415e+02 ;
+    ECSDI:precio 4.18e+02 ;
+    ECSDI:tieneMarca "Marca_Phone_SLQAUN" ;
+    ECSDI:tipoproducto "Phone" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/9> a ECSDI:Producto ;
+    ECSDI:id 9 ;
+    ECSDI:nombre "nombre_FE7DS8" ;
+    ECSDI:peso 5.820435e+02 ;
+    ECSDI:precio 7.1e+01 ;
+    ECSDI:tieneMarca "Marca_Blender_70YM1O" ;
+    ECSDI:tipoproducto "Blender" .
 
