@@ -77,6 +77,31 @@ app = Flask(__name__)
 #def crearLotes():
 
 
+def escribirAPedido():
+    #crear pedido
+    g = Graph()
+    # Definir el namespace de tu ontología ECSDI
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+
+    # Definir la URI de tu pedido
+    pedido_uri = ECSDI['Pedido/1']
+
+    # Añadir triples al grafo
+    g.add((pedido_uri, RDF.type, ECSDI.Pedido))
+    g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer)))  # Id del pedido
+    g.add((pedido_uri, ECSDI.latitud, Literal(10, datatype=XSD.float)))  # Latitud
+    g.add((pedido_uri, ECSDI.longitud, Literal(20, datatype=XSD.float)))  # Longitud
+    g.add((pedido_uri, ECSDI.metodoPago, Literal("tarjeta")))  # Método de pago
+    g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(1, datatype=XSD.integer)))  # Prioridad de entrega
+
+    # Definir la URI de la compra asociada al pedido
+    compra_uri = ECSDI['Compra/1']
+    g.add((pedido_uri, ECSDI.compra_a_enviar, compra_uri))
+
+    # Serializar el grafo en formato Turtle y guardarlo en un archivo
+    with open("pedido.ttl", "w") as f:
+        f.write(g.serialize(format="turtle"))
+
 
 @app.route("/comm")
 def comunicacion():
@@ -118,29 +143,7 @@ def comunicacion():
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
                 if accion == ECSDI.Pedido:
-                    #crear pedido
-                    g = Graph()
-                    # Definir el namespace de tu ontología ECSDI
-                    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-
-                    # Definir la URI de tu pedido
-                    pedido_uri = ECSDI['Pedido/1']
-
-                    # Añadir triples al grafo
-                    g.add((pedido_uri, RDF.type, ECSDI.Pedido))
-                    g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer)))  # Id del pedido
-                    g.add((pedido_uri, ECSDI.latitud, Literal(10, datatype=XSD.float)))  # Latitud
-                    g.add((pedido_uri, ECSDI.longitud, Literal(20, datatype=XSD.float)))  # Longitud
-                    g.add((pedido_uri, ECSDI.metodoPago, Literal("tarjeta")))  # Método de pago
-                    g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(1, datatype=XSD.integer)))  # Prioridad de entrega
-
-                    # Definir la URI de la compra asociada al pedido
-                    compra_uri = ECSDI['Compra/1']
-                    g.add((pedido_uri, ECSDI.compra_a_enviar, compra_uri))
-
-                    # Serializar el grafo en formato Turtle y guardarlo en un archivo
-                    with open("pedido.ttl", "w") as f:
-                        f.write(g.serialize(format="turtle").decode("utf-8"))
+                    escribirAPedido()
                 # Preparar lotes para enviar
                 #else: 
                 #    crearLotes()
@@ -183,4 +186,4 @@ if __name__ == '__main__':
 
     # Wait for the behaviors to finish
     ab1.join()
-    #print('The End')
+    print('The End')
