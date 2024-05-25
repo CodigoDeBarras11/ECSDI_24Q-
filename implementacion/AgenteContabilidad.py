@@ -141,38 +141,31 @@ def comunicacion():
                                sender=DirectoryAgent.uri,
                                msgcnt=get_count())
         else:
-            # Obtenemos la performativa
-            perf = msgdic['performative']
-
-            if perf != ACL.request:
-                # Si no es un request, respondemos que no hemos entendido el mensaje
-                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteContabilidad.uri, msgcnt=get_count())
-            else:
-                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
-                # de registro
-                receiver_uri = msgdic['receiver'] #receiver_uri
-                # Averiguamos el tipo de la accion
-                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+          # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # de registro
+            receiver_uri = msgdic['receiver'] #receiver_uri
+            # Averiguamos el tipo de la accion
+            accion = gm.value(subject=receiver_uri, predicate=RDF.type)
             
-                if accion == ECSDI.ProductoEnviado:
-                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                    update_money(user_id, retirar, "compra")
+            if accion == ECSDI.ProductoEnviado:
+                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                update_money(user_id, retirar, "compra")
                 
 
-                elif accion == ECSDI.RespuestaDevolucion:
-                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    ingresar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                    update_money(user_id, ingresar, "reembolso")
+            elif accion == ECSDI.RespuestaDevolucion:
+                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                ingresar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                update_money(user_id, ingresar, "reembolso")
                 
-                # No habia ninguna accion en el mensaje
-                else:
-                    gr = build_message(Graph(),
-                                ACL['not-understood'],
-                                sender=AgenteContabilidad.uri,
-                                msgcnt=get_count())
+            # No habia ninguna accion en el mensaje
+            else:
+                gr = build_message(Graph(),
+                        ACL['not-understood'],
+                        sender=AgenteContabilidad.uri,
+                        msgcnt=get_count())
                 
-                return Response(status=200)
+            return Response(status=200)
 
     return Response(status=200)
 
@@ -197,24 +190,39 @@ def tidyup():
     pass
 
 
-def agentbehavior1(cola):
-    """
-    Un comportamiento del agente
-
-    :return:
-    """
-    update_money(3, 11, "compra")
-    pass
-
 
 if __name__ == '__main__':
-    # Ponemos en marcha los behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
+    
+    hostaddr = hostname = socket.gethostname()
+    AgenteContabilidadAdd = f'http://{hostaddr}:{port}'
+    AgenteContabilidadId = hostaddr.split('.')[0] + '-' + str(port)
+    mess = f'REGISTER|{AgenteContabilidadId},CONTABILIDAD,{AgenteContabilidadAdd}'
 
-    # Ponemos en marcha el servidor
-    app.run(host=hostname, port=port)
+    diraddress = "http://localhost:9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
 
-    # Esperamos a que acaben los behaviors
-    ab1.join()
+    if 'OK' in resp:
+        print(f'SOLVER {AgenteContabilidadId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteContabilidadId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
+
+
     print('The End')

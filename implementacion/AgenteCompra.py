@@ -202,69 +202,56 @@ def comunicacion():
                                sender=DirectoryAgent.uri,
                                msgcnt=get_count())
         else:
-            # Obtenemos la performativa
-            perf = msgdic['performative']
+            # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # de registro
+            receiver_uri = msgdic['receiver'] #receiver_uri
+            # Averiguamos el tipo de la accion
+            accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-            if perf != ACL.request:
-                # Si no es un request, respondemos que no hemos entendido el mensaje
-                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
-            else:
-                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
-                # de registro
-                receiver_uri = msgdic['receiver'] #receiver_uri
-                # Averiguamos el tipo de la accion
-                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+            if accion == ECSDI.Compra:
+                registrar_compra()
+                #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
 
-                if accion == ECSDI.Compra:
-                    registrar_compra()
-                    #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
+            elif accion == ECSDI.ProductoEnviado:
+                compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
+                fecha = gm.value(subject=receiver_uri, predicate=ECSDI.fechaHora)
+                registrar_fecha_compra(compra_id, fecha)
 
+            elif accion == ECSDI.PeticionDevolucion:
+                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
+                devolucion, precio = responder_peticion_devolucion(user_id, product_id)
 
-                elif accion == ECSDI.ProductoEnviado:
-                    receiver_uri = msgdic['receiver']
-
-                    compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
-                    fecha = gm.value(subject=receiver_uri, predicate=ECSDI.fechaHora)
-                    registrar_fecha_compra(compra_id, fecha)
-
-
-                elif accion == ECSDI.PeticionDevolucion:
-                    receiver_uri = msgdic['receiver']
-
-                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
-                    devolucion, precio = responder_peticion_devolucion(user_id, product_id)
-
-                    receiver_uri = agn.AgenteDevolucion
-                    receiver_address = "http://{hostname}:9013/comm"  
-                    content_graph = Graph()
-                    content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
-                    if devolucion == True: 
-                        content_graph.add((receiver_uri, ECSDI.acceptado, Literal(True)))
-                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
-                        content_graph.add((receiver_uri, ECSDI.precio, Literal(precio)))
-                    else:
-                        content_graph.add((receiver_uri, ECSDI.acceptado, Literal(False)))
-                  
-                    msg_graph = build_message(
-                        gmess=content_graph,
-                        perf=ACL.request,
-                        sender=AgenteCompra.uri,
-                        receiver=receiver_uri,
-                        msgcnt=mss_cnt
-                    )
-                    response_graph = send_message(gmess=msg_graph, address=receiver_address)
-
-                    mss_cnt += 1
-    
-                # No habia ninguna accion en el mensaje
+                receiver_uri = agn.AgenteDevolucion
+                receiver_address = "http://{hostname}:9013/comm"  
+                content_graph = Graph()
+                content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
+                if devolucion == True: 
+                    content_graph.add((receiver_uri, ECSDI.acceptado, Literal(True)))
+                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
+                    content_graph.add((receiver_uri, ECSDI.precio, Literal(precio)))
                 else:
-                    gr = build_message(Graph(),
-                                ACL['not-understood'],
-                                sender=AgenteCompra.uri,
-                                msgcnt=get_count())
+                    content_graph.add((receiver_uri, ECSDI.acceptado, Literal(False)))
+                  
+                msg_graph = build_message(
+                    gmess=content_graph,
+                    perf=ACL.request,
+                    sender=AgenteCompra.uri,
+                    receiver=receiver_uri,
+                    msgcnt=mss_cnt
+                )
+                response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                mss_cnt += 1
+    
+            # No habia ninguna accion en el mensaje
+            else:
+                gr = build_message(Graph(),
+                        ACL['not-understood'],
+                        sender=AgenteCompra.uri,
+                        msgcnt=get_count())
                 
-                return Response(status=200)
+            return Response(status=200)
 
     return Response(status=200)
 
@@ -315,13 +302,37 @@ def agentbehavior1(cola):
     print(response.text)
 
 if __name__ == '__main__':
-    # Ponemos en marcha los behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-
-    # Ponemos en marcha el servidor
-    app.run(host=hostname, port=port)
     
-    # Esperamos a que acaben los behaviors
-    ab1.join()
+    hostaddr = hostname = socket.gethostname()
+    AgenteCompraAdd = f'http://{hostaddr}:{port}'
+    AgenteCompraId = hostaddr.split('.')[0] + '-' + str(port)
+    mess = f'REGISTER|{AgenteCompraId},COMPRA,{AgenteCompraAdd}'
+
+    diraddress = "http://localhost:9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
+
+    if 'OK' in resp:
+        print(f'SOLVER {AgenteCompraId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteCompraId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
+
+
     print('The End')
