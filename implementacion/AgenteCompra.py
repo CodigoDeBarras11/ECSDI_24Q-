@@ -309,6 +309,10 @@ def agentbehavior1(cola):
     #precios = [100, 200]
     #print(check_date(fechas, precios))
     #registrar_fecha_compra(3, "24/05/2024")
+    diraddress = "http://localhost:9000"
+    mess = 'SEARCH|AgenteDevolucion,1'  # Search for 1 agent of type AgenteDevolucion
+    response = requests.get(f"{diraddress}/message", params={'message': mess})
+    print(response.text)
 
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors

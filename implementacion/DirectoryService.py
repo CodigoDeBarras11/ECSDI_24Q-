@@ -124,7 +124,7 @@ def info():
     global directory
     global loadbalance
 
-    return render_template('directory.html', dir=obscure(directory), bal=loadbalance)
+    return render_template('directory.html', dir=directory, bal=loadbalance)
 
 
 @app.route("/stop")
@@ -162,7 +162,7 @@ if __name__ == '__main__':
         hostaddr = gethostname()
     else:
         hostaddr = hostname = socket.gethostname()
-
+    
     print('DS Hostname =', hostaddr)
 
     # Ponemos en marcha el servidor Flask

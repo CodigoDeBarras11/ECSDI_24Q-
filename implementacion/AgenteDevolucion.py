@@ -203,21 +203,43 @@ def tidyup():
     pass
 
 
-def agentbehavior1(cola):
-    """
-    Agent's behavior
-    """
-    pass
-
 
 if __name__ == '__main__':
-    # Launch the behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
+    
+    hostaddr = hostname = socket.gethostname()
+    AgenteDevolucionAdd = f'http://{hostaddr}:{port}'
+    print("------------")
+    print(AgenteDevolucionAdd)
+    AgenteDevolucionId = hostaddr.split('.')[0] + '-' + str(port)
+    print(AgenteDevolucionId)
+    print("------------")
+    mess = f'REGISTER|{AgenteDevolucionId},AgenteDevolucion,{AgenteDevolucionAdd}'
 
-    # Launch the server
-    app.run(host=hostname, port=port)
+    diraddress = "http://localhost:9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
 
-    # Wait for the behaviors to finish
-    ab1.join()
+    if 'OK' in resp:
+        print(f'SOLVER {AgenteDevolucionId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteDevolucionId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
+
+
     print('The End')
