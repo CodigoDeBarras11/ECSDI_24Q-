@@ -1,0 +1,17 @@
+{% extends 'base.html'%}
+
+{% block header %}
+  <h1>{% block title %}Conectarse como{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<ul>
+
+    <br>
+    <li><a href="{{ url_for('loginUser') }}">Usuario</a></li>
+    <br>
+    <br>
+    <li><a href="{{ url_for('loginShop') }}">Tienda</a>
+  
+</ul>
+{% endblock %}

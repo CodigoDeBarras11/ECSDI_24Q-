@@ -1,0 +1,17 @@
+{% extends 'base.html'%}
+{% block header %}
+  <h1>{% block title %}Add Product{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+{% from "formutils.html" import render_field %}
+<form method=post action="{{ url_for('anadirProducto') }}">
+  <dl>
+    {{ render_field(form.product_name) }}
+    {{ render_field(form.product_type) }}
+    {{ render_field(form.product_price) }}
+    {{ render_field(form.product_weight) }}
+    {{ render_field(form.product_brand) }}
+  </dl>
+  <p><input type=submit value=Submit>
+</form>
+{% endblock %}
