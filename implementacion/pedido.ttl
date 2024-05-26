@@ -1,12 +1,22 @@
+@prefix AGN: <http://www.agentes.org#> .
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#searchid> xsd:positiveInteger 0.
+AGN:searchid xsd:positiveInteger "2"^^xsd:positiveInteger .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/1> a ECSDI:Pedido ;
+    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> ;
     ECSDI:id 1 ;
     ECSDI:latitud 10 ;
     ECSDI:longitud 20 ;
     ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> .
+    ECSDI:prioridadEntrega 1 .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/2> a ECSDI:Pedido ;
+    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/2> ;
+    ECSDI:id 1 ;
+    ECSDI:latitud 1e+01 ;
+    ECSDI:longitud 2e+01 ;
+    ECSDI:metodoPago "tarjeta" ;
+    ECSDI:prioridadEntrega 1 .
+

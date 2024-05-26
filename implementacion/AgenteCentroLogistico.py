@@ -82,21 +82,64 @@ def escribirAPedido():
     g = Graph()
     # Definir el namespace de tu ontología ECSDI
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+    g.bind("ECSDI", ECSDI)
+
+
+    AGN = Namespace("http://www.agentes.org#")
+    g.bind("AGN", AGN)
+
+    # Cargar el grafo existente desde el archivo si existe
+    try:
+        g.parse("pedido.ttl", format="turtle")
+    except FileNotFoundError:
+        pass  # Si el archivo no existe, continuamos con un grafo vacío
+
+    # Leer el valor actual de searchid
+    searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
+    if searchid_value is None:
+        searchid = 0
+    else:
+        searchid = int(searchid_value)
+
+    # Incrementar el valor de searchid
+    searchid += 1
+
+    # Actualizar el valor en el grafo
+    g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid, datatype=XSD.positiveInteger)))
+
+
 
     # Definir la URI de tu pedido
-    pedido_uri = ECSDI['Pedido/1']
+    pedido_uri = ECSDI[f'Pedido/{searchid}']
 
     # Añadir triples al grafo
     g.add((pedido_uri, RDF.type, ECSDI.Pedido))
     g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer)))  # Id del pedido
-    g.add((pedido_uri, ECSDI.latitud, Literal(10, datatype=XSD.float)))  # Latitud
-    g.add((pedido_uri, ECSDI.longitud, Literal(20, datatype=XSD.float)))  # Longitud
+    g.add((pedido_uri, ECSDI.latitud, Literal(10.0)))  # Latitud
+    g.add((pedido_uri, ECSDI.longitud, Literal(20.0)))  # Longitud
     g.add((pedido_uri, ECSDI.metodoPago, Literal("tarjeta")))  # Método de pago
     g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(1, datatype=XSD.integer)))  # Prioridad de entrega
 
     # Definir la URI de la compra asociada al pedido
-    compra_uri = ECSDI['Compra/1']
+    compra_uri = ECSDI[f'Compra/{searchid}']
     g.add((pedido_uri, ECSDI.compra_a_enviar, compra_uri))
+    
+
+    temp_ttl = g.serialize(format="turtle")
+
+    # Reemplazar la línea del searchid con el formato deseado
+    temp_ttl_lines = temp_ttl.split('\n')
+    with open("pedido.ttl", "r") as f:
+        original_lines = f.readlines()
+
+    for i, line in enumerate(original_lines):
+        if "AGN:searchid" in line:
+            original_lines[i] = f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n'
+            break
+    else:
+        # Si no se encuentra, añadir al final
+        original_lines.append(f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n')
+
 
     # Serializar el grafo en formato Turtle y guardarlo en un archivo
     with open("pedido.ttl", "w") as f:
@@ -177,6 +220,9 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
+    escribirAPedido()
+    print("Archivo pedido.ttl creado.")
+
     # Launch the behaviors
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
