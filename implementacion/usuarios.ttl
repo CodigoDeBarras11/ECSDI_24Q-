@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#userid> xsd:positiveInteger 2 .
+<http://www.agentes.org#userid> xsd:positiveInteger 3 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> a ECSDI:Cliente ;
     ECSDI:id 0 ;
@@ -10,4 +10,8 @@
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/1> a ECSDI:Cliente ;
     ECSDI:id 1 ;
     ECSDI:nombre "pepef" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> a ECSDI:Cliente ;
+    ECSDI:id 2 ;
+    ECSDI:nombre "pepe" .
 

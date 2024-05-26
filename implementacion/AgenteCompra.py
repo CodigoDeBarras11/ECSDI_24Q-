@@ -174,6 +174,15 @@ def haversine(coord1, coord2):
 
     return distance
 
+def get_agent(agente):
+    mess = f'SEARCH|{agente},1'  
+    response = requests.get(f"{diraddress}/message", params={'message': mess})
+    response = response.text.split(" ")
+    if "OK" in response[0]:
+        return f'{response[1]}/comm'
+    else:
+        return "NOT FOUND"
+
 @app.route("/comm")
 def comunicacion():
     """
@@ -211,11 +220,16 @@ def comunicacion():
             if accion == ECSDI.Compra:
                 registrar_compra()
                 #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
+                mss_cnt += 1
+                return Response(status=200)
 
             elif accion == ECSDI.ProductoEnviado:
                 compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
                 fecha = gm.value(subject=receiver_uri, predicate=ECSDI.fechaHora)
                 registrar_fecha_compra(compra_id, fecha)
+                mss_cnt += 1
+                return Response(status=200)
+
 
             elif accion == ECSDI.PeticionDevolucion:
                 user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
@@ -223,12 +237,13 @@ def comunicacion():
                 devolucion, precio = responder_peticion_devolucion(user_id, product_id)
 
                 receiver_uri = agn.AgenteDevolucion
-                receiver_address = "http://{hostname}:9013/comm"  
+                receiver_address = get_agent("DEVOLUCION") 
+
                 content_graph = Graph()
                 content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
                 if devolucion == True: 
                     content_graph.add((receiver_uri, ECSDI.acceptado, Literal(True)))
-                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
+                    content_graph.add((receiver_uri, ECSDI.id, Literal(user_id)))
                     content_graph.add((receiver_uri, ECSDI.precio, Literal(precio)))
                 else:
                     content_graph.add((receiver_uri, ECSDI.acceptado, Literal(False)))
@@ -241,8 +256,8 @@ def comunicacion():
                     msgcnt=mss_cnt
                 )
                 response_graph = send_message(gmess=msg_graph, address=receiver_address)
-
                 mss_cnt += 1
+                return Response(status=200)
     
             # No habia ninguna accion en el mensaje
             else:
@@ -251,9 +266,8 @@ def comunicacion():
                         sender=AgenteCompra.uri,
                         msgcnt=get_count())
                 
-            return Response(status=200)
 
-    return Response(status=200)
+    return Response(status=400)
 
 
 @app.route("/Stop")
@@ -296,10 +310,6 @@ def agentbehavior1(cola):
     #precios = [100, 200]
     #print(check_date(fechas, precios))
     #registrar_fecha_compra(3, "24/05/2024")
-    diraddress = "http://localhost:9000"
-    mess = 'SEARCH|AgenteDevolucion,1'  # Search for 1 agent of type AgenteDevolucion
-    response = requests.get(f"{diraddress}/message", params={'message': mess})
-    print(response.text)
 
 if __name__ == '__main__':
     
@@ -319,7 +329,7 @@ if __name__ == '__main__':
     print('DS Hostname =', hostaddr)
 
     if 'OK' in resp:
-        print(f'SOLVER {AgenteCompraId} successfully registered')
+        print(f'COMPRA {AgenteCompraId} successfully registered')
         
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text

@@ -141,7 +141,7 @@ def comunicacion():
                                sender=DirectoryAgent.uri,
                                msgcnt=get_count())
         else:
-          # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
             receiver_uri = msgdic['receiver'] #receiver_uri
             # Averiguamos el tipo de la accion
@@ -151,12 +151,14 @@ def comunicacion():
                 user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
                 retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
                 update_money(user_id, retirar, "compra")
+                return Response(status=200)
                 
 
             elif accion == ECSDI.RespuestaDevolucion:
                 user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
                 ingresar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
                 update_money(user_id, ingresar, "reembolso")
+                return Response(status=200)
                 
             # No habia ninguna accion en el mensaje
             else:
@@ -165,9 +167,8 @@ def comunicacion():
                         sender=AgenteContabilidad.uri,
                         msgcnt=get_count())
                 
-            return Response(status=200)
 
-    return Response(status=200)
+    return Response(status=400)
 
 
 @app.route("/Stop")
@@ -209,7 +210,7 @@ if __name__ == '__main__':
     print('DS Hostname =', hostaddr)
 
     if 'OK' in resp:
-        print(f'SOLVER {AgenteContabilidadId} successfully registered')
+        print(f'CONTABILIDAD {AgenteContabilidadId} successfully registered')
         
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
