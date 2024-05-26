@@ -86,7 +86,6 @@ def escribirAPedido():
 
 
     AGN = Namespace("http://www.agentes.org#")
-    g.bind("AGN", AGN)
 
     # Cargar el grafo existente desde el archivo si existe
     try:
@@ -105,7 +104,7 @@ def escribirAPedido():
     searchid += 1
 
     # Actualizar el valor en el grafo
-    g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid, datatype=XSD.positiveInteger)))
+    g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
 
 
 
