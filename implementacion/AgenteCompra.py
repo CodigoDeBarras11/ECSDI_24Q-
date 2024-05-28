@@ -34,6 +34,7 @@ from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 from datetime import datetime, timedelta
 import math
+import base64
 
 
 __author__ = 'Pepe'
@@ -213,12 +214,14 @@ def comunicacion():
         else:
             # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
-            receiver_uri = msgdic['receiver'] #receiver_uri
+            print(msgdic)
+            receiver_uri = msgdic['content'] #receiver_uri marcado como conent por el Pablo
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-            if accion == ECSDI.Compra:
-                registrar_compra()
+            if accion == ECSDI.PeticionCompra:
+                print("Hola")
+                #registrar_compra()
                 #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
                 mss_cnt += 1
                 return Response(status=200)

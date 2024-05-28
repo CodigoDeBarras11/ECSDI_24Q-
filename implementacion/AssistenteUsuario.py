@@ -138,14 +138,26 @@ def compra():
             if  products[i]['brand']:
                 product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
             product_graph.add((prod, ECSDI.vendido_por, vendedor))
-        return products
+        #return products
         peticionCompra = agn.peticionCompra
         product_graph.add((peticionCompra, RDF.type, ECSDI.PeticionCompra))
         product_graph.add((peticionCompra, ECSDI.comprado_por, usuario))
-        msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=peticionCompra, msgcnt=mss_cnt)
+        msg = build_message(
+            product_graph, 
+            ACL.request, 
+            sender=agn.AsistenteUsuario, 
+            receiver=agn.AgenteCompra, 
+            content=peticionCompra, 
+            msgcnt=mss_cnt)
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
+        print("holaholaholahola")
+        print(product_graph)
+        print("--------------")
+        print(product_graph.serialize(format='xml'))
+        print("--------------")
         if 'OK' in compraadd:
             compra = compraadd[4:]
+        print(msg)
         response = send_message(msg, compra + '/comm')
         return render_template("envio.html")
     return render_template('products.html', products=products)

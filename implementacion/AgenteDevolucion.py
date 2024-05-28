@@ -194,7 +194,7 @@ def tidyup():
 
 if __name__ == '__main__':
 
-    """hostaddr = hostname = socket.gethostname()
+    hostaddr = hostname = socket.gethostname()
     AgenteDevolucionAdd = f'http://{hostaddr}:{port}'
     AgenteDevolucionId = hostaddr.split('.')[0] + '-' + str(port)
     mess = f'REGISTER|{AgenteDevolucionId},DEVOLUCION,{AgenteDevolucionAdd}'
@@ -226,6 +226,6 @@ if __name__ == '__main__':
         mess = f'UNREGISTER|{AgenteDevolucionId}'
         requests.get(diraddress + '/message', params={'message': mess})
     else:
-        print('Unable to register')"""
+        print('Unable to register')
 
     print('The End')
