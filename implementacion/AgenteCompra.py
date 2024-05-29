@@ -223,8 +223,15 @@ def comunicacion():
                 print("Hola")
                 #registrar_compra()
                 #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
+                msg_graph1 = build_message(
+                    gmess=Graph(),
+                    perf=ACL.agree,
+                    sender=AgenteCompra.uri,
+                    receiver=agn.AssistenteUsuario,
+                    msgcnt=mss_cnt
+                )
                 mss_cnt += 1
-                return Response(status=200)
+                return msg_graph1.serialize(format='xml')
 
             elif accion == ECSDI.ProductoEnviado:
                 compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
