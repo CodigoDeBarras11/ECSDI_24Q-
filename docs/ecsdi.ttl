@@ -44,7 +44,8 @@
 ###  http://webprotege.stanford.edu/compra_a_enviar
 <http://webprotege.stanford.edu/compra_a_enviar> rdf:type owl:ObjectProperty ;
                                                  rdfs:subPropertyOf owl:topObjectProperty ;
-                                                 rdfs:domain <http://webprotege.stanford.edu/Pedido> ,
+                                                 rdfs:domain <http://webprotege.stanford.edu/InfoUsuarioEntrega> ,
+                                                             <http://webprotege.stanford.edu/Pedido> ,
                                                              <http://webprotege.stanford.edu/ProductoEnviado> ,
                                                              :Compra_procesada ;
                                                  rdfs:range <http://webprotege.stanford.edu/Compra> ;
@@ -128,14 +129,15 @@
 
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#productos
 :productos rdf:type owl:ObjectProperty ;
-           rdfs:domain <http://webprotege.stanford.edu/Compra> ,
+           rdfs:domain <http://webprotege.stanford.edu/CentroLogistico> ,
+                       <http://webprotege.stanford.edu/Compra> ,
                        <http://webprotege.stanford.edu/PeticionDevolucion> ,
-                       <http://webprotege.stanford.edu/PeticionRegistrarProducto> ,
                        <http://webprotege.stanford.edu/ProductoEnviado> ,
                        <http://webprotege.stanford.edu/ProductosEntregables> ,
                        <http://webprotege.stanford.edu/ProductosEnviar> ,
                        <http://webprotege.stanford.edu/ProductosRecomendados> ,
                        :Lote ,
+                       :PeticionCompra ,
                        :ResultadoBusqueda ;
            rdfs:range <http://webprotege.stanford.edu/Producto> .
 
@@ -256,7 +258,8 @@
 ###  http://webprotege.stanford.edu/peso
 <http://webprotege.stanford.edu/peso> rdf:type owl:DatatypeProperty ;
                                       rdfs:subPropertyOf owl:topDataProperty ;
-                                      rdfs:domain <http://webprotege.stanford.edu/Producto> ;
+                                      rdfs:domain <http://webprotege.stanford.edu/Producto> ,
+                                                  :Lote ;
                                       rdfs:range xsd:float .
 
 
