@@ -1,0 +1,17 @@
+{% extends 'base.html'%}
+
+{% block header %}
+  <h1>{% block title %}Index{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<ul>
+    <br>
+    <li><a href="{{ url_for('busca') }}">Buscar</a></li>
+    <br>
+    <li><a href="{{ url_for('devolucion') }}">Devolver</a></li>
+    <br>
+    
+  
+</ul>
+{% endblock %}

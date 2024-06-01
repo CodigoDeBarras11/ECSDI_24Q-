@@ -25,18 +25,18 @@ import argparse
 from AgentUtil.Logging import config_logger
 
 from rdflib import Namespace, Graph, RDF, Literal
-from flask import Flask, request
+from flask import Flask, request, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 
-__author__ = 'javier'
+__author__ = 'daniel'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9011
+port = 9013
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -45,8 +45,8 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteSimple',
-                       agn.AgenteSimple,
+AgenteDevolucion = Agent('AgenteDevolucion',
+                       agn.AgenteDevolucion,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
@@ -65,19 +65,124 @@ cola1 = Queue()
 app = Flask(__name__)
 
 
+def get_count():
+    global mss_cnt
+    mss_cnt += 1
+    return mss_cnt
+
 @app.route("/comm")
 def comunicacion():
     """
     Entrypoint for communication
     """
-    global dsgraph
-    global mss_cnt
+    global dsGraph
 
+    message = request.args['content']
+    gm = Graph()
+    gm.parse(data=message, format='xml') 
+    msgdic = get_message_properties(gm)
 
-    message = request.args.get('content', '')  #
-    print(message)
+    gr = None
 
-    return "p"
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteDevolucion.uri, msgcnt=get_count())
+    else:
+        # Obtenemos la performativa
+        if msgdic['performative'] != ACL.request:
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(Graph(),
+                               ACL['not-understood'],
+                               sender=DirectoryAgent.uri,
+                               msgcnt=get_count())
+        else:
+            # Obtenemos la performativa
+            perf = msgdic['performative']
+
+            if perf != ACL.request:
+                # Si no es un request, respondemos que no hemos entendido el mensaje
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteDevolucion.uri, msgcnt=get_count())
+            else:
+                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+                # de registro
+                receiver_uri = msgdic['receiver']
+                # Averiguamos el tipo de la accion
+                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+
+                if accion == ECSDI.PeticionDevolucion:
+                    #PeticionCompra recibo del asistente virtual
+                    #checkear con AgenteCompra cuando se compro
+                    receiver_uri = msgdic['receiver'] 
+                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                    product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
+
+                    receiver_uri = agn.AgenteCompra
+                    receiver_address = "http://{hostname}:9011/comm"  
+
+                    content_graph = Graph()
+                    content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
+                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
+                    content_graph.add((receiver_uri, ECSDI.id, Literal(product_id)))
+                    
+                    # Build the message
+                    msg_graph = build_message(
+                        gmess=content_graph,
+                        perf=ACL.request,
+                        sender=AgenteDevolucion.uri,
+                        receiver=receiver_uri,
+                        msgcnt=mss_cnt
+                    )
+
+                    response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                
+                elif accion == ECSDI.RespuestaDevolucion:
+                    #comunicar respuest al asisten viertual
+                
+                    receiver_uri = msgdic['receiver'] 
+                    respuesta = gm.value(subject=receiver_uri, predicate=ECSDI.acceptado)
+
+                    if respuesta == True:
+                        buyer_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
+                        price = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                        receiver_uri = agn.AgenteContabilidad
+                        receiver_address = "http://{hostname}:9012/comm"  
+                    
+                        content_graph = Graph()
+                        content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
+                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
+
+                        #comnunicar al agente virtual que se ha aceptado
+
+                        msg_graph = build_message(
+                            gmess=content_graph,
+                            perf=ACL.request,
+                            sender=AgenteDevolucion.uri,
+                            receiver=receiver_uri,
+                            msgcnt=mss_cnt
+                        )
+
+                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
+
+                        mss_cnt += 1
+
+                    else: 
+                        print("fewf")
+                        #comnunicar al agente virtual que se ha aceptado
+                
+                # No habia ninguna accion en el mensaje
+                else:
+                    gr = build_message(Graph(),
+                                ACL['not-understood'],
+                                sender=AgenteDevolucion.uri,
+                                msgcnt=get_count())
+                
+                return Response(status=200)
+            
+            
+
+    return Response(status=200)
 
 
 
@@ -98,21 +203,43 @@ def tidyup():
     pass
 
 
-def agentbehavior1(cola):
-    """
-    Agent's behavior
-    """
-    pass
-
 
 if __name__ == '__main__':
-    # Launch the behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
+    
+    hostaddr = hostname = socket.gethostname()
+    AgenteDevolucionAdd = f'http://{hostaddr}:{port}'
+    print("------------")
+    print(AgenteDevolucionAdd)
+    AgenteDevolucionId = hostaddr.split('.')[0] + '-' + str(port)
+    print(AgenteDevolucionId)
+    print("------------")
+    mess = f'REGISTER|{AgenteDevolucionId},AgenteDevolucion,{AgenteDevolucionAdd}'
 
-    # Launch the server
-    app.run(host=hostname, port=port)
+    diraddress = "http://localhost:9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
 
-    # Wait for the behaviors to finish
-    ab1.join()
+    if 'OK' in resp:
+        print(f'SOLVER {AgenteDevolucionId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteDevolucionId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
+
+
     print('The End')
