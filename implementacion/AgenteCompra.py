@@ -221,7 +221,8 @@ def comunicacion():
 
             if accion == ECSDI.PeticionCompra:
                 print("Hola")
-
+                comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                print(comprado_por)
                 # Step 1: Identify all subjects (products) of a specific type
                 productos = set(gm.subjects(RDF.type, ECSDI.Producto))
 
@@ -241,8 +242,8 @@ def comunicacion():
                     print(marca)
                     print(vendido_por)
                     print("------------------------")
-
-                #registrar_compra()
+                
+                registrar_compra(id, precio, vendido_por)
                 #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
                 msg_graph1 = build_message(
                     gmess=Graph(),
@@ -252,7 +253,11 @@ def comunicacion():
                     msgcnt=mss_cnt
                 )
                 mss_cnt += 1
+
+                #devolver compra procesado con un id con url por cada Compra
                 return msg_graph1.serialize(format='xml')
+            
+            #devolver infoProvisionentregal cuando recibo accion InfoUsuarioEntrega
 
             elif accion == ECSDI.ProductoEnviado:
                 compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
