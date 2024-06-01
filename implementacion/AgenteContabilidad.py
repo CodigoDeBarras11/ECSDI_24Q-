@@ -73,9 +73,9 @@ def get_count():
     mss_cnt += 1
     return mss_cnt
 
-
-def update_money(user_id, amount, accion):
+def update_money(cliente, tienda, cantidad, accion):
    
+    print("hi")
     grafo_banco = Graph()
 
     file_path = "bd/banco.ttl"
@@ -87,25 +87,30 @@ def update_money(user_id, amount, accion):
     grafo_banco.parse("bd/banco.ttl", format="ttl")
     grafo_banco.bind('ECSDI', ECSDI)
 
-    user_exists = False
-    for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Transaccion)): #usar transaccion
-        vendido_por = grafo_banco.value(subject=s, predicate=ECSDI.vendido_por)
-        vendido_por = str(vendido_por).split('/')[-1]
-        if vendido_por == str(user_id):
-            user_exists = True
-            cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
-            cuenta_int = int(cuenta)
-            if accion == "compra": new_amount = cuenta_int + amount
-            else: new_amount = cuenta_int - amount
-            grafo_banco.remove((s, ECSDI.precio, cuenta))
-            grafo_banco.add((s, ECSDI.precio, Literal(str(new_amount))))
-            break
+    cliente_existe = False
+    tienda_existe = False
+    for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Usuario)): #cambiar por cuenta, en ontologia
+        cuenta = grafo_banco.value(subject=s, predicate=ECSDI.Lote)  #cambiar por cuenta_id
+        if o == cliente or o == tienda:
+            dinero_cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
+            dinero_cuenta_int = int(dinero_cuenta)
+            if o == cliente: 
+                cliente_existe = True
+                if accion == "compra": dinero_cuenta_int = dinero_cuenta_int - cantidad
+                else: dinero_cuenta_int = dinero_cuenta_int + cantidad
+            else: 
+                tienda_existe = True
+                if accion == "compra": dinero_cuenta_int = dinero_cuenta_int + cantidad
+                else: dinero_cuenta_int = dinero_cuenta_int - cantidad
+            grafo_banco.remove((s, ECSDI.precio, dinero_cuenta))
+            grafo_banco.add((s, ECSDI.precio, Literal(str(dinero_cuenta_int))))
+            if cliente_existe and tienda_existe: break
 
-    if not user_exists:
+    if not cliente_existe:
         last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
-        banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por banco
+        banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por cuenta
         grafo_banco.add((banco, RDF.type, ECSDI.Compra)) 
-        grafo_banco.add((banco, ECSDI.id, Literal(last_id+1)))
+        grafo_banco.add((banco, ECSDI.id¡¡, Literal(last_id+1)))
         comprador = ECSDI.Cliente + '/'+ str(user_id)
         grafo_banco.add((banco, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia cuenta
         grafo_banco.add((banco, ECSDI.precio, Literal(amount)))
@@ -121,6 +126,7 @@ def comunicacion():
     """
 
     global dsGraph
+    global mss_cnt
 
     message = request.args['content']
     gm = Graph()
@@ -143,7 +149,8 @@ def comunicacion():
         else:
             # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
-            receiver_uri = msgdic['receiver'] #receiver_uri
+            receiver_uri = msgdic['receiver']
+            print(receiver_uri)
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
             
@@ -155,10 +162,25 @@ def comunicacion():
                 
 
             elif accion == ECSDI.RespuestaDevolucion:
-                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                ingresar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                update_money(user_id, ingresar, "reembolso")
-                return Response(status=200)
+                print("Hola")
+                usuario = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                vendedor = gm.value(subject=receiver_uri, predicate=ECSDI.vendido_por)
+                cantidad = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                #update_money(user_id, ingresar, "reembolso")
+                print(usuario)
+                print(vendedor)
+                print(cantidad)
+
+                r_graph = build_message(
+                    gmess=Graph(),
+                    perf=ACL.agree,
+                    sender=AgenteContabilidad.uri,
+                    receiver=agn.AgenteDevolucion,
+                    content=ECSDI.RespuestaDevolucion,
+                    msgcnt=mss_cnt
+                )
+                mss_cnt += 1
+                return r_graph.serialize(format='xml')
                 
             # No habia ninguna accion en el mensaje
             else:
@@ -213,6 +235,11 @@ if __name__ == '__main__':
         print(f'CONTABILIDAD {AgenteContabilidadId} successfully registered')
         
         # Buscamos el logger si existe en el registro
+        cliente = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2"
+        tienda = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0"
+        cantidad = "90.0"
+        accion = "reembolsar"
+        update_money(cliente, tienda, cantidad)
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
         if 'OK' in loggeradd:
             logger = loggeradd[4:]

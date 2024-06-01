@@ -73,6 +73,9 @@ def comunicacion():
     Entrypoint for communication
     """
 
+    global mss_cnt
+
+
     message = request.args['content']
     gm = Graph()
     gm.parse(data=message, format='xml') 
@@ -94,83 +97,95 @@ def comunicacion():
         else:
             # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
-            receiver_uri = msgdic['receiver']
+            receiver_uri = msgdic['content'] 
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+            print(accion)
 
             if accion == ECSDI.PeticionDevolucion:
                 #PeticionCompra recibo del asistente virtual
                 #checkear con AgenteCompra cuando se compro
-                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
-                product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
+                print(receiver_uri)
+                #checkear que se cojan bien(lo dudo)
+                comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                producto = gm.value(subject=receiver_uri, predicate=ECSDI.productos)
+                print("-----------------")
+                print(comprado_por)
+                print(producto)
+                print("-----------------")
 
                 receiver_uri = agn.AgenteCompra
-                receiver_address = get_agent("COMPRA") 
+                receiver_address = get_agent("COMPRA")
+                print(receiver_address)
 
                 if receiver_address != "NOT FOUND":
                     content_graph = Graph()
                     content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
-                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
-                    content_graph.add((receiver_uri, ECSDI.id, Literal(product_id)))
+                    content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                    content_graph.add((receiver_uri, ECSDI.productos, producto))
                         
                     msg_graph = build_message(
                         gmess=content_graph,
                         perf=ACL.request,
                         sender=AgenteDevolucion.uri,
                         receiver=receiver_uri,
+                        content=agn.PeticionDevolucion,
                         msgcnt=mss_cnt
                     )
-                    response_graph = send_message(gmess=msg_graph, address=receiver_address)
-                    mss_cnt += 1
-                    return Response(status=200)
-                
-                else:
-                    return Response(status=404)
+                    response_graph = send_message(gmess=msg_graph, address=receiver_address) 
+                    print("----------------")
+                    print(response_graph.serialize(format='xml')) 
+                    print("----------------")
+                    devolucion = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.acceptado)
+                    print(devolucion)
 
-                   
-            elif accion == ECSDI.RespuestaDevolucion:
-                #comunicar respuest al asisten viertual
-                
-                respuesta = gm.value(subject=receiver_uri, predicate=ECSDI.acceptado)
+                    r_graph = Graph()
+                    if int(devolucion) == 1:
+                        print("hola")
+                        r_graph.add((agn.AgenteDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        mensaje = "Peticion de devolucion aceptada. Se le reembolsara el dinero lo antes posible. Como el proceso de devolucion del producto no esta dentro del alcance de ECSDI se lo puede quedar."
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        
+                        comprado_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.comprado_por)
+                        vendido_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.vendido_por)
+                        cantidad = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.precio)
 
-                if respuesta == True:
-                    buyer_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    price = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+                        receiver_uri = agn.AgenteContabilidad
+                        receiver_address = get_agent("CONTABILIDAD")
+                        print(receiver_address)
 
-                    receiver_uri = agn.AgenteContabilidad
-                    receiver_address = get_agent("CONTABILIDAD") 
-
-                    if receiver_address != "NOT FOUND":
                         content_graph = Graph()
                         content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
-                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
-                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
-
-                        #comnunicar al agente virtual que se ha aceptado
+                        content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                        content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
+                            
                         msg_graph = build_message(
                             gmess=content_graph,
                             perf=ACL.request,
                             sender=AgenteDevolucion.uri,
                             receiver=receiver_uri,
+                            content=agn.PeticionDevolucion,
                             msgcnt=mss_cnt
                         )
-                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
-                        mss_cnt += 1
-                        return Response(status=200)
-                    
-                    else:
-                        return Response(status=404)
+                        response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
 
-                else: 
-                    print("fewf")
-                    #comnunicar al agente virtual que se ha aceptado
+                    else:
+                        print("adios")
+                        r_graph.add((agn.AgenteDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        mensaje = "El producto introducido no se puede devolver ya que han pasado mas de 15 dias desde su compra. Si esta seguro que compro el producto hace menos de 15 dias revise que el nombre del producto este correctamente escrito"
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        
+                    return r_graph.serialize(format='xml')
                 
-            # No habia ninguna accion en el mensaje
-            else:
-                gr = build_message(Graph(),
-                            ACL['not-understood'],
-                            sender=AgenteDevolucion.uri,
-                            msgcnt=get_count())
+                else:
+                    gr = build_message(Graph(),
+                        ACL['not-understood'],
+                        sender=AgenteDevolucion.uri,
+                        msgcnt=get_count())
+            
             
     return Response(status=400)
 

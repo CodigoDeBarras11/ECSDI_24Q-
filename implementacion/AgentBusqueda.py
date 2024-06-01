@@ -43,11 +43,10 @@ parser.add_argument('--dir', default=None, help="Direccion del servicio de direc
 # parsing de los parametros de la linea de comandos
 args = parser.parse_args()
 
-if not args.verbose:
-    logger = config_logger(1, 'busqueda')
+#if not args.verbose: logger = config_logger(1, 'busqueda')
 
 # Configuration stuff
-    port = 9010
+port = 9010
 
 
 
@@ -97,114 +96,6 @@ app = Flask(__name__)
 
 
 #FUNCIONES DEL AGENTE ------------------------------------------------------
-
-'''@app.route("/accept_purchase", methods=["POST"])
-def accept_purchase():
-    # Lógica de aceptar la compra
-    # Puedes acceder a datos adicionales enviados desde el formulario utilizando request
-    # Por ejemplo, request.form['producto_id'] para obtener el ID del producto aceptado
-    # Luego, redirigir al AgenteCompra o realizar cualquier otra acción necesaria
-    return 'Redirige a agente de compra'
-    #return redirect(url_for("agente_compra"))
-
-@app.route("/reject_purchase", methods=["POST"])
-def reject_purchase():
-    # Lógica de rechazar la compra
-    return 'Recarga la página para cercar productos'
-    #return "Compra Rechazada"
-
-
-@app.route("/search")
-def comunicacion1():
-    
-    product_type = request.args.get('product_type')
-    min_price = request.args.get('min_price')
-    if(min_price): min_price = float(min_price)
-    max_price = request.args.get('max_price')
-    if(max_price): max_price = float(max_price)
-    min_weight = request.args.get('min_weight')
-    if(min_weight): min_weight = float(min_weight)
-    max_weight = request.args.get('max_weight')
-    if(max_weight): max_weight = float(max_weight)
-    if product_type or min_price or max_price or  min_weight or max_weight:
-        products = search_products(product_type, min_price, max_price, min_weight, max_weight)
-        
-        return render_template_string("""
-        <h1>Productos Encontrados:</h1>
-        <table border="1">
-            <tr>
-                <th>Nombre</th>
-                <th>Peso</th>
-                <th>Precio</th>
-                <th>Marca</th>
-            </tr>
-            {% for product in products %}
-            <tr>
-                <td>{{ product['name'] }}</td>
-                <td>{{ product['weight'] }}</td>
-                <td>{{ product['price'] }}</td>
-                <td>{{ product['brand'] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        <form action="/accept_purchase" method="POST">
-            <input type="submit" value="Aceptar Compra para todos los productos">
-        </form>
-        <form action="/reject_purchase" method="POST">
-            <input type="submit" value="Rechazar Compra">
-        </form>
-    """, products=products)
-
-    else: return "Tienes que poner algun filtro"
-
-def search_products(product_class, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
-    
-    global dsgraph
-    logger.info(product_class)
-    if not product_class: product_class = "Product"
-    elif product_class not in("Blender", "Product"): return ["El tipo de producto especificado no es valido"] # esto es una solucion provisional
-    query = """
-    PREFIX pont: <http://www.products.org/ontology/>
-    PREFIX pontp: <http://www.products.org/ontology/property/>
-    PREFIX pontr: <http://www.products.org/ontology/resource/>
-
-    SELECT ?product ?name ?price ?weight ?brand
-    WHERE {
-        ?product rdf:type pont:%s .
-        ?product pontp:nombre ?name .
-        ?product pontp:precio ?price .
-        ?product pontp:peso ?weight .
-        ?product pontp:tieneMarca ?brand_uri .
-        ?brand_uri pontp:nombre ?brand .
-    """ % product_class
-
-
-    if min_price is not None:
-        query += f"FILTER(?price >= {min_price})\n"
-    if max_price is not None:
-        query += f"FILTER(?price <= {max_price})\n"
-    if min_weight is not None:
-        query += f"FILTER(?weight >= {min_weight})\n"
-    if max_weight is not None:
-        query += f"FILTER(?weight <= {max_weight})\n"
-
-    query += "}"
-
-    results = dsgraph.query(query)
-
-    products = []
-    for row in results:
-        product = {
-            "name": str(row.name),
-            "price": float(row.price),
-            "weight": float(row.weight),
-            "brand": str(row.brand)
-        }
-        products.append(product)
-
-    return products    
-'''
-
 
 @app.route("/comm")
 def comunicacion():
@@ -266,23 +157,18 @@ def comunicacion():
                     else: min_weight = None
                     if(max_weight != 'None'): max_weight = float(max_weight)
                     else: max_weight = None
-                    logger.info([product_type,min_price, max_price, min_weight, max_weight, user])
                     products = search_products(product_type, min_price, max_price, min_weight, max_weight)
                     registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
-                    gr = products
+                    gr = build_message(products, ACL['inform'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt, receiver=msgdic['sender'])
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 
     # Aqui realizariamos lo que pide la accion
     # Por ahora simplemente retornamos un Inform-done
-    '''gr = build_message(Graph(),
-                        ACL['inform'],
-                        sender=AgenteBusqueda.uri,
-                        msgcnt=mss_cnt,
-                        receiver=msgdic['sender'], )'''
+   
     mss_cnt += 1
 
-    logger.info('Respondemos a la peticion')
+    print('Respondemos a la peticion')
 
     return gr.serialize(format='xml')
 
