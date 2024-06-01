@@ -16,7 +16,7 @@ Asume que el agente de registro esta en el puerto 9000
 
 from os import getcwd, path
 import sys
-
+import datetime
 import requests
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
@@ -49,8 +49,8 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteSimple',
-                       agn.AgenteSimple,
+AgenteCentroLogistico = Agent('AgenteCentroLogistico',
+                       agn.AgenteCentroLogistico,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
@@ -141,12 +141,106 @@ def escribirAPedido():
     with open("pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
 
+def escribirALote(centroLogID, prioridadEntrega):
+        #crear pedido
+    g = Graph()
+    # Definir el namespace de tu ontología ECSDI
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+    g.bind("ECSDI", ECSDI)
+
+
+    AGN = Namespace("http://www.agentes.org#")
+
+    # Cargar el grafo existente desde el archivo si existe
+    try:
+        g.parse("lote.ttl", format="turtle")
+    except FileNotFoundError:
+        pass  # Si el archivo no existe, continuamos con un grafo vacío
+
+    # Leer el valor actual de searchid
+    searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
+    if searchid_value is None:
+        searchid = 0
+    else:
+        searchid = int(searchid_value)
+
+    # Incrementar el valor de searchid
+    searchid += 1
+
+    # Actualizar el valor en el grafo
+    g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
+
+    lote_uri = ECSDI[f'Lote/{searchid}']
+    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridad_entrega)
+
+    # Añadir triples al grafo
+    g.add((lote_uri, RDF.type, ECSDI.Lote))
+    g.add((lote_uri, ECSDI.id, Literal(searchid, datatype=XSD.integer)))  
+    g.add((lote_uri, ECSDI.fechahora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime))) 
+
+    # Asignar id de centroLog, Transp, Productos
+    centroLog_uri = ECSDI[f'CentroLogistico/{centroLogID}']
+    g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
+    transp_uri = ECSDI[f'Transportista/{transpID}']
+    g.add((lote_uri, ECSDI.transportista, transp_uri))
+    #Un for para añadir todos los productos al lote
+    peso_actual = 0
+    for producto in productos:
+        producto_peso = float(producto['peso'])  # Asumiendo que cada producto tiene un atributo 'peso'
+        if peso_actual + producto_peso <= MaxPesoLote:
+            peso_actual += producto_peso
+            producto_uri = URIRef(producto['uri'])
+            g.add((lote_uri, ECSDI.contenido, producto_uri))
+        else:
+            # Si el producto no cabe en el lote actual, guardamos el lote actual y creamos uno nuevo
+            searchid += 1
+            g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
+            lote_uri = ECSDI[f'Lote/{searchid}']
+            g.add((lote_uri, RDF.type, ECSDI.Lote))
+            g.add((lote_uri, ECSDI.id, Literal(searchid, datatype=XSD.integer)))
+            g.add((lote_uri, ECSDI.fechahora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
+            g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
+            peso_actual = producto_peso
+            g.add((lote_uri, ECSDI.contenido, URIRef(producto['uri'])))
+
+    temp_ttl = g.serialize(format="turtle")
+
+    # Reemplazar la línea del searchid con el formato deseado
+    temp_ttl_lines = temp_ttl.split('\n')
+    with open("lote.ttl", "r") as f:
+        original_lines = f.readlines()
+
+    for i, line in enumerate(original_lines):
+        if "AGN:searchid" in line:
+            original_lines[i] = f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n'
+            break
+    else:
+        # Si no se encuentra, añadir al final
+        original_lines.append(f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n')
+
+
+    # Serializar el grafo en formato Turtle y guardarlo en un archivo
+    with open("lote.ttl", "w") as f:
+        f.write(g.serialize(format="turtle"))
+
 def prepararLotes():
     #consultar MaxPesoLote
-    #leer el último lote no lleno a ver si cabe más productos.
+    #leer el último lote con la fecha de entrega de no lleno a ver si cabe más productos.
     #en caso que faltan productos para poner a lotes, crear un lote nuevo.
 
+    lotes.sort(reverse=True, key=lambda x: x[0])
 
+    # Buscar lotes que cumplan con las condiciones
+    for lote_id, lote in lotes:
+        lote_fecha_entrega = g.value(lote, ECSDI.fechahora)
+        if lote_fecha_entrega:
+            lote_fecha_entrega_dt = datetime.datetime.fromisoformat(lote_fecha_entrega)
+            if lote_fecha_entrega_dt == fecha_entrega_dt:
+                lote_peso = g.value(lote, ECSDI.peso)
+                if lote_peso and float(lote_peso) < max_peso_lote:
+                   #el primero producto que se puede añadir al lote se añade
+                   #hasta que el lote ya no se puede añadir más
+                   #crear un nuevo lote 
 
 @app.route("/comm")
 def comunicacion():
@@ -167,7 +261,7 @@ def comunicacion():
 
     if msgdic is None:
         # Si no es, respondemos que no hemos entendido el mensaje
-        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCentroLogistico.uri, msgcnt=get_count())
     else:
         if msgdic['performative'] != ACL.request:
             # Si no es un request, respondemos que no hemos entendido el mensaje
@@ -180,7 +274,7 @@ def comunicacion():
 
             if perf != ACL.request:
                 # Si no es un request, respondemos que no hemos entendido el mensaje
-                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCompra.uri, msgcnt=get_count())
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCentroLogistico.uri, msgcnt=get_count())
             
             else:
                 receiver_uri = msgdic['receiver'] #receiver_uri
