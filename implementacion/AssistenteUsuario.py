@@ -117,6 +117,7 @@ def compra():
         products = form.getlist('products')
         product_graph = Graph()
         n = len(products)
+        print(n)
         for i in range(n):
             products[i] = products[i].split(sep=',')
             if(len(products[i]) > 5): vendedor = products[i][5]

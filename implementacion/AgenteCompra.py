@@ -214,13 +214,34 @@ def comunicacion():
         else:
             # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
-            print(msgdic)
+            #print(msgdic)
             receiver_uri = msgdic['content'] #receiver_uri marcado como conent por el Pablo
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
             if accion == ECSDI.PeticionCompra:
                 print("Hola")
+
+                # Step 1: Identify all subjects (products) of a specific type
+                productos = set(gm.subjects(RDF.type, ECSDI.Producto))
+
+                # Step 2: Retrieve all predicates and objects for each identified subject
+                for producto in productos:
+                    print("------------------------")
+                    nombre = gm.value(subject=producto, predicate=ECSDI.nombre)
+                    id = gm.value(subject=producto, predicate=ECSDI.id)
+                    precio = gm.value(subject=producto, predicate=ECSDI.precio)
+                    peso = gm.value(subject=producto, predicate=ECSDI.peso)
+                    marca = gm.value(subject=producto, predicate=ECSDI.tieneMarca)
+                    vendido_por = gm.value(subject=producto, predicate=ECSDI.vendido_por)
+                    print(nombre)
+                    print(id)
+                    print(precio)
+                    print(peso)
+                    print(marca)
+                    print(vendido_por)
+                    print("------------------------")
+
                 #registrar_compra()
                 #enviar mensaje a AgenteCentroLogisticos con la info de cada compra
                 msg_graph1 = build_message(
