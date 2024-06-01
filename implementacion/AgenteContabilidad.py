@@ -89,6 +89,7 @@ def update_money(cliente, tienda, cantidad, accion):
 
     cliente_existe = False
     tienda_existe = False
+    #comprobar que busco por cuenta de usuario o de tienda, el sujeto(id) de la cuenta, sera el sujeto del comprador o tienda
     for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Usuario)): #cambiar por cuenta, en ontologia
         cuenta = grafo_banco.value(subject=s, predicate=ECSDI.Lote)  #cambiar por cuenta_id
         if o == cliente or o == tienda:
@@ -106,6 +107,7 @@ def update_money(cliente, tienda, cantidad, accion):
             grafo_banco.add((s, ECSDI.precio, Literal(str(dinero_cuenta_int))))
             if cliente_existe and tienda_existe: break
 
+    #falta concretar el formato de la base de datos
     if not cliente_existe:
         last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
         banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por cuenta
