@@ -73,9 +73,6 @@ app = Flask(__name__)
 
 #    return idTransportista
 
-#Creacion de lotes
-#def crearLotes():
-
 
 def escribirAPedido():
     #crear pedido
@@ -144,6 +141,12 @@ def escribirAPedido():
     with open("pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
 
+def prepararLotes():
+    #consultar MaxPesoLote
+    #leer el último lote no lleno a ver si cabe más productos.
+    #en caso que faltan productos para poner a lotes, crear un lote nuevo.
+
+
 
 @app.route("/comm")
 def comunicacion():
@@ -184,11 +187,12 @@ def comunicacion():
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-                if accion == ECSDI.Pedido:
+                if accion == ECSDI.Pedido: #me pasan el id de compra, las coodenadas, la lista de productos
                     escribirAPedido()
-                # Preparar lotes para enviar
+                    prepararLotes()
                 #else: 
-                #    crearLotes()
+                    #cada cierto tiempo consultar si hay lotes sin transportista, en caso que sí asignar un transportista a un lote.
+                    
                 
     return "p"
 
