@@ -12,6 +12,7 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 import argparse
+from AgentUtil.Logging import config_logger
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
@@ -34,6 +35,9 @@ if args.dir is None:
     diraddress =  'http://'+hostname+':9000'
 else:
     diraddress = args.dir
+
+if not args.verbose:
+    logger = config_logger(1, 'busqueda')
 
 agn = Namespace("http://www.agentes.org#")
 AssistenteUsuario = Agent('AssistenteUsuario',
@@ -100,6 +104,7 @@ def devolucion():
         peticiondevolucion =agn.peticiondevolucion
         grafo_devolucion.add((peticiondevolucion, RDF.type, ECSDI.PeticionDevolucion))
         grafo_devolucion.add((prod, RDF.type, ECSDI.Producto))
+        grafo_devolucion.add((peticiondevolucion, ECSDI.comprado_por, usuario))
         msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.Agentedevolucion, content=peticiondevolucion, msgcnt=mss_cnt)
         devoladr = requests.get(diraddress + '/message', params={'message': 'SEARCH|DEVOLUCION'}).text
         if 'OK' in devoladr:
@@ -138,7 +143,7 @@ def compra():
             if  products[i]['brand']:
                 product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
             product_graph.add((prod, ECSDI.vendido_por, vendedor))
-        return products
+        #return products
         peticionCompra = agn.peticionCompra
         product_graph.add((peticionCompra, RDF.type, ECSDI.PeticionCompra))
         product_graph.add((peticionCompra, ECSDI.comprado_por, usuario))
@@ -147,8 +152,67 @@ def compra():
         if 'OK' in compraadd:
             compra = compraadd[4:]
         response = send_message(msg, compra + '/comm')
-        return render_template("envio.html")
+        return render_template(url_for("envio"))
     return render_template('products.html', products=products)
+
+
+@app.route("/comm")
+def comunicacion():
+    """
+    Entrypoint de comunicacion del agente
+    Simplemente retorna un objeto fijo que representa una
+    respuesta a una busqueda de hotel
+
+    Asumimos que se reciben siempre acciones que se refieren a lo que puede hacer
+    el agente (buscar con ciertas restricciones, reservar)
+    Las acciones se mandan siempre con un Request
+    Prodriamos resolver las busquedas usando una performativa de Query-ref
+    """
+    global dsgraph
+    global mss_cnt
+    # Extraemos el mensaje y creamos un grafo con el
+    grafo = Graph()
+    grafo = grafo.parse(data=request.args.get('content'), format='xml')
+    msgdic = get_message_properties(grafo)
+    #print(msgdic)
+    # Comprobamos que sea un mensaje FIPA ACL
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(
+            Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+    else:
+        # Obtenemos la performativa
+        perf = msgdic['performative']
+
+        if perf != ACL.request:
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(
+                Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+        else:
+            # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # de registro
+
+            # Averiguamos el tipo de la accion
+            if 'content' in msgdic:
+                content = msgdic['content']
+                accion = grafo.value(subject=content, predicate=RDF.type)
+                if accion == ECSDI.PeticionBusqueda:
+                    gr = grafo
+                else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+            else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+
+    # Aqui realizariamos lo que pide la accion
+    # Por ahora simplemente retornamos un Inform-done
+    '''gr = build_message(Graph(),
+                        ACL['inform'],
+                        sender=AgenteBusqueda.uri,
+                        msgcnt=mss_cnt,
+                        receiver=msgdic['sender'], )'''
+    mss_cnt += 1
+
+    logger.info('Respondemos a la peticion')
+
+    return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
 def envio():
@@ -198,7 +262,6 @@ def busca():
         searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
         if 'OK' in searchadd:
             busqueda = searchadd[4:]
-        print(busqueda)
         productos = send_message(msg,busqueda + '/comm')
         products = []
         #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))

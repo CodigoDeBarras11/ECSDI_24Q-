@@ -112,6 +112,12 @@
                                              rdfs:label "vendido_por" .
 
 
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#centro_logistico
+:centro_logistico rdf:type owl:ObjectProperty ;
+                  rdfs:domain :Lote ;
+                  rdfs:range <http://webprotege.stanford.edu/CentroLogistico> .
+
+
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#comprado_por
 :comprado_por rdf:type owl:ObjectProperty ;
               rdfs:domain <http://webprotege.stanford.edu/Compra> ,
@@ -127,8 +133,15 @@
                        <http://webprotege.stanford.edu/ProductoEnviado> ,
                        <http://webprotege.stanford.edu/ProductosEntregables> ,
                        <http://webprotege.stanford.edu/ProductosEnviar> ,
-                       <http://webprotege.stanford.edu/ProductosRecomendados> ;
+                       <http://webprotege.stanford.edu/ProductosRecomendados> ,
+                       :Lote ;
            rdfs:range <http://webprotege.stanford.edu/Producto> .
+
+
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#transportista
+:transportista rdf:type owl:ObjectProperty ;
+               rdfs:domain :Lote ;
+               rdfs:range <http://webprotege.stanford.edu/Transportista> .
 
 
 #################################################################
@@ -176,7 +189,8 @@
                                                        <http://webprotege.stanford.edu/InformacionProvisionalEntrega> ,
                                                        <http://webprotege.stanford.edu/RecordatorioPedirFeedback> ,
                                                        <http://webprotege.stanford.edu/RespuestaTransporte> ,
-                                                       <http://webprotege.stanford.edu/Transaccion> ;
+                                                       <http://webprotege.stanford.edu/Transaccion> ,
+                                                       :Lote ;
                                            rdfs:range xsd:dateTime ;
                                            rdfs:label "fechaHora" .
 
@@ -192,7 +206,8 @@
                                                 <http://webprotege.stanford.edu/Producto> ,
                                                 <http://webprotege.stanford.edu/Tienda> ,
                                                 <http://webprotege.stanford.edu/Transaccion> ,
-                                                <http://webprotege.stanford.edu/Usuario> ;
+                                                <http://webprotege.stanford.edu/Usuario> ,
+                                                :Lote ;
                                     rdfs:range xsd:positiveInteger ;
                                     rdfs:label "id" .
 
@@ -506,6 +521,10 @@
 ###  http://webprotege.stanford.edu/Usuario
 <http://webprotege.stanford.edu/Usuario> rdf:type owl:Class ;
                                          rdfs:label "Usuario" .
+
+
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#Lote
+:Lote rdf:type owl:Class .
 
 
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#PeticionCompra
