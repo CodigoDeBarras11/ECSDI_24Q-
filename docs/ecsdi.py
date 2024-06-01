@@ -5,7 +5,7 @@
 
  Translated to RDFlib from ontology urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8
 
- :Date 01/06/2024 12:08:03
+ :Date 01/06/2024 13:25:42
 """
 from rdflib import URIRef
 from rdflib.namespace import ClosedNamespace
@@ -44,9 +44,11 @@ ECSDI =  ClosedNamespace(
         'Transaccion',
         'Transportista',
         'Usuario',
+        'Compra_procesada',
         'Lote',
         'PeticionCompra',
         'Peticion_agente',
+        'ResultadoBusqueda',
 
         # Object properties
         'buscado_por',

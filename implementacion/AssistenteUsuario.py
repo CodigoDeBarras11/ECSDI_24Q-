@@ -36,8 +36,7 @@ if args.dir is None:
 else:
     diraddress = args.dir
 
-if not args.verbose:
-    logger = config_logger(1, 'busqueda')
+#if not args.verbose: logger = config_logger(1, 'busqueda')
 
 agn = Namespace("http://www.agentes.org#")
 AssistenteUsuario = Agent('AssistenteUsuario',
@@ -109,8 +108,8 @@ def devolucion():
         devoladr = requests.get(diraddress + '/message', params={'message': 'SEARCH|DEVOLUCION'}).text
         if 'OK' in devoladr:
             devol = devoladr[4:]
-        response = send_message(msg, devol + '/comm')
-        return redirect(url_for('index'))
+            response = send_message(msg, devol + '/comm')
+            return redirect(url_for('index'))
     return render_template('devolucion.html', form = form)
 
 @app.route('/compra', methods=['GET', 'POST'])
@@ -124,7 +123,8 @@ def compra():
         n = len(products)
         for i in range(n):
             products[i] = products[i].split(sep=',')
-            if(len(products[i]) > 5): vendedor = products[i][5]
+            if(len(products[i]) > 5): 
+                vendedor = products[i][5]
             else: vendedor = ECSDI.Tienda + '/0'
             products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": products[i][4]}
             prod = ECSDI.Producto + '/' + str(products[i]['id'])
@@ -151,8 +151,8 @@ def compra():
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
-        response = send_message(msg, compra + '/comm')
-        return render_template(url_for("envio"))
+            response = send_message(msg, compra + '/comm')
+            return render_template(url_for("envio"))
     return render_template('products.html', products=products)
 
 
@@ -197,27 +197,27 @@ def comunicacion():
                 content = msgdic['content']
                 accion = grafo.value(subject=content, predicate=RDF.type)
                 if accion == ECSDI.PeticionBusqueda:
-                    gr = grafo
+                   gr = build_message(Graph(),
+                        ACL['inform'],
+                        sender=AssistenteUsuario.uri,
+                        msgcnt=mss_cnt,
+                        receiver=msgdic['sender'])
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
 
     # Aqui realizariamos lo que pide la accion
     # Por ahora simplemente retornamos un Inform-done
-    '''gr = build_message(Graph(),
-                        ACL['inform'],
-                        sender=AgenteBusqueda.uri,
-                        msgcnt=mss_cnt,
-                        receiver=msgdic['sender'], )'''
+    
     mss_cnt += 1
 
-    logger.info('Respondemos a la peticion')
+    #logger.info('Respondemos a la peticion')
 
     return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
 def envio():
     form = formcompra.BuyForm(request.form)
-    if request.method == 'PUT' and form.validate():
+    if request.method == 'POST' and form.validate():
         infoentrega = agn.infoentrega
         grafo_entrega = Graph()
         grafo_entrega.add((infoentrega, RDF.type, ECSDI.InfoUsuarioEntrega))
@@ -229,7 +229,9 @@ def envio():
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
-        response = send_message(msg, compra + '/comm')
+            response = send_message(msg, compra + '/comm')
+            response
+            render_template('InfoEntrega.html', form = form)
 
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
@@ -262,22 +264,22 @@ def busca():
         searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
         if 'OK' in searchadd:
             busqueda = searchadd[4:]
-        productos = send_message(msg,busqueda + '/comm')
-        products = []
-        #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
-        for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
-            product = {
-                "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
-                "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
-                "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
-                "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
-                "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
-                "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
-            }
-            product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
-            if(product['vendedor']): product['data'] +=',' + product['vendedor']
-            products.append(product)
-        return render_template('products.html', products=products)
+            productos = send_message(msg,busqueda + '/comm')
+            products = []
+            #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
+            for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
+                product = {
+                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
+                    "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
+                    "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
+                    "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
+                    "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
+                    "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
+                }
+                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
+                if(product['vendedor']): product['data'] +=',' + product['vendedor']
+                products.append(product)
+            return render_template('products.html', products=products)
     return render_template('search.html', form=form)
 
 @app.route('/userOptions')
@@ -379,9 +381,10 @@ while not done:
         done = True
     except ConnectionError:
         pass
-print('DS Hostname =', hostaddr)
+#print('DS Hostname =', hostaddr)
 
 if 'OK' in resp:
+    #print('adress:'+solveradd)
     print(f'ASSISTANT {solverid} successfully registered')
     # Buscamos el logger si existe en el registro
     '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text

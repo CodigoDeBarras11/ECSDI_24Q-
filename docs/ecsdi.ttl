@@ -45,7 +45,8 @@
 <http://webprotege.stanford.edu/compra_a_enviar> rdf:type owl:ObjectProperty ;
                                                  rdfs:subPropertyOf owl:topObjectProperty ;
                                                  rdfs:domain <http://webprotege.stanford.edu/Pedido> ,
-                                                             <http://webprotege.stanford.edu/ProductoEnviado> ;
+                                                             <http://webprotege.stanford.edu/ProductoEnviado> ,
+                                                             :Compra_procesada ;
                                                  rdfs:range <http://webprotege.stanford.edu/Compra> ;
                                                  rdfs:comment "Un pedido solo pertenece a una compra" ,
                                                               "Una compra puede tener varios pedidos (si los productos son enviados separadamente). Una compra como minimo tiene un pedido." ;
@@ -134,7 +135,8 @@
                        <http://webprotege.stanford.edu/ProductosEntregables> ,
                        <http://webprotege.stanford.edu/ProductosEnviar> ,
                        <http://webprotege.stanford.edu/ProductosRecomendados> ,
-                       :Lote ;
+                       :Lote ,
+                       :ResultadoBusqueda ;
            rdfs:range <http://webprotege.stanford.edu/Producto> .
 
 
@@ -523,6 +525,11 @@
                                          rdfs:label "Usuario" .
 
 
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#Compra_procesada
+:Compra_procesada rdf:type owl:Class ;
+                  rdfs:subClassOf <http://webprotege.stanford.edu/Mensajes> .
+
+
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#Lote
 :Lote rdf:type owl:Class .
 
@@ -535,6 +542,11 @@
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#Peticion_agente
 :Peticion_agente rdf:type owl:Class ;
                  rdfs:subClassOf <http://webprotege.stanford.edu/Mensajes> .
+
+
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#ResultadoBusqueda
+:ResultadoBusqueda rdf:type owl:Class ;
+                   rdfs:subClassOf <http://webprotege.stanford.edu/Mensajes> .
 
 
 #################################################################
