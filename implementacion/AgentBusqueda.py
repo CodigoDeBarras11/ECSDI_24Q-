@@ -159,7 +159,7 @@ def comunicacion():
                     else: max_weight = None
                     products = search_products(product_type, min_price, max_price, min_weight, max_weight)
                     registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
-                    gr = build_message(products, ACL['inform'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt, receiver=msgdic['sender'])
+                    gr = build_message(products, ACL['inform'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt, receiver=msgdic['sender'], content=ECSDI.ResultadoBusqueda)
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 
@@ -289,29 +289,6 @@ def search_products(product_class, min_price:float=None, max_price:float=None, m
     return product_graph
 
 
-'''def send_message_custom(products):
-   
-    global mss_cnt
-    content = Graph()
-    content.bind('pontp', Namespace("http://www.products.org/ontology/property/"))
-    for product in products:
-        product_uri = agn[product['name']]  
-        content.objects((product_uri, RDF.type, agn.Product))
-        content.objects((product_uri, agn.nombre, Literal(product['name'])))
-        content.objects((product_uri, agn.precio, Literal(product['price'])))
-        content.objects((product_uri, agn.peso, Literal(product['weight'])))
-        content.objects((product_uri, agn.tieneMarca, Literal(product['brand'])))  
-
-
-    msg = build_message(Graph(), ACL.inform, sender=AgenteBusqueda.uri, receiver=agn.AgenteSimple, content=content, msgcnt=mss_cnt)
-    
-    port2 = 9011
-    address = 'http://{}:{}/comm'.format(hostname, port2)
-    #msg = "hola"
-    logger.info(type(msg))
-    r = requests.get(address, params={'content': msg})
-    
-    mss_cnt += 1'''
 
 
 if __name__ == '__main__':

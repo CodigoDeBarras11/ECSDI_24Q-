@@ -94,8 +94,9 @@ def anadirProducto():
 def devolucion():
     if not usuario: return redirect(url_for('loginUser'))
     form = formproduct.ProductForm(request.form)
-    if request.method == 'POST' and form.validate():
-        name = form.data['product_name']
+    name = form.data.get('product_name')
+    if request.method == 'POST' and name:
+        print('hola')
         product_graph = Graph()
         product_graph.parse("product.ttl", format="turtle")
         prod = product_graph.value(predicate=ECSDI.nombre, object=Literal(name))
@@ -103,13 +104,25 @@ def devolucion():
         peticiondevolucion =agn.peticiondevolucion
         grafo_devolucion.add((peticiondevolucion, RDF.type, ECSDI.PeticionDevolucion))
         grafo_devolucion.add((prod, RDF.type, ECSDI.Producto))
+        grafo_devolucion.add((peticiondevolucion, ECSDI.productos, prod))
         grafo_devolucion.add((peticiondevolucion, ECSDI.comprado_por, usuario))
-        msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.Agentedevolucion, content=peticiondevolucion, msgcnt=mss_cnt)
+        msg = build_message(grafo_devolucion, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.Agentedevolucion, content=peticiondevolucion, msgcnt=mss_cnt)
         devoladr = requests.get(diraddress + '/message', params={'message': 'SEARCH|DEVOLUCION'}).text
         if 'OK' in devoladr:
             devol = devoladr[4:]
             response = send_message(msg, devol + '/comm')
-            return redirect(url_for('index'))
+            content = get_message_properties(response)['content']
+            accion = response.value(subject=content, predicate=RDF.type)
+            acepted = response.value(subject=accion, predicate=ECSDI.acceptado)
+            veredicto = "Tu entrega ha sido "
+            metodo_devolucion = response.value(subject=accion, predicate=ECSDI.metodoDevolucion)
+            if(acepted):
+                veredicto += "aceptada"
+                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto, info2 = "Metodo de devolucion" + metodo_devolucion)
+            else: 
+                veredicto += "denegada"
+                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto)
+        
     return render_template('devolucion.html', form = form)
 
 @app.route('/compra', methods=['GET', 'POST'])
@@ -152,7 +165,11 @@ def compra():
         if 'OK' in compraadd:
             compra = compraadd[4:]
             response = send_message(msg, compra + '/comm')
-            return render_template(url_for("envio"))
+            content = get_message_properties(response)['content']
+            accion = response.value(subject=content, predicate=RDF.type)
+            araycompras = []
+            for rescompra in response.subjects(predicate=RDF.type, object=ECSDI.Compra): araycompras.append(rescompra)
+            return render_template(url_for("envio"), araycompras)
     return render_template('products.html', products=products)
 
 
@@ -215,7 +232,7 @@ def comunicacion():
     return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
-def envio():
+def envio(araycompras):
     form = formcompra.BuyForm(request.form)
     if request.method == 'POST' and form.validate():
         infoentrega = agn.infoentrega
@@ -225,13 +242,19 @@ def envio():
         grafo_entrega.add((infoentrega, ECSDI.longitud, Literal(form.data.get('shiping_longitude'))))
         grafo_entrega.add((infoentrega, ECSDI.metodoPago, Literal(form.data.get('payment_method'))))
         grafo_entrega.add((infoentrega, ECSDI.prioridadEntrega, Literal(form.data.get('shiping_priority'))))
+        for env in  araycompras: 
+            grafo_entrega.add((env, RDF.type, ECSDI.Compra))
+            grafo_entrega.add((infoentrega, ECSDI.compra_a_enviar, env))
         msg = build_message(grafo_entrega, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=infoentrega, msgcnt=mss_cnt)
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
             response = send_message(msg, compra + '/comm')
-            response
-            render_template('InfoEntrega.html', form = form)
+            content = get_message_properties(response)['content']
+            accion = response.value(subject=content, predicate=RDF.type)
+            precio = response.value(subject=accion, predicate=ECSDI.precio)
+            fecha_entrega = response.value(subject=accion, predicate=ECSDI.fechaHora)
+            render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar" + precio, info2 = "Va a llegar el" + fecha_entrega)
 
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
