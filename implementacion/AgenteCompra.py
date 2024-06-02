@@ -320,8 +320,8 @@ def comunicacion():
                 
                 r_gmess = Graph()
                 r_gmess.add((agn.InformacionProvisionalEntrega, RDF.type, ECSDI.InformacionProvisionalEntrega))
-                r_gmess.add((agn.AsistenteUsuario, ECSDI.precio, Literal(precio_total)))
-                r_gmess.add((agn.AsistenteUsuario, ECSDI.fechaHora, Literal(fecha_de_entrega_provisional)))
+                r_gmess.add((agn.InformacionProvisionalEntrega, ECSDI.precio, Literal(precio_total)))
+                r_gmess.add((agn.InformacionProvisionalEntrega, ECSDI.fechaHora, Literal(fecha_de_entrega_provisional)))
 
                 r_graph = build_message(
                     gmess=r_gmess,
