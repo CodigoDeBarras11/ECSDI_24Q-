@@ -12,7 +12,6 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 import argparse
-from AgentUtil.Logging import config_logger
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
@@ -420,4 +419,3 @@ if 'OK' in resp:
     requests.get(diraddress + '/message', params={'message': mess})
 else:
     print('Unable to register')
-

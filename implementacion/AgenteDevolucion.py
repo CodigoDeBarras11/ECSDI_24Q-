@@ -16,14 +16,12 @@ Asume que el agente de registro esta en el puerto 9000
 
 from os import getcwd, path
 import sys
-
 import requests
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
 import socket
 import argparse
 from AgentUtil.Logging import config_logger
-
 from rdflib import Namespace, Graph, RDF, Literal
 from flask import Flask, request, Response
 from AgentUtil.FlaskServer import shutdown_server
@@ -43,23 +41,13 @@ agn = Namespace("http://www.agentes.org#")
 # Contador de mensajes
 mss_cnt = 0
 
-# Datos del Agente
+diraddress = "http://localhost:9000"
 
+# Datos del Agente
 AgenteDevolucion = Agent('AgenteDevolucion',
                        agn.AgenteDevolucion,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
-
-# Directory agent address
-DirectoryAgent = Agent('DirectoryAgent',
-                       agn.Directory,
-                       'http://%s:9000/Register' % hostname,
-                       'http://%s:9000/Stop' % hostname)
-
-# Global triplestore graph
-dsgraph = Graph()
-
-cola1 = Queue()
 
 
 app = Flask(__name__)
@@ -70,12 +58,23 @@ def get_count():
     mss_cnt += 1
     return mss_cnt
 
+def get_agent(agente):
+    mess = f'SEARCH|{agente},1'  
+    response = requests.get(f"{diraddress}/message", params={'message': mess})
+    response = response.text.split(" ")
+    if "OK" in response[0]:
+        return f'{response[1]}/comm'
+    else:
+        return "NOT FOUND"
+
 @app.route("/comm")
 def comunicacion():
     """
     Entrypoint for communication
     """
-    global dsGraph
+
+    global mss_cnt
+
 
     message = request.args['content']
     gm = Graph()
@@ -93,96 +92,102 @@ def comunicacion():
             # Si no es un request, respondemos que no hemos entendido el mensaje
             gr = build_message(Graph(),
                                ACL['not-understood'],
-                               sender=DirectoryAgent.uri,
+                               sender=AgenteDevolucion.uri,
                                msgcnt=get_count())
         else:
-            # Obtenemos la performativa
-            perf = msgdic['performative']
+            # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # de registro
+            receiver_uri = msgdic['content'] 
+            # Averiguamos el tipo de la accion
+            accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+            print(accion)
 
-            if perf != ACL.request:
-                # Si no es un request, respondemos que no hemos entendido el mensaje
-                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteDevolucion.uri, msgcnt=get_count())
-            else:
-                # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
-                # de registro
-                receiver_uri = msgdic['receiver']
-                # Averiguamos el tipo de la accion
-                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+            if accion == ECSDI.PeticionDevolucion:
+                #PeticionCompra recibo del asistente virtual
+                #checkear con AgenteCompra cuando se compro
+                print(receiver_uri)
+                #checkear que se cojan bien(lo dudo)
+                comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                producto = gm.value(subject=receiver_uri, predicate=ECSDI.productos)
+                print("-----------------")
+                print(comprado_por)
+                print(producto)
+                print("-----------------")
 
-                if accion == ECSDI.PeticionDevolucion:
-                    #PeticionCompra recibo del asistente virtual
-                    #checkear con AgenteCompra cuando se compro
-                    receiver_uri = msgdic['receiver'] 
-                    user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                    product_id = gm.value(subject=receiver_uri, predicate=ECSDI.id)
+                receiver_uri = agn.AgenteCompra
+                receiver_address = get_agent("COMPRA")
+                print(receiver_address)
 
-                    receiver_uri = agn.AgenteCompra
-                    receiver_address = "http://{hostname}:9011/comm"  
-
+                if receiver_address != "NOT FOUND":
                     content_graph = Graph()
                     content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
-                    content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(user_id)))
-                    content_graph.add((receiver_uri, ECSDI.id, Literal(product_id)))
-                    
-                    # Build the message
+                    content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                    content_graph.add((receiver_uri, ECSDI.productos, producto))
+                        
                     msg_graph = build_message(
                         gmess=content_graph,
                         perf=ACL.request,
                         sender=AgenteDevolucion.uri,
                         receiver=receiver_uri,
+                        content=agn.PeticionDevolucion,
                         msgcnt=mss_cnt
                     )
+                    response_graph = send_message(gmess=msg_graph, address=receiver_address) 
+                    print("----------------")
+                    print(response_graph.serialize(format='xml')) 
+                    print("----------------")
+                    devolucion = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.acceptado)
+                    print(devolucion)
 
-                    response_graph = send_message(gmess=msg_graph, address=receiver_address)
+                    r_graph = Graph()
+                    if int(devolucion) == 1:
+                        print("hola")
+                        r_graph.add((agn.AgenteDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        mensaje = "Peticion de devolucion aceptada. Se le reembolsara el dinero lo antes posible. Como el proceso de devolucion del producto no esta dentro del alcance de ECSDI se lo puede quedar."
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        
+                        comprado_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.comprado_por)
+                        vendido_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.vendido_por)
+                        cantidad = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.precio)
 
-                
-                elif accion == ECSDI.RespuestaDevolucion:
-                    #comunicar respuest al asisten viertual
-                
-                    receiver_uri = msgdic['receiver'] 
-                    respuesta = gm.value(subject=receiver_uri, predicate=ECSDI.acceptado)
-
-                    if respuesta == True:
-                        buyer_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                        price = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
                         receiver_uri = agn.AgenteContabilidad
-                        receiver_address = "http://{hostname}:9012/comm"  
-                    
+                        receiver_address = get_agent("CONTABILIDAD")
+                        print(receiver_address)
+
                         content_graph = Graph()
                         content_graph.add((receiver_uri, RDF.type, ECSDI.RespuestaDevolucion))
-                        content_graph.add((receiver_uri, ECSDI.precio, Literal(price)))
-                        content_graph.add((receiver_uri, ECSDI.id_usuario, Literal(buyer_id)))
-
-                        #comnunicar al agente virtual que se ha aceptado
-
+                        content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                        content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
+                            
                         msg_graph = build_message(
                             gmess=content_graph,
                             perf=ACL.request,
                             sender=AgenteDevolucion.uri,
                             receiver=receiver_uri,
+                            content=agn.PeticionDevolucion,
                             msgcnt=mss_cnt
                         )
+                        response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
 
-                        response_graph = send_message(gmess=msg_graph, address=receiver_address)
-
-                        mss_cnt += 1
-
-                    else: 
-                        print("fewf")
-                        #comnunicar al agente virtual que se ha aceptado
+                    else:
+                        print("adios")
+                        r_graph.add((agn.AgenteDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        mensaje = "El producto introducido no se puede devolver ya que han pasado mas de 15 dias desde su compra. Si esta seguro que compro el producto hace menos de 15 dias revise que el nombre del producto este correctamente escrito"
+                        r_graph.add((agn.AgenteDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        
+                    return r_graph.serialize(format='xml')
                 
-                # No habia ninguna accion en el mensaje
                 else:
                     gr = build_message(Graph(),
-                                ACL['not-understood'],
-                                sender=AgenteDevolucion.uri,
-                                msgcnt=get_count())
-                
-                return Response(status=200)
+                        ACL['not-understood'],
+                        sender=AgenteDevolucion.uri,
+                        msgcnt=get_count())
             
             
-
-    return Response(status=200)
+    return Response(status=400)
 
 
 
@@ -202,20 +207,13 @@ def tidyup():
     """
     pass
 
-
-
 if __name__ == '__main__':
-    
+
     hostaddr = hostname = socket.gethostname()
     AgenteDevolucionAdd = f'http://{hostaddr}:{port}'
-    print("------------")
-    print(AgenteDevolucionAdd)
     AgenteDevolucionId = hostaddr.split('.')[0] + '-' + str(port)
-    print(AgenteDevolucionId)
-    print("------------")
-    mess = f'REGISTER|{AgenteDevolucionId},AgenteDevolucion,{AgenteDevolucionAdd}'
+    mess = f'REGISTER|{AgenteDevolucionId},DEVOLUCION,{AgenteDevolucionAdd}'
 
-    diraddress = "http://localhost:9000"
     done = False
     while not done:
         try:
@@ -226,12 +224,16 @@ if __name__ == '__main__':
     print('DS Hostname =', hostaddr)
 
     if 'OK' in resp:
-        print(f'SOLVER {AgenteDevolucionId} successfully registered')
+        print(f'DEVOLUCION {AgenteDevolucionId} successfully registered')
         
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
         if 'OK' in loggeradd:
             logger = loggeradd[4:]
+
+        mess = 'SEARCH|COMPRA,1'  
+        response = requests.get(f"{diraddress}/message", params={'message': mess})
+        print(response.text)
 
         # Ponemos en marcha el servidor Flask
         app.run(host=hostname, port=port, debug=False, use_reloader=False)
@@ -240,6 +242,5 @@ if __name__ == '__main__':
         requests.get(diraddress + '/message', params={'message': mess})
     else:
         print('Unable to register')
-
 
     print('The End')

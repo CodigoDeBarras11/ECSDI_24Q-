@@ -8,3 +8,63 @@
     ECSDI:id 0 ;
     ECSDI:tipoproducto "Blender" .
 
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/90> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 90 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/91> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 91 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/92> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 92 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/93> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 93 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/94> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 94 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/95> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 95 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/96> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 96 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/97> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 97 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/98> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 98 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/99> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 99 ;
+    ECSDI:min_precio 8e+01 ;
+    ECSDI:tipoproducto "Blender" .
+
