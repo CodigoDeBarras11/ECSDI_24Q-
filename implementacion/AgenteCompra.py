@@ -25,7 +25,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal, XSD
+from rdflib import Namespace, Graph, RDF, Literal, XSD, BNode
 from flask import Flask, request, render_template_string, Response
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -36,6 +36,7 @@ from datetime import datetime, timedelta
 import math
 import base64
 import argparse
+from rdflib.collection import Collection
 
 __author__ = 'Pepe'
 
@@ -171,12 +172,9 @@ def registrar_compra(comprador, producto, precio, vendido_por, peso):
     return compra
         
 
-def haversine(coord1, coord2):
+def haversine(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
     R = 6371.0
-
-    lat1, lon1 = coord1
-    lat2, lon2 = coord2
 
     # Convert latitude and longitude from degrees to radians
     lat1 = math.radians(lat1)
@@ -205,6 +203,77 @@ def get_agent(agente):
         return f'{response[1]}/comm'
     else:
         return "NOT FOUND"
+
+
+def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
+    grafo_centroLogisticos = Graph()
+    try:
+        grafo_centroLogisticos.parse("centros_logisticos.ttl", format="turtle")
+    except Exception as e:
+        print("Error parsing Turtle file")
+    
+    #print("------------")
+    centros_ordenados = []
+    for s, p, o in grafo_centroLogisticos.triples((None, RDF.type, ECSDI.CentroLogistico)):
+        #print(s)
+        latitud_cl = grafo_centroLogisticos.value(s, ECSDI.latitud)
+        longitud_cl = grafo_centroLogisticos.value(s, ECSDI.longitud)
+        distancia = haversine(float(latitud_cl), float(longitud_cl), float(lat_us), float(lon_us))
+        centros_ordenados.append((s, distancia))
+
+    #print(centros_ordenados)
+    #print("---------------")
+    centros_ordenados = sorted(centros_ordenados, key=lambda x: x[1])
+    #print("---------------")
+    #print(centros_ordenados)
+
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    for centro_logistico in centros_ordenados:
+        gmess = Graph()
+        gmess.add((agn.CentrosLogisticos, RDF.type, ECSDI.ProductosEntregables))
+        gmess.add((agn.CentrosLogisticos, ECSDI.CentroLogistico, centro_logistico[0]))
+
+        productos_node = BNode()
+        Collection(gmess, productos_node, productos)
+        gmess.add((agn.CentrosLogisticos, ECSDI.productos, productos_node))
+
+        sujetos_node = BNode()
+        Collection(gmess, sujetos_node, sujetos)
+        gmess.add((agn.CentrosLogisticos, ECSDI.Compra, sujetos_node))
+
+        pesos_node = BNode()
+        Collection(gmess, pesos_node, pesos)
+        gmess.add((agn.CentrosLogisticos, ECSDI.peso, pesos_node))
+        
+        precios_node = BNode()
+        Collection(gmess, precios_node, precios)
+        gmess.add((agn.CentrosLogisticos, ECSDI.precio, precios_node))
+
+        print("---------------")
+        print(gmess.serialize(format='ttl'))
+        print("---------------")
+    
+        """receiver_uri = agn.AgenteCentroLogistico
+        receiver_address = get_agent("")
+        print(receiver_address)
+
+        msg_graph = build_message(
+            gmess=gmess,
+            perf=ACL.request,
+            sender=AgenteCompra.uri,
+            receiver=receiver_uri,
+            content=agn.CentrosLogisticos,
+            msgcnt=mss_cnt
+        )
+        response_graph1 = send_message(gmess=msg_graph, address=receiver_address)"""
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    """for sujeto, precio, peso, producto in zip(sujetos, precios, pesos, productos):
+        print("---------------")
+        print(sujeto)
+        print(precio)
+        print(peso)
+        print(producto)
+        print("---------------")"""
 
 @app.route("/comm")
 def comunicacion():
@@ -246,7 +315,7 @@ def comunicacion():
             if accion == ECSDI.PeticionCompra:
                 
                 r_gmess = Graph()
-              
+
                 print(receiver_uri)
                 print(message)
                 comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
@@ -304,6 +373,11 @@ def comunicacion():
                 grafo_compras.parse("bd/compras.ttl", format="turtle")
                 precio_total = 0
                 fecha_de_entrega_provisional = datetime.today() + timedelta(days=int(prioridad_de_entrega))
+                n_graph = Graph()#recorrer centros logisticos por cercania, iteras hasta que no me queden productos
+                productos = []
+                precios = []
+                pesos = []
+                sujetos = []
                 for compra in gm.subjects(predicate=RDF.type, object=ECSDI.Compra):
                     print(compra)
                     for s, p, o in grafo_compras.triples((None, RDF.type, ECSDI.Compra)):
@@ -311,12 +385,22 @@ def comunicacion():
                         if s == compra:
                             print("hola")
                             precio = grafo_compras.value(subject=s, predicate=ECSDI.precio)
+                            peso = grafo_compras.value(subject=s, predicate=ECSDI.peso)
+                            producto = grafo_compras.value(subject=s, predicate=ECSDI.Producto)
                             print(precio)
+                            print(peso)
+                            print(producto)
+                            sujetos.append(s)
+                            precios.append(precio)
+                            pesos.append(peso)
+                            productos.append(producto)
                             precio_total += float(precio)
                              
                 print("-----------")
                 print(precio_total)
                 print(fecha_de_entrega_provisional)
+
+                enviar_productos(sujetos, precios, pesos, productos, latitud, longitud)
                 
                 r_gmess = Graph()
                 r_gmess.add((agn.InformacionProvisionalEntrega, RDF.type, ECSDI.InformacionProvisionalEntrega))

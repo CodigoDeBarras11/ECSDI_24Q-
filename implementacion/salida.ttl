@@ -3,7 +3,7 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<message-8176379481088831731-0000> a acl:FipaAclMessage,
+<message--5248421085026791061-0000> a acl:FipaAclMessage,
         owl:NamedIndividual ;
     acl:content <http://www.agentes.org#infoentrega> ;
     acl:performative acl:request ;
@@ -11,14 +11,17 @@
     acl:sender <http://www.agentes.org#AsistenteUsuario> .
 
 <http://www.agentes.org#infoentrega> a ECSDI:InfoUsuarioEntrega ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/29>,
-        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/30> ;
+    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/87>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/88>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/89> ;
     ECSDI:latitud 3.33e+02 ;
     ECSDI:longitud 4.44e+02 ;
     ECSDI:metodoPago "Credit Card" ;
     ECSDI:prioridadEntrega 3 .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/29> a ECSDI:Compra .
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/87> a ECSDI:Compra .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/30> a ECSDI:Compra .
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/88> a ECSDI:Compra .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/89> a ECSDI:Compra .
 
