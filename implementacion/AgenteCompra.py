@@ -319,7 +319,7 @@ def comunicacion():
                 print(fecha_de_entrega_provisional)
                 
                 r_gmess = Graph()
-                r_gmess.add((agn.AsistenteUsuario, RDF.type, ECSDI.InformacionProvisionalEntrega))
+                r_gmess.add((agn.InformacionProvisionalEntrega, RDF.type, ECSDI.InformacionProvisionalEntrega))
                 r_gmess.add((agn.AsistenteUsuario, ECSDI.precio, Literal(precio_total)))
                 r_gmess.add((agn.AsistenteUsuario, ECSDI.fechaHora, Literal(fecha_de_entrega_provisional)))
 
@@ -328,7 +328,7 @@ def comunicacion():
                     perf=ACL.agree,
                     sender=AgenteCompra.uri,
                     receiver=agn.AsistenteUsuario,
-                    content=ECSDI.InformacionProvisionalEntrega,
+                    content=agn.InformacionProvisionalEntrega,
                     msgcnt=mss_cnt
                 )
 
