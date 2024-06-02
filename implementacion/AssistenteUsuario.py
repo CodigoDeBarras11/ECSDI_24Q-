@@ -12,6 +12,7 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 import argparse
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
@@ -254,15 +255,16 @@ def envio():
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
-            grafo_entrega.serialize("salida.ttl",format='turtle')
+            #grafo_entrega.serialize("salida.ttl",format='turtle')
             response = send_message(msg, compra + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
             precio = response.value(subject=content, predicate=ECSDI.precio)
             print(precio)
             fecha_entrega = response.value(subject=content, predicate=ECSDI.fechaHora)
-            print(fecha_entrega)
-            return render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar " + precio, info2 = "Va a llegar el " + fecha_entrega)
+            data = fecha_entrega.split('T')
+            print(data)
+            return render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar " + precio, info2 = "Va a llegar el " + data[0])
 
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
