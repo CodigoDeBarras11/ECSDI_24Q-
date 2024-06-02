@@ -75,9 +75,9 @@ def get_count():
 
 def update_money(cliente, tienda, cantidad, accion):
    
-    print("hi")
     grafo_banco = Graph()
-
+    cliente = URIRef(cliente)
+    tienda = URIRef(tienda)
     file_path = "bd/banco.ttl"
     if not os.path.exists(file_path):
         grafo_banco.add((agn.last_id, XSD.positiveInteger, Literal(0)))
@@ -89,34 +89,50 @@ def update_money(cliente, tienda, cantidad, accion):
 
     cliente_existe = False
     tienda_existe = False
-    #comprobar que busco por cuenta de usuario o de tienda, el sujeto(id) de la cuenta, sera el sujeto del comprador o tienda
-    for s, p, o in grafo_banco.triples((None, RDF.type, ECSDI.Usuario)): #cambiar por cuenta, en ontologia
-        cuenta = grafo_banco.value(subject=s, predicate=ECSDI.Lote)  #cambiar por cuenta_id
-        if o == cliente or o == tienda:
-            dinero_cuenta = grafo_banco.value(subject=s, predicate=ECSDI.precio)
-            dinero_cuenta_int = int(dinero_cuenta)
-            if o == cliente: 
-                cliente_existe = True
-                if accion == "compra": dinero_cuenta_int = dinero_cuenta_int - cantidad
-                else: dinero_cuenta_int = dinero_cuenta_int + cantidad
-            else: 
-                tienda_existe = True
-                if accion == "compra": dinero_cuenta_int = dinero_cuenta_int + cantidad
-                else: dinero_cuenta_int = dinero_cuenta_int - cantidad
-            grafo_banco.remove((s, ECSDI.precio, dinero_cuenta))
-            grafo_banco.add((s, ECSDI.precio, Literal(str(dinero_cuenta_int))))
-            if cliente_existe and tienda_existe: break
+    
+    for cuenta in grafo_banco.subjects(ECSDI.pertenece_a, None):
+        pertenece_a = grafo_banco.value(cuenta, ECSDI.pertenece_a)
+        balance = grafo_banco.value(cuenta, ECSDI.balance)
 
-    #falta concretar el formato de la base de datos
+        if pertenece_a == cliente:
+            cliente_existe = True
+            cantidad_previa = float(balance)
+            if accion == "compra":
+                nuevo_balance = cantidad_previa - float(cantidad)
+            else:
+                nuevo_balance = cantidad_previa + float(cantidad)
+            grafo_banco.remove((cuenta, ECSDI.balance, balance))
+            grafo_banco.set((cuenta, ECSDI.balance, Literal(str(nuevo_balance))))
+
+        if pertenece_a == tienda:
+            tienda_existe = True
+            balance_value = float(balance)
+            if accion == "compra":
+                nuevo_balance = cantidad_previa + float(cantidad)
+            else:
+                nuevo_balance = cantidad_previa - float(cantidad)
+            grafo_banco.remove((cuenta, ECSDI.balance, balance))
+            grafo_banco.set((cuenta, ECSDI.balance, Literal(str(nuevo_balance))))
+
+        if cliente_existe and tienda_existe:
+            break
+
+    last_id = 0
     if not cliente_existe:
         last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
-        banco = ECSDI.Compra +'/'+ str(last_id+1) #cambiar por cuenta
-        grafo_banco.add((banco, RDF.type, ECSDI.Compra)) 
-        grafo_banco.add((banco, ECSDI.id¡¡, Literal(last_id+1)))
-        comprador = ECSDI.Cliente + '/'+ str(user_id)
-        grafo_banco.add((banco, ECSDI.vendido_por, comprador)) #cambiar, añadir en ontologia cuenta
-        grafo_banco.add((banco, ECSDI.precio, Literal(amount)))
-        grafo_banco.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
+        banco = ECSDI.CuentaBancaria +'/'+ str(last_id+1) 
+        cuenta_usuario = cliente
+        grafo_banco.add((banco, ECSDI.pertenece_a, cuenta_usuario)) 
+     
+        cantidad_negativa = "-" + cantidad
+        grafo_banco.add((banco, ECSDI.balance, Literal(cantidad_negativa)))
+    if not tienda_existe:
+        if not cliente_existe: last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) + 1
+        cuenta_tienda = tienda
+        banco = ECSDI.CuentaBancaria +'/'+ str(last_id+1) 
+        grafo_banco.add((banco, ECSDI.pertenece_a, cuenta_tienda)) 
+        grafo_banco.add((banco, ECSDI.balance, Literal(cantidad)))
+    grafo_banco.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
 
     grafo_banco.serialize("bd/banco.ttl", format="ttl")
 
@@ -241,7 +257,7 @@ if __name__ == '__main__':
         tienda = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0"
         cantidad = "90.0"
         accion = "reembolsar"
-        update_money(cliente, tienda, cantidad)
+        update_money(cliente, tienda, cantidad, accion)
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
         if 'OK' in loggeradd:
             logger = loggeradd[4:]
