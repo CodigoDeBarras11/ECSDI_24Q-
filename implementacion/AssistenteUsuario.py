@@ -2,7 +2,7 @@ from os import getcwd, path
 import sys
 sys.path.append(path.dirname(getcwd()))
 from formularios import formbusca, formcompra, formlogin, formproduct, shopform
-from flask import Flask, render_template, request, redirect, url_for,Blueprint
+from flask import Flask, render_template, request, redirect, url_for
 import requests
 import socket
 from docs.ecsdi import ECSDI
@@ -112,12 +112,12 @@ def devolucion():
             response = send_message(msg, devol + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
-            acepted = response.value(subject=accion, predicate=ECSDI.acceptado)
+            acepted = response.value(subject=content, predicate=ECSDI.acceptado)
             veredicto = "Tu entrega ha sido "
-            metodo_devolucion = response.value(subject=accion, predicate=ECSDI.metodoDevolucion)
             if(acepted):
                 veredicto += "aceptada"
-                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto, info2 = "Metodo de devolucion" + metodo_devolucion)
+                mensaje_devolucion = response.value(subject=content, predicate=ECSDI.Mensajes)
+                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto, info2 = mensaje_devolucion)
             else: 
                 veredicto += "denegada"
                 return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto)
@@ -147,7 +147,7 @@ def compra():
                 product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
             else: 
                 products[i]['id'] = 0
-                product_graph.add((prod, ECSDI.id, Literal(0)))
+                product_graph.add((prod, ECSDI.id, Literal(str(0))))
             if products[i]['price']:
                 product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
             if  products[i]['weight']:

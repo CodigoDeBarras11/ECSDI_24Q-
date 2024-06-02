@@ -122,10 +122,10 @@ def comunicacion():
                 #checkear que se cojan bien(lo dudo)
                 comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
                 producto = gm.value(subject=receiver_uri, predicate=ECSDI.productos)
-                print("-----------------")
-                print(comprado_por)
-                print(producto)
-                print("-----------------")
+                #print("-----------------")
+                #print(comprado_por)
+                #print(producto)
+                #print("-----------------")
 
                 receiver_uri = agn.AgenteCompra
                 receiver_address = get_agent("COMPRA")
@@ -146,9 +146,9 @@ def comunicacion():
                         msgcnt=mss_cnt
                     )
                     response_graph = send_message(gmess=msg_graph, address=receiver_address) 
-                    print("----------------")
-                    print(response_graph.serialize(format='xml')) 
-                    print("----------------")
+                    #print("----------------")
+                    #print(response_graph.serialize(format='xml')) 
+                    #print("----------------")
                     devolucion = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.acceptado)
                     print(devolucion)
 
@@ -156,9 +156,9 @@ def comunicacion():
                     if int(devolucion) == 1:
                         print("hola")
                         r_graph.add((agn.RespuestaDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
-                        r_graph.add((ECSDI.RespuestaDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        r_graph.add((agn.RespuestaDevolucion, ECSDI.acceptado, Literal(devolucion)))
                         mensaje = "Peticion de devolucion aceptada. Se le reembolsara el dinero lo antes posible. Como el proceso de devolucion del producto no esta dentro del alcance de ECSDI se lo puede quedar."
-                        r_graph.add((ECSDI.RespuestaDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        r_graph.add((agn.RespuestaDevolucion, ECSDI.Mensajes, Literal(mensaje)))
                         
                         comprado_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.comprado_por)
                         vendido_por = response_graph.value(subject=agn.AgenteDevolucion, predicate=ECSDI.vendido_por)
@@ -187,9 +187,9 @@ def comunicacion():
                     else:
                         print("adios")
                         r_graph.add((agn.RespuestaDevolucion, RDF.type, ECSDI.RespuestaDevolucion))
-                        r_graph.add((ECSDI.RespuestaDevolucion, ECSDI.acceptado, Literal(devolucion)))
+                        r_graph.add((agn.RespuestaDevolucion, ECSDI.acceptado, Literal(devolucion)))
                         mensaje = "El producto introducido no se puede devolver ya que han pasado mas de 15 dias desde su compra. Si esta seguro que compro el producto hace menos de 15 dias revise que el nombre del producto este correctamente escrito"
-                        r_graph.add((ECSDI.RespuestaDevolucion, ECSDI.Mensajes, Literal(mensaje)))
+                        r_graph.add((agn.RespuestaDevolucion, ECSDI.Mensajes, Literal(mensaje)))
                     
                     msg_graph = build_message(
                             gmess=r_graph,
