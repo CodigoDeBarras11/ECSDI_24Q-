@@ -17,6 +17,8 @@ Asume que el agente de registro esta en el puerto 9000
 from os import getcwd, path
 import sys
 import datetime
+import schedule
+import time
 import requests
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
@@ -68,10 +70,56 @@ cola1 = Queue()
 
 app = Flask(__name__)
 
-#negociar Transportista
-#def negociarTransportista():
+def get_count():
+    global mss_cnt
+    mss_cnt += 1
+    return mss_cnt
 
-#    return idTransportista
+def schedule_tasks():
+    # Programar la tarea diaria a las 8:00 AM
+    schedule.every().day.at("08:00").do(send_info_to_accounting)
+
+    # Verificar si es la hora programada
+    while True:
+        now = time.localtime()
+        if now.tm_hour == 8 and now.tm_min == 0 and now.tm_sec == 0:
+            # Es la hora programada, ejecutar la tarea
+            schedule.run_pending()
+        time.sleep(60)
+
+def send_info_to_accounting():
+    g = rdflib.Graph()
+    g.parse("pedidos.ttl", format="turtle")
+
+    now = time.localtime()
+
+    current_date = f"{now.tm_year}-{now.tm_mon}-{now.tm_mday}"
+    query = f"""
+    PREFIX ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#>
+    SELECT ?compra_id
+    WHERE {{
+        ?pedido ECSDI:fechaEntrega "{current_date}" .
+        ?pedido ECSDI:compra_a_enviar ?compra .
+        BIND(STRAFTER(str(?compra), "Compra/") as ?compra_id)
+    }}
+    """
+
+    results = g.query(query)
+
+    compra_ids = [str(row[0]) for row in results]
+    for compra_id in compra_ids:
+        send_info_to_accounting_helper(compra_id)
+
+
+
+def send_info_to_accounting_helper(compra_id):
+    url = 'http://url-del-agente-de-contabilidad'
+    data = {'compra_id': compra_id}
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        print(f'Información enviada correctamente para compra_id: {compra_id}.')
+    else:
+        print(f'Error al enviar la información para compra_id: {compra_id}.')
 
 
 def escribirAPedido():
@@ -141,7 +189,47 @@ def escribirAPedido():
     with open("pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
 
-def escribirALote(centroLogID, prioridadEntrega):
+
+def negociarTransportista(fecha_entrega_dt):
+    g = Graph()
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+    AGN = Namespace("http://www.agentes.org#")
+
+    try:
+        g.parse("transportistas.ttl", format="turtle")
+    except FileNotFoundError:
+        raise Exception("El archivo transportistas.ttl no existe.")
+
+    transportistas = []
+    for s in g.subjects(RDF.type, ECSDI.Transportista):
+        transportista_id = g.value(s, ECSDI.id)
+        if transportista_id:
+            transportistas.append((int(transportista_id), s))
+
+    transportista_lotes = {transportista_uri: 0 for _, transportista_uri in transportistas}
+
+    # Cargar el archivo de lotes para contar los lotes asignados a cada transportista en la fecha de entrega
+    lote_g = Graph()
+    try:
+        lote_g.parse("lote.ttl", format="turtle")
+    except FileNotFoundError:
+        pass  # Si el archivo no existe, continuamos con un grafo vacío
+
+    for s in lote_g.subjects(RDF.type, ECSDI.Lote):
+        lote_fecha_entrega = lote_g.value(s, ECSDI.fechahora)
+        if lote_fecha_entrega and datetime.datetime.fromisoformat(str(lote_fecha_entrega)) == fecha_entrega_dt:
+            transportista_uri = lote_g.value(s, ECSDI.transportista)
+            if transportista_uri in transportista_lotes:
+                transportista_lotes[transportista_uri] += 1
+
+    # Seleccionar el transportista con menos lotes asignados en esa fecha
+    transportista_seleccionado = min(transportista_lotes, key=transportista_lotes.get)
+
+    return transportista_seleccionado.split('/')[-1]  # Devuelve solo el ID del transportista
+
+
+
+def escribirALote(centroLogID, prioridadEntrega, productos):
         #crear pedido
     g = Graph()
     # Definir el namespace de tu ontología ECSDI
@@ -171,7 +259,7 @@ def escribirALote(centroLogID, prioridadEntrega):
     g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
 
     lote_uri = ECSDI[f'Lote/{searchid}']
-    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridad_entrega)
+    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
 
     # Añadir triples al grafo
     g.add((lote_uri, RDF.type, ECSDI.Lote))
@@ -181,6 +269,7 @@ def escribirALote(centroLogID, prioridadEntrega):
     # Asignar id de centroLog, Transp, Productos
     centroLog_uri = ECSDI[f'CentroLogistico/{centroLogID}']
     g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
+    transpID = negociarTransportista()
     transp_uri = ECSDI[f'Transportista/{transpID}']
     g.add((lote_uri, ECSDI.transportista, transp_uri))
     #Un for para añadir todos los productos al lote
@@ -190,7 +279,8 @@ def escribirALote(centroLogID, prioridadEntrega):
         if peso_actual + producto_peso <= MaxPesoLote:
             peso_actual += producto_peso
             producto_uri = URIRef(producto['uri'])
-            g.add((lote_uri, ECSDI.contenido, producto_uri))
+            productos.pop(0)
+            g.add((lote_uri, ECSDI.productos, producto_uri))
         else:
             # Si el producto no cabe en el lote actual, guardamos el lote actual y creamos uno nuevo
             searchid += 1
@@ -201,7 +291,7 @@ def escribirALote(centroLogID, prioridadEntrega):
             g.add((lote_uri, ECSDI.fechahora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
             g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
             peso_actual = producto_peso
-            g.add((lote_uri, ECSDI.contenido, URIRef(producto['uri'])))
+            g.add((lote_uri, ECSDI.productos, URIRef(producto['uri'])))
 
     temp_ttl = g.serialize(format="turtle")
 
@@ -223,21 +313,52 @@ def escribirALote(centroLogID, prioridadEntrega):
     with open("lote.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
 
-def prepararLotes():
+def prepararLotes(prioridadEntrega, productos, centroLogID):
     #consultar MaxPesoLote
     #leer el último lote con la fecha de entrega de no lleno a ver si cabe más productos.
     #en caso que faltan productos para poner a lotes, crear un lote nuevo.
+    g = Graph()
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#")
+    AGN = Namespace("http://www.agentes.org#")
+
+    g.parse("lote.ttl", format="turtle")
+
+    fecha_hoy = datetime.datetime.now()
+    fecha_entrega = fecha_hoy + datetime.timedelta(days=prioridadEntrega)
+    fecha_entrega_dt = fecha_entrega.isoformat()
+
+    lotes = []
+    for s in g.subjects(RDF.type, ECSDI.Lote):
+        lote_id = g.value(s, ECSDI.id)
+        fechahora = g.value(s, ECSDI.fechahora)
+        peso = g.value(s, ECSDI.peso)
+        if lote_id and fechahora and peso:
+            lotes.append((int(lote_id), str(fechahora), float(peso), s))
 
     lotes.sort(reverse=True, key=lambda x: x[0])
 
     # Buscar lotes que cumplan con las condiciones
-    for lote_id, lote in lotes:
-        lote_fecha_entrega = g.value(lote, ECSDI.fechahora)
-        if lote_fecha_entrega:
-            lote_fecha_entrega_dt = datetime.datetime.fromisoformat(lote_fecha_entrega)
-            if lote_fecha_entrega_dt == fecha_entrega_dt:
-                lote_peso = g.value(lote, ECSDI.peso)
-                if lote_peso and float(lote_peso) < max_peso_lote:
+    for lote_id, lote_fechahora, lote_peso, lote_uri in lotes:
+        if lote_fechahora == fecha_entrega_dt:
+            while productos and lote_peso < MaxPesoLote:
+                producto = productos[0]  
+                producto_peso = float(producto['peso'])  
+                
+                if lote_peso + producto_peso <= MaxPesoLote:
+                    producto_uri = URIRef(producto['uri'])
+                    g.add((lote_uri, ECSDI.productos, producto_uri))
+                    lote_peso += producto_peso
+                    productos.pop(0)
+                    if lote_peso == MaxPesoLote:
+                        break  
+                else:
+                    break
+            break
+
+    if productos:
+        escribirALote(centroLogID, prioridadEntrega, productos)
+                   
+                   
                    #el primero producto que se puede añadir al lote se añade
                    #hasta que el lote ya no se puede añadir más
                    #crear un nuevo lote 
@@ -281,11 +402,15 @@ def comunicacion():
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-                if accion == ECSDI.Pedido: #me pasan el id de compra, las coodenadas, la lista de productos
+                if accion == ECSDI.Pedido: 
+                    r_gmess = Graph()
+              
+                    print(receiver_uri)
+                    print(message)
+
                     escribirAPedido()
                     prepararLotes()
-                #else: 
-                    #cada cierto tiempo consultar si hay lotes sin transportista, en caso que sí asignar un transportista a un lote.
+                
                     
                 
     return "p"
@@ -317,16 +442,33 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    escribirAPedido()
-    print("Archivo pedido.ttl creado.")
+    hostaddr = hostname = socket.gethostname()
+    AgenteCentroLogisticoAdd = f'http://{hostaddr}:{port}'
+    AgenteCentroLogisticoId = hostaddr.split('.')[0] + '-' + str(port)
+    mess = f'REGISTER|{AgenteCentroLogisticoId},CENTROLOGISTICO,{AgenteCentroLogisticoAdd}'
 
-    # Launch the behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
+    diraddress = "http://localhost:9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
 
-    # Launch the server
-    app.run(host=hostname, port=port)
+    if 'OK' in resp:
+        print(f'CENTROLOGISTICO {AgenteCentroLogisticoId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
 
-    # Wait for the behaviors to finish
-    ab1.join()
-    print('The End')
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteCentroLogisticoId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
