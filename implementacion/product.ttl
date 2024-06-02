@@ -482,4 +482,3 @@
     ECSDI:precio 7.1e+01 ;
     ECSDI:tieneMarca "Marca_Blender_70YM1O" ;
     ECSDI:tipoproducto "Blender" .
-

@@ -12,6 +12,7 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 import argparse
+from AgentUtil.Logging import config_logger
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
@@ -35,6 +36,8 @@ if args.dir is None:
 else:
     diraddress = args.dir
 
+#if not args.verbose: logger = config_logger(1, 'busqueda')
+
 agn = Namespace("http://www.agentes.org#")
 AssistenteUsuario = Agent('AssistenteUsuario',
                        agn.AssistenteUsuario,
@@ -53,6 +56,7 @@ def createorUpdateproduct(product):
     if not prod:
         productid = int(product_graph.value(subject=agn.productid, predicate=XSD.positiveInteger))
         prod = ECSDI.Producto + '/' + str(productid)
+        product_graph.add((prod, RDF.type, ECSDI.Producto))
         product_graph.add((prod, ECSDI.id, Literal(productid)))
         product_graph.add((prod, ECSDI.nombre, Literal(product['product_name'])))
         if product['product_type']:
@@ -86,6 +90,29 @@ def anadirProducto():
         return redirect(url_for('index'))
     return render_template('addProduct.html', form = form)
     
+@app.route('/devolucion', methods=['GET', 'POST'])
+def devolucion():
+    if not usuario: return redirect(url_for('loginUser'))
+    form = formproduct.ProductForm(request.form)
+    if request.method == 'POST':
+        print("hola")
+        name = form.data['product_name']
+        product_graph = Graph()
+        product_graph.parse("product.ttl", format="turtle")
+        prod = product_graph.value(predicate=ECSDI.nombre, object=Literal(name))
+        grafo_devolucion = Graph()
+        peticiondevolucion =agn.peticiondevolucion
+        grafo_devolucion.add((peticiondevolucion, RDF.type, ECSDI.PeticionDevolucion))
+        grafo_devolucion.add((prod, RDF.type, ECSDI.Producto))
+        grafo_devolucion.add((peticiondevolucion, ECSDI.productos, prod))
+        grafo_devolucion.add((peticiondevolucion, ECSDI.comprado_por, usuario))
+        msg = build_message(grafo_devolucion, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.Agentedevolucion, content=peticiondevolucion, msgcnt=mss_cnt)
+        devoladr = requests.get(diraddress + '/message', params={'message': 'SEARCH|DEVOLUCION'}).text
+        if 'OK' in devoladr:
+            devol = devoladr[4:]
+            response = send_message(msg, devol + '/comm')
+            return redirect(url_for('index'))
+    return render_template('devolucion.html', form = form)
 
 @app.route('/compra', methods=['GET', 'POST'])
 def compra():
@@ -98,37 +125,116 @@ def compra():
         n = len(products)
         for i in range(n):
             products[i] = products[i].split(sep=',')
-            if(len(products[i]) > 5): vendedor = products[i][5]
+            if(len(products[i]) > 5): 
+                vendedor = products[i][5]
             else: vendedor = ECSDI.Tienda + '/0'
-            products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": int(products[i][4])}
+            products[i] = {"name": str(products[i][0]), "price": float(products[i][1]),"weight": float(products[i][2]),"brand": str(products[i][3]), "id": products[i][4]}
             prod = ECSDI.Producto + '/' + str(products[i]['id'])
             product_graph.add((prod, RDF.type, ECSDI.Producto))
             if products[i]['name']:
                 product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
             if products[i]['id']:
                 product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
+            else: 
+                products[i]['id'] = 0
+                product_graph.add((prod, ECSDI.id, Literal(0)))
             if products[i]['price']:
                 product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
             if  products[i]['weight']:
                 product_graph.add((prod, ECSDI.peso, Literal(products[i]['weight'])))
             if  products[i]['brand']:
                 product_graph.add((prod, ECSDI.tieneMarca, Literal(products[i]['brand'])))
-           
             product_graph.add((prod, ECSDI.vendido_por, vendedor))
-        return products
+        #return products
         peticionCompra = agn.peticionCompra
-        product_graph.add((prod, RDF.type, ECSDI.PeticionCompra))
-        product_graph.add((prod, RDF.type, ECSDI.PeticionCompra))
-        msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=AgenteCompra.uri, content=peticionCompra, msgcnt=mss_cnt)
-        response = send_message(msg, AgenteCompra.address)
-        return render_template("envio.html")
+        product_graph.add((agn.AgenteCompra, RDF.type, ECSDI.PeticionCompra)) #cambiar con Pablo
+        product_graph.add((agn.AgenteCompra, ECSDI.comprado_por, usuario)) #cambiar con Pablo
+        msg = build_message(product_graph, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=peticionCompra, msgcnt=mss_cnt)
+        compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
+        if 'OK' in compraadd:
+            compra = compraadd[4:]
+            response = send_message(msg, compra + '/comm')
+            return render_template(url_for("envio"))
     return render_template('products.html', products=products)
+
+
+@app.route("/comm")
+def comunicacion():
+    """
+    Entrypoint de comunicacion del agente
+    Simplemente retorna un objeto fijo que representa una
+    respuesta a una busqueda de hotel
+
+    Asumimos que se reciben siempre acciones que se refieren a lo que puede hacer
+    el agente (buscar con ciertas restricciones, reservar)
+    Las acciones se mandan siempre con un Request
+    Prodriamos resolver las busquedas usando una performativa de Query-ref
+    """
+    global dsgraph
+    global mss_cnt
+    # Extraemos el mensaje y creamos un grafo con el
+    grafo = Graph()
+    grafo = grafo.parse(data=request.args.get('content'), format='xml')
+    msgdic = get_message_properties(grafo)
+    #print(msgdic)
+    # Comprobamos que sea un mensaje FIPA ACL
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(
+            Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+    else:
+        # Obtenemos la performativa
+        perf = msgdic['performative']
+
+        if perf != ACL.request:
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(
+                Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+        else:
+            # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
+            # de registro
+
+            # Averiguamos el tipo de la accion
+            if 'content' in msgdic:
+                content = msgdic['content']
+                accion = grafo.value(subject=content, predicate=RDF.type)
+                if accion == ECSDI.PeticionBusqueda:
+                   gr = build_message(Graph(),
+                        ACL['inform'],
+                        sender=AssistenteUsuario.uri,
+                        msgcnt=mss_cnt,
+                        receiver=msgdic['sender'])
+                else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+            else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
+
+    # Aqui realizariamos lo que pide la accion
+    # Por ahora simplemente retornamos un Inform-done
+    
+    mss_cnt += 1
+
+    #logger.info('Respondemos a la peticion')
+
+    return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
 def envio():
     form = formcompra.BuyForm(request.form)
-    if request.method == 'PUT' and form.validate():
-        id  = 0
+    if request.method == 'POST' and form.validate():
+        infoentrega = agn.infoentrega
+        grafo_entrega = Graph()
+        grafo_entrega.add((infoentrega, RDF.type, ECSDI.InfoUsuarioEntrega))
+        grafo_entrega.add((infoentrega, ECSDI.latitud, Literal(form.data.get('shiping_latitude'))))
+        grafo_entrega.add((infoentrega, ECSDI.longitud, Literal(form.data.get('shiping_longitude'))))
+        grafo_entrega.add((infoentrega, ECSDI.metodoPago, Literal(form.data.get('payment_method'))))
+        grafo_entrega.add((infoentrega, ECSDI.prioridadEntrega, Literal(form.data.get('shiping_priority'))))
+        msg = build_message(grafo_entrega, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=infoentrega, msgcnt=mss_cnt)
+        compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
+        if 'OK' in compraadd:
+            compra = compraadd[4:]
+            response = send_message(msg, compra + '/comm')
+            response
+            render_template('InfoEntrega.html', form = form)
+
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
 
@@ -149,7 +255,6 @@ def busca():
         gm = Graph()
         gm.bind('ECSDI', ECSDI)
         peticionbusquda =  agn.peticionbusqueda
-        print(peticionbusquda)
         gm.add((peticionbusquda, RDF.type, ECSDI.PeticionBusqueda))
         gm.add((peticionbusquda, ECSDI.tipoproducto, Literal(product_type)))
         gm.add((peticionbusquda, ECSDI.max_precio, Literal(max_price)))
@@ -161,22 +266,22 @@ def busca():
         searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
         if 'OK' in searchadd:
             busqueda = searchadd[4:]
-        productos = send_message(msg,busqueda)
-        products = []
-        #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
-        for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
-            product = {
-                "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
-                "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
-                "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
-                "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
-                "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
-                "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
-            }
-            product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ str(product['id']) 
-            if(product['vendedor']): product['data'] +=',' + product['vendedor']
-            products.append(product)
-        return render_template('products.html', products=products)
+            productos = send_message(msg,busqueda + '/comm')
+            products = []
+            #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
+            for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
+                product = {
+                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
+                    "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
+                    "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
+                    "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
+                    "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
+                    "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
+                }
+                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
+                if(product['vendedor']): product['data'] +=',' + product['vendedor']
+                products.append(product)
+            return render_template('products.html', products=products)
     return render_template('search.html', form=form)
 
 @app.route('/userOptions')
@@ -278,9 +383,10 @@ while not done:
         done = True
     except ConnectionError:
         pass
-print('DS Hostname =', hostaddr)
+#print('DS Hostname =', hostaddr)
 
 if 'OK' in resp:
+    #print('adress:'+solveradd)
     print(f'ASSISTANT {solverid} successfully registered')
     # Buscamos el logger si existe en el registro
     '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
@@ -294,4 +400,3 @@ if 'OK' in resp:
     requests.get(diraddress + '/message', params={'message': mess})
 else:
     print('Unable to register')
-
