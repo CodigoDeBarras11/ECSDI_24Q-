@@ -327,8 +327,8 @@ def comunicacion():
                     gmess=r_gmess,
                     perf=ACL.agree,
                     sender=AgenteCompra.uri,
-                    receiver=agn.AgenteDevolucion,
-                    content=ECSDI.RespuestaDevolucion,
+                    receiver=agn.AsistenteUsuario,
+                    content=ECSDI.InformacionProvisionalEntrega,
                     msgcnt=mss_cnt
                 )
 
