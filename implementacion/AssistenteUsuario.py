@@ -174,7 +174,7 @@ def compra():
 
 
 @app.route("/comm")
-def comunicacion():
+async def comunicacion():
     """
     Entrypoint de comunicacion del agente
     Simplemente retorna un objeto fijo que representa una
@@ -260,7 +260,7 @@ def envio(araycompras):
     return render_template('envio.html', form = form)
 
 @app.route('/busca', methods=['GET', 'POST'])
-def busca():
+async def busca():
     if not usuario: return redirect(url_for('loginUser'))
     form = formbusca.SearchForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -413,10 +413,9 @@ if 'OK' in resp:
     '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
     if 'OK' in loggeradd:
         logger = loggeradd[4:]'''
-
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     # Ponemos en marcha el servidor Flask
-    app.run(host=hostname, port=port, debug=False, use_reloader=False)
-
+    app.run(host=hostname, port=port, debug=False, use_reloader=False, threaded = True)
     mess = f'UNREGISTER|{solverid}'
     requests.get(diraddress + '/message', params={'message': mess})
 else:
