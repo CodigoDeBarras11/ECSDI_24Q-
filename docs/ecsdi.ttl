@@ -200,14 +200,6 @@
                                          rdfs:label "latitud" .
 
 
-###  http://webprotege.stanford.edu/metodoDevolucion
-<http://webprotege.stanford.edu/metodoDevolucion> rdf:type owl:DatatypeProperty ;
-                                                  rdfs:subPropertyOf owl:topDataProperty ;
-                                                  rdfs:domain <http://webprotege.stanford.edu/RespuestaDevolucion> ;
-                                                  rdfs:range xsd:string ;
-                                                  rdfs:label "metodoDevolucion" .
-
-
 ###  http://webprotege.stanford.edu/metodoPago
 <http://webprotege.stanford.edu/metodoPago> rdf:type owl:DatatypeProperty ;
                                             rdfs:subPropertyOf owl:topDataProperty ;
@@ -280,6 +272,12 @@
 :balance rdf:type owl:DatatypeProperty ;
          rdfs:domain :CuentaBancaria ;
          rdfs:range xsd:float .
+
+
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#devuelta
+:devuelta rdf:type owl:DatatypeProperty ;
+          rdfs:domain <http://webprotege.stanford.edu/Compra> ;
+          rdfs:range xsd:boolean .
 
 
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#longitud
