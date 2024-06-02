@@ -88,41 +88,51 @@ def schedule_tasks():
         time.sleep(60)
 
 def send_info_to_accounting():
-    g = rdflib.Graph()
+    g = Graph()
     g.parse("pedidos.ttl", format="turtle")
 
-    now = time.localtime()
+    now = datetime.datetime.now().date()
 
     current_date = f"{now.tm_year}-{now.tm_mon}-{now.tm_mday}"
-    query = f"""
-    PREFIX ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#>
-    SELECT ?compra_id
-    WHERE {{
-        ?pedido ECSDI:fechaEntrega "{current_date}" .
-        ?pedido ECSDI:compra_a_enviar ?compra .
+    query = """
+    PREFIX ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8>
+    SELECT ?compra_id ?productos_enviados
+    WHERE {
+        ?pedido a ECSDI:Pedido ;
+                ECSDI:compra_a_enviar ?compra ;
+                ECSDI:productos_enviados ?productos_enviados ;
+                ECSDI:fechaEntrega ?fecha_entrega .
         BIND(STRAFTER(str(?compra), "Compra/") as ?compra_id)
-    }}
-    """
+        FILTER (?fecha_entrega = "%s"^^xsd:date)
+    }
+    """ % now
 
     results = g.query(query)
 
     compra_ids = [str(row[0]) for row in results]
-    for compra_id in compra_ids:
-        send_info_to_accounting_helper(compra_id)
+    productos_enviados = [str(row[1]) for row in results]
+    r_gmess = Graph()
+
+    for compra_id, productos in zip(compra_ids, productos_enviados):
+        compra_uri = ECSDI[compra_id]
+        productos_list = productos.split(',')
+        for producto_uri in productos_list:
+            r_gmess.add((compra_uri, ECSDI.Producto_Enviado, URIRef(producto_uri.strip())))
 
 
+    r_graph = build_message(
+        gmess=r_gmess,
+        perf=ACL.agree,
+        sender=AgenteCentroLogistico.uri,
+        receiver=agn.AgenteCompra,
+        content=ECSDI.Producto_Enviado,
+        msgcnt=mss_cnt
+    )
+    mss_cnt += 1
+    return r_graph.serialize(format='xml')
 
-def send_info_to_accounting_helper(compra_id):
-    url = 'http://url-del-agente-de-contabilidad'
-    data = {'compra_id': compra_id}
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        print(f'Información enviada correctamente para compra_id: {compra_id}.')
-    else:
-        print(f'Error al enviar la información para compra_id: {compra_id}.')
 
-
-def escribirAPedido():
+def escribirAPedido(prioridadEntrega, productos, compraID, latitud, longitud):
     #crear pedido
     g = Graph()
     # Definir el namespace de tu ontología ECSDI
@@ -159,15 +169,20 @@ def escribirAPedido():
     # Añadir triples al grafo
     g.add((pedido_uri, RDF.type, ECSDI.Pedido))
     g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer)))  # Id del pedido
-    g.add((pedido_uri, ECSDI.latitud, Literal(10.0)))  # Latitud
-    g.add((pedido_uri, ECSDI.longitud, Literal(20.0)))  # Longitud
-    g.add((pedido_uri, ECSDI.metodoPago, Literal("tarjeta")))  # Método de pago
-    g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(1, datatype=XSD.integer)))  # Prioridad de entrega
+    g.add((pedido_uri, ECSDI.latitud, latitud))  # Latitud
+    g.add((pedido_uri, ECSDI.longitud, longitud))  # Longitud
+    g.add((pedido_uri, ECSDI.metodoPago, metodoPago))  # Método de pago
+    g.add((pedido_uri, ECSDI.prioridadEntrega, prioridadEntrega))  # Prioridad de entrega
+    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
+    g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))  # Prioridad de entrega
 
     # Definir la URI de la compra asociada al pedido
-    compra_uri = ECSDI[f'Compra/{searchid}']
+    compra_uri = ECSDI[f'Compra/{compraID}']
     g.add((pedido_uri, ECSDI.compra_a_enviar, compra_uri))
-    
+    for producto in productos:
+        producto_uri = URIRef(producto['uri'])
+        g.add((pedido_uri, ECSDI.productos_enviados, producto_uri))
+
 
     temp_ttl = g.serialize(format="turtle")
 

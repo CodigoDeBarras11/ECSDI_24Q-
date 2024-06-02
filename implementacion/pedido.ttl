@@ -9,7 +9,11 @@
     ECSDI:latitud 10 ;
     ECSDI:longitud 20 ;
     ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 .
+    ECSDI:prioridadEntrega 1 ;
+    ECSDI:fechaEntrega ;
+    ECSDI:productos_enviados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/1>,
+                            <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2>,
+                            <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3>.
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/2> a ECSDI:Pedido ;
     ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/2> ;
