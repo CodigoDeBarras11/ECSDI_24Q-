@@ -213,7 +213,7 @@ def comunicacion():
             # Extraemos el objeto del contenido que ha de ser una accion de la ontologia de acciones del agente
             # de registro
             #print(msgdic)
-            receiver_uri = msgdic['receiver'] 
+            receiver_uri = msgdic['content'] 
             #print(receiver_uri)
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)

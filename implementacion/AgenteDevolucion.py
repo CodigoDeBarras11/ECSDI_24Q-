@@ -120,9 +120,9 @@ def comunicacion():
 
                 if receiver_address != "NOT FOUND":
                     content_graph = Graph()
-                    content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
-                    content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
-                    content_graph.add((receiver_uri, ECSDI.productos, producto))
+                    content_graph.add((agn.PeticionDevolucion, RDF.type, ECSDI.PeticionDevolucion))
+                    content_graph.add((agn.PeticionDevolucion, ECSDI.comprado_por, comprado_por))
+                    content_graph.add((agn.PeticionDevolucion, ECSDI.productos, producto))
                         
                     msg_graph = build_message(
                         gmess=content_graph,

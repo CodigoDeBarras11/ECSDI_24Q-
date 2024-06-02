@@ -106,7 +106,7 @@ def update_money(cliente, tienda, cantidad, accion):
 
         if pertenece_a == tienda:
             tienda_existe = True
-            balance_value = float(balance)
+            cantidad_previa = float(balance)
             if accion == "compra":
                 nuevo_balance = cantidad_previa + float(cantidad)
             else:
@@ -181,14 +181,14 @@ def comunicacion():
 
             elif accion == ECSDI.RespuestaDevolucion:
                 print("Hola")
-                usuario = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
-                vendedor = gm.value(subject=receiver_uri, predicate=ECSDI.vendido_por)
+                cliente = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                tienda = gm.value(subject=receiver_uri, predicate=ECSDI.vendido_por)
                 cantidad = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                #update_money(user_id, ingresar, "reembolso")
-                print(usuario)
-                print(vendedor)
-                print(cantidad)
 
+                print(cliente)
+                print(tienda)
+                print(cantidad)
+                update_money(cliente, tienda, cantidad, "reembolso")
                 r_graph = build_message(
                     gmess=Graph(),
                     perf=ACL.agree,
@@ -253,11 +253,11 @@ if __name__ == '__main__':
         print(f'CONTABILIDAD {AgenteContabilidadId} successfully registered')
         
         # Buscamos el logger si existe en el registro
-        cliente = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2"
-        tienda = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0"
-        cantidad = "90.0"
-        accion = "reembolsar"
-        update_money(cliente, tienda, cantidad, accion)
+        #cliente = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2"
+        #tienda = "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0"
+        #cantidad = "90.0"
+        #accion = "reembolsar"
+        #update_money(cliente, tienda, cantidad, accion)
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
         if 'OK' in loggeradd:
             logger = loggeradd[4:]
