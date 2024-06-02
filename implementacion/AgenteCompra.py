@@ -143,8 +143,7 @@ def registrar_fecha_compra(compra_id, date): #cuandos envia
 
     grafo_compras.serialize("bd/compras.ttl", format="ttl")
 
-def registrar_compra(comprador, producto, precio, vendido_por):#añadir devuelto para saber si se ha devuelto o no
-
+def registrar_compra(comprador, producto, precio, vendido_por, peso):
     grafo_compras = Graph()
     
     file_path = "bd/compras.ttl"
@@ -163,6 +162,7 @@ def registrar_compra(comprador, producto, precio, vendido_por):#añadir devuelto
     grafo_compras.add((compra, ECSDI.Producto, producto))
     grafo_compras.add((compra, ECSDI.vendido_por, vendido_por))
     grafo_compras.add((compra, ECSDI.precio, Literal(str(precio))))
+    grafo_compras.add((compra, ECSDI.peso, Literal(str(peso))))
     grafo_compras.add((compra, ECSDI.devuelta, Literal("0")))
     grafo_compras.add((compra, ECSDI.fechaHora, Literal(None)))
     grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
@@ -268,7 +268,7 @@ def comunicacion():
                     print(comprado_por)
                     print(producto)
                     print("/////////")
-                    compra = registrar_compra(comprado_por, producto, precio, vendido_por)
+                    compra = registrar_compra(comprado_por, producto, precio, vendido_por, peso)
                     print(compra)
                     r_gmess.add((compra, RDF.type, ECSDI.Compra))
                  
@@ -289,24 +289,51 @@ def comunicacion():
                 
                 #con los id de compra que recibo enviar informacion al centro logistic
                 #que le toque enviar los productos, del mas cercano al usuario al mas lejano
-                """
+
+
+                latitud = gm.value(subject=receiver_uri, predicate=ECSDI.latitud)
+                longitud = gm.value(subject=receiver_uri, predicate=ECSDI.longitud)
+                meotodo_de_pago = gm.value(subject=receiver_uri, predicate=ECSDI.metodoPago)
+                prioridad_de_entrega = gm.value(subject=receiver_uri, predicate=ECSDI.prioridadEntrega)
+                print(latitud)
+                print(longitud)
+                print(meotodo_de_pago)
+                print(prioridad_de_entrega)
+                print("-----------")
+                grafo_compras = Graph()
+                grafo_compras.parse("bd/compras.ttl", format="turtle")
+                precio_total = 0
+                fecha_de_entrega_provisional = datetime.today() + timedelta(days=int(prioridad_de_entrega))
+                for compra in gm.subjects(predicate=RDF.type, object=ECSDI.Compra):
+                    print(compra)
+                    for s, p, o in grafo_compras.triples((None, RDF.type, ECSDI.Compra)):
+                        print(s)
+                        if s == compra:
+                            print("hola")
+                            precio = grafo_compras.value(subject=s, predicate=ECSDI.precio)
+                            print(precio)
+                            precio_total += float(precio)
+                             
+                print("-----------")
+                print(precio_total)
+                print(fecha_de_entrega_provisional)
                 
-                receiver_uri = agn.AgenteCentroLogistico
-                receiver_address = get_agent("CENTROLOGISTICO") 
-                if receiver_address != "NOT FOUND":
-                    content_graph = Graph()
-                    content_graph.add((receiver_uri, RDF.type, ECSDI.PeticionDevolucion))
-                
+                r_gmess = Graph()
+                r_gmess.add((agn.AsistenteUsuario, RDF.type, ECSDI.InformacionProvisionalEntrega))
+                r_gmess.add((agn.AsistenteUsuario, ECSDI.precio, Literal(precio_total)))
+                r_gmess.add((agn.AsistenteUsuario, ECSDI.fechaHora, Literal(fecha_de_entrega_provisional)))
+
                 r_graph = build_message(
-                    gmess=Graph(),
+                    gmess=r_gmess,
                     perf=ACL.agree,
                     sender=AgenteCompra.uri,
-                    receiver=agn.AssistenteUsuario,
+                    receiver=agn.AgenteDevolucion,
+                    content=ECSDI.RespuestaDevolucion,
                     msgcnt=mss_cnt
                 )
-                mss_cnt += 1
+
                 return r_graph.serialize(format='xml')
-            """
+
 
             elif accion == ECSDI.ProductoEnviado:
                 #se registra la fecha de compra y se cobra el producto al usuario
