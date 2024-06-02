@@ -236,8 +236,6 @@ def envio():
     if request.method == 'POST' and form.validate():
         araycompras = form.data.get('envios')
         araycompras = araycompras.split(',')
-        #araycompras= araycompras[]
-        if(len(araycompras) == 1): araycompras = [URIRef(araycompras[0].split('\'')[1])]
         print(araycompras)
         infoentrega = agn.infoentrega
         grafo_entrega = Graph()
@@ -248,8 +246,8 @@ def envio():
         grafo_entrega.add((infoentrega, ECSDI.metodoPago, Literal(form.data.get('payment_method'))))
         grafo_entrega.add((infoentrega, ECSDI.prioridadEntrega, Literal(form.data.get('shiping_priority'))))
         for env in  araycompras: 
+            env = URIRef(env.split('\'')[1])
             print(env)
-            print('hola')
             grafo_entrega.add((env, RDF.type, ECSDI.Compra))
             grafo_entrega.add((infoentrega, ECSDI.compra_a_enviar, env))
         msg = build_message(grafo_entrega, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=infoentrega, msgcnt=mss_cnt)
