@@ -83,7 +83,7 @@ def createorUpdateproduct(product):
 def anadirProducto():
     if not usuario: return redirect(url_for('loginShop'))
     form = formproduct.ProductForm(request.form)
-    print(form.data)
+    print(request.form.data)
     if request.method == 'POST' and form.validate():
         createorUpdateproduct(form.data)
         return redirect(url_for('index'))
@@ -143,11 +143,11 @@ def compra():
             product_graph.add((prod, RDF.type, ECSDI.Producto))
             if products[i]['name']:
                 product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
-            if products[i]['id']:
+            if products[i]['id'] != 'None':
                 product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
             else: 
-                products[i]['id'] = 0
-                product_graph.add((prod, ECSDI.id, Literal(str(0))))
+                products[i]['id'] = Literal(0)
+                product_graph.add((prod, ECSDI.id, Literal(0)))
             if products[i]['price']:
                 product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
             if  products[i]['weight']:
@@ -168,7 +168,7 @@ def compra():
             accion = response.value(subject=content, predicate=RDF.type)
             araycompras = []
             for rescompra in response.subjects(predicate=RDF.type, object=ECSDI.Compra): araycompras.append(rescompra)
-            return render_template(url_for("envio"), araycompras)
+            return render_template("envio.html",  form = formcompra.BuyForm(envios = araycompras))
     return render_template('products.html', products=products)
 
 
@@ -231,23 +231,32 @@ async def comunicacion():
     return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
-def envio(araycompras):
+def envio():
     form = formcompra.BuyForm(request.form)
     if request.method == 'POST' and form.validate():
+        araycompras = form.data.get('envios')
+        araycompras = araycompras.split(',')
+        #araycompras= araycompras[]
+        if(len(araycompras) == 1): araycompras = [URIRef(araycompras[0].split('\'')[1])]
+        print(araycompras)
         infoentrega = agn.infoentrega
         grafo_entrega = Graph()
+        grafo_entrega.bind('ECSDI', ECSDI)
         grafo_entrega.add((infoentrega, RDF.type, ECSDI.InfoUsuarioEntrega))
         grafo_entrega.add((infoentrega, ECSDI.latitud, Literal(form.data.get('shiping_latitude'))))
         grafo_entrega.add((infoentrega, ECSDI.longitud, Literal(form.data.get('shiping_longitude'))))
         grafo_entrega.add((infoentrega, ECSDI.metodoPago, Literal(form.data.get('payment_method'))))
         grafo_entrega.add((infoentrega, ECSDI.prioridadEntrega, Literal(form.data.get('shiping_priority'))))
         for env in  araycompras: 
+            print(env)
+            print('hola')
             grafo_entrega.add((env, RDF.type, ECSDI.Compra))
             grafo_entrega.add((infoentrega, ECSDI.compra_a_enviar, env))
         msg = build_message(grafo_entrega, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=infoentrega, msgcnt=mss_cnt)
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
+            grafo_entrega.serialize("salida.ttl",format='turtle')
             response = send_message(msg, compra + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
