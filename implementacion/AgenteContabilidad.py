@@ -32,6 +32,7 @@ from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
+import argparse
 
 
 
@@ -45,6 +46,20 @@ agn = Namespace("http://www.agentes.org#")
 
 # Contador de mensajes
 mss_cnt = 0
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+args = parser.parse_args()
+if args.dir is None:
+    diraddress =  'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
 
 # Datos del Agente
 
@@ -239,7 +254,6 @@ if __name__ == '__main__':
     AgenteContabilidadId = hostaddr.split('.')[0] + '-' + str(port)
     mess = f'REGISTER|{AgenteContabilidadId},CONTABILIDAD,{AgenteContabilidadAdd}'
 
-    diraddress = "http://localhost:9000"
     done = False
     while not done:
         try:

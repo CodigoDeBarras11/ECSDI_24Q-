@@ -29,6 +29,7 @@ from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
+import argparse
 
 __author__ = 'daniel'
 
@@ -41,7 +42,19 @@ agn = Namespace("http://www.agentes.org#")
 # Contador de mensajes
 mss_cnt = 0
 
-diraddress = "http://localhost:9000"
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+args = parser.parse_args()
+if args.dir is None:
+    diraddress =  'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
 
 # Datos del Agente
 AgenteDevolucion = Agent('AgenteDevolucion',
@@ -177,7 +190,15 @@ def comunicacion():
                         r_graph.add((agn.AgenteDevolucion, ECSDI.acceptado, Literal(devolucion)))
                         mensaje = "El producto introducido no se puede devolver ya que han pasado mas de 15 dias desde su compra. Si esta seguro que compro el producto hace menos de 15 dias revise que el nombre del producto este correctamente escrito"
                         r_graph.add((agn.AgenteDevolucion, ECSDI.Mensajes, Literal(mensaje)))
-                        
+                    
+                    msg_graph = build_message(
+                            gmess=r_graph,
+                            perf=ACL.inform,
+                            sender=AgenteDevolucion.uri,
+                            receiver=agn.AsistenteUsuario,
+                            content=agn.RespuestaDevolucion,
+                            msgcnt=mss_cnt
+                        )
                     return r_graph.serialize(format='xml')
                 
                 else:

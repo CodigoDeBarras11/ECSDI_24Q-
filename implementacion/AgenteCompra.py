@@ -35,13 +35,27 @@ from docs.ecsdi import ECSDI
 from datetime import datetime, timedelta
 import math
 import base64
-
+import argparse
 
 __author__ = 'Pepe'
 
 # Configuration stuff
 hostname = socket.gethostname()
 port = 9011
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+args = parser.parse_args()
+if args.dir is None:
+    diraddress =  'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -385,7 +399,6 @@ if __name__ == '__main__':
     AgenteCompraId = hostaddr.split('.')[0] + '-' + str(port)
     mess = f'REGISTER|{AgenteCompraId},COMPRA,{AgenteCompraAdd}'
 
-    diraddress = "http://localhost:9000"
     done = False
     while not done:
         try:
