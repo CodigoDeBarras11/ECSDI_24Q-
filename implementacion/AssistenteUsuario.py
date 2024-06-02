@@ -83,7 +83,7 @@ def createorUpdateproduct(product):
 def anadirProducto():
     if not usuario: return redirect(url_for('loginShop'))
     form = formproduct.ProductForm(request.form)
-    print(request.form.data)
+    print(request.form)
     if request.method == 'POST' and form.validate():
         createorUpdateproduct(form.data)
         return redirect(url_for('index'))
@@ -258,9 +258,11 @@ def envio():
             response = send_message(msg, compra + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
-            precio = response.value(subject=accion, predicate=ECSDI.precio)
-            fecha_entrega = response.value(subject=accion, predicate=ECSDI.fechaHora)
-            render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar" + precio, info2 = "Va a llegar el" + fecha_entrega)
+            precio = response.value(subject=content, predicate=ECSDI.precio)
+            print(precio)
+            fecha_entrega = response.value(subject=content, predicate=ECSDI.fechaHora)
+            print(fecha_entrega)
+            return render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar " + precio, info2 = "Va a llegar el " + fecha_entrega)
 
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
@@ -298,7 +300,7 @@ async def busca():
             #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
             for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
                 product = {
-                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
+                    "id": productos.value(subject=prod, predicate=ECSDI.id),
                     "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
                     "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
                     "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
