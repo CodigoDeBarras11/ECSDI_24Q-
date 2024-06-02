@@ -133,7 +133,7 @@ def registrar_fecha_compra(compra_id, date): #cuandos envia
 
     grafo_compras.serialize("bd/compras.ttl", format="ttl")
 
-def registrar_compra(comprador, producto, precio, vendido_por):
+def registrar_compra(comprador, producto, precio, vendido_por):#añadir devuelto para saber si se ha devuelto o no
 
     grafo_compras = Graph()
     

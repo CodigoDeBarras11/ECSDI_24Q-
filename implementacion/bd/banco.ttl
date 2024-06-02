@@ -3,9 +3,9 @@
 
 <http://www.agentes.org#last_id> xsd:positiveInteger 1 .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/1> ECSDI:balance "450.0" ;
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/1> ECSDI:balance "540.0" ;
     ECSDI:pertenece_a <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/2> ECSDI:balance "-90.0" ;
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/2> ECSDI:balance "-180.0" ;
     ECSDI:pertenece_a <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
