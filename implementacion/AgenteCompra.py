@@ -89,14 +89,14 @@ def get_count():
     mss_cnt += 1
     return mss_cnt
 
-def check_date(fechas, precios, vendedores):
-    for fecha, precio, vendedor in zip(fechas, precios, vendedores):
+def check_date(fechas, precios, vendedores, sujetos):
+    for fecha, precio, vendedor, sujeto in zip(fechas, precios, vendedores, sujetos):
         if str(fecha) != "None":
             fecha_time = datetime.strptime(fecha, '%d/%m/%Y')
             hoy = datetime.today()
             diferencia = hoy - fecha_time
-            if diferencia.days <= 15: return True, precio, vendedor
-    return False, None, None
+            if diferencia.days <= 15: return True, precio, vendedor, sujeto
+    return False, None, None, None
 
 
 def responder_peticion_devolucion(comprador, producto):
@@ -105,7 +105,9 @@ def responder_peticion_devolucion(comprador, producto):
     fechas = []
     precios = []
     vendedores = []
-
+    sujetos = []
+    print(comprador)
+    print(producto)
     for s, p, o in grafo_compras.triples((None, RDF.type, ECSDI.Compra)):
         comprado_por = grafo_compras.value(subject=s, predicate=ECSDI.comprado_por)
         producto_b = grafo_compras.value(subject=s, predicate=ECSDI.Producto)
@@ -113,11 +115,19 @@ def responder_peticion_devolucion(comprador, producto):
             fecha = grafo_compras.value(subject=s, predicate=ECSDI.fechaHora)
             precio = grafo_compras.value(subject=s, predicate=ECSDI.precio)
             vendedor = grafo_compras.value(subject=s, predicate=ECSDI.vendido_por)
-            fechas.append(str(fecha))
-            precios.append(str(precio))
-            vendedores.append(vendedor)
+            devuelto = grafo_compras.value(subject=s, predicate=ECSDI.devuelta)
+            if int(devuelto) == 0:
+                fechas.append(str(fecha))
+                precios.append(str(precio))
+                vendedores.append(vendedor)
+                sujetos.append(s)
+    
+    devolucion, precio, vendido_por, sujeto = check_date(fechas, precios, vendedores, sujetos)
+    if devolucion == True:
+        grafo_compras.set((sujeto, ECSDI.devuelta, Literal("1")))
+        grafo_compras.serialize("bd/compras.ttl", format="turtle")
 
-    return check_date(fechas, precios, vendedores)
+    return devolucion, precio, vendido_por
 
 def registrar_fecha_compra(compra_id, date): #cuandos envia
     grafo_compras = Graph()
@@ -153,6 +163,7 @@ def registrar_compra(comprador, producto, precio, vendido_por):#añadir devuelto
     grafo_compras.add((compra, ECSDI.Producto, producto))
     grafo_compras.add((compra, ECSDI.vendido_por, vendido_por))
     grafo_compras.add((compra, ECSDI.precio, Literal(str(precio))))
+    grafo_compras.add((compra, ECSDI.devuelta, Literal("0")))
     grafo_compras.add((compra, ECSDI.fechaHora, Literal(None)))
     grafo_compras.set((agn.last_id, XSD.positiveInteger, Literal(last_id+1)))
         
@@ -307,13 +318,8 @@ def comunicacion():
 
 
             elif accion == ECSDI.PeticionDevolucion:
-                #se comprueba si se acepta la devolucion
-                #si se acepta se devuelve si mas la informacion necesaria
-                #si se denega se devuelve que no mas el motivo
                 r_gmess = Graph()
 
-                #print("Hola")
-                #print(receiver_uri)
                 comprado_por = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
                 producto = gm.value(subject=receiver_uri, predicate=ECSDI.productos)
                 print(comprado_por)
@@ -327,7 +333,6 @@ def comunicacion():
                     r_gmess.add((receiver_uri, ECSDI.precio, Literal(precio)))
                 else:
                     r_gmess.add((receiver_uri, ECSDI.acceptado, Literal(0)))
-                
                 
                 r_graph = build_message(
                     gmess=r_gmess,
@@ -411,10 +416,14 @@ if __name__ == '__main__':
     if 'OK' in resp:
         print(f'COMPRA {AgenteCompraId} successfully registered')
         
+
+
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
         if 'OK' in loggeradd:
             logger = loggeradd[4:]
+
+        #responder_peticion_devolucion()
 
         # Ponemos en marcha el servidor Flask
         app.run(host=hostname, port=port, debug=False, use_reloader=False)

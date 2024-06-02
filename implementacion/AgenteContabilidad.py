@@ -91,8 +91,8 @@ def get_count():
 def update_money(cliente, tienda, cantidad, accion):
    
     grafo_banco = Graph()
-    cliente = URIRef(cliente)
-    tienda = URIRef(tienda)
+    #cliente = URIRef(cliente)
+    #tienda = URIRef(tienda)
     file_path = "bd/banco.ttl"
     if not os.path.exists(file_path):
         grafo_banco.add((agn.last_id, XSD.positiveInteger, Literal(0)))
@@ -116,7 +116,7 @@ def update_money(cliente, tienda, cantidad, accion):
                 nuevo_balance = cantidad_previa - float(cantidad)
             else:
                 nuevo_balance = cantidad_previa + float(cantidad)
-            grafo_banco.remove((cuenta, ECSDI.balance, balance))
+            #grafo_banco.remove((cuenta, ECSDI.balance, balance))
             grafo_banco.set((cuenta, ECSDI.balance, Literal(str(nuevo_balance))))
 
         if pertenece_a == tienda:
@@ -126,7 +126,7 @@ def update_money(cliente, tienda, cantidad, accion):
                 nuevo_balance = cantidad_previa + float(cantidad)
             else:
                 nuevo_balance = cantidad_previa - float(cantidad)
-            grafo_banco.remove((cuenta, ECSDI.balance, balance))
+            #grafo_banco.remove((cuenta, ECSDI.balance, balance))
             grafo_banco.set((cuenta, ECSDI.balance, Literal(str(nuevo_balance))))
 
         if cliente_existe and tienda_existe:

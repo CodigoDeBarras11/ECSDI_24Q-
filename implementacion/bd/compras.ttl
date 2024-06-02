@@ -4,37 +4,42 @@
 <http://www.agentes.org#last_id> xsd:positiveInteger 5 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> a ECSDI:Compra ;
-    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/57> ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/27> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
     ECSDI:fechaHora "None" ;
-    ECSDI:precio "86.0" ;
+    ECSDI:precio "80.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/2> a ECSDI:Compra ;
-    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/27> ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/21> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
     ECSDI:fechaHora "None" ;
-    ECSDI:precio "80.0" ;
+    ECSDI:precio "81.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/3> a ECSDI:Compra ;
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
     ECSDI:fechaHora "None" ;
     ECSDI:precio "80.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/4> a ECSDI:Compra ;
-    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/21> ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/10> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
-    ECSDI:fechaHora "None" ;
-    ECSDI:precio "81.0" ;
+    ECSDI:devuelta "1" ;
+    ECSDI:fechaHora "25/05/2024" ;
+    ECSDI:precio "90.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/5> a ECSDI:Compra ;
-    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/10> ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/57> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
-    ECSDI:fechaHora "25/05/2024" ;
-    ECSDI:precio "90.0" ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:precio "86.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
