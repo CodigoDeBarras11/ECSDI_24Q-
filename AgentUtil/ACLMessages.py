@@ -51,7 +51,7 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
     return gmess
 
 
-def send_message(gmess, address, parsed = True):
+def send_message(gmess, address):
     """
     Envia un mensaje usando un GET y retorna la respuesta como
     un grafo RDF
