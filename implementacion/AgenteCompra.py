@@ -253,7 +253,7 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
         print(gmess.serialize(format='ttl'))
         print("---------------")
     
-        """receiver_uri = agn.AgenteCentroLogistico
+        receiver_uri = agn.AgenteCentroLogistico
         receiver_address = get_agent("")
         print(receiver_address)
 
@@ -265,7 +265,8 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
             content=agn.CentrosLogisticos,
             msgcnt=mss_cnt
         )
-        response_graph1 = send_message(gmess=msg_graph, address=receiver_address)"""
+        response_graph1 = send_message(gmess=msg_graph, address=receiver_address)
+        
     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     """for sujeto, precio, peso, producto in zip(sujetos, precios, pesos, productos):
         print("---------------")

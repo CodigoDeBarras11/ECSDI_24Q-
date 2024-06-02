@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#last_id> xsd:positiveInteger 89 .
+<http://www.agentes.org#last_id> xsd:positiveInteger 92 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> a ECSDI:Compra ;
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/27> ;
@@ -790,5 +790,32 @@
     ECSDI:devuelta "0" ;
     ECSDI:fechaHora "None" ;
     ECSDI:precio "69.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/90> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/33> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "965.2016" ;
+    ECSDI:precio "69.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/91> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/57> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "727.4875" ;
+    ECSDI:precio "86.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/92> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/54> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "817.1964" ;
+    ECSDI:precio "53.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 
