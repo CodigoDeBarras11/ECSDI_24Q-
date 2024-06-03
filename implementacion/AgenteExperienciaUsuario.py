@@ -291,7 +291,7 @@ def comunicacion():
                     print(productos)
                     store_feedback(valoraciones, productos, cliente)
                     graph = build_message(
-                            gmess=graph(),
+                            gmess=Graph(),
                             perf=ACL.agree,
                             sender=AgenteExperiencia.uri,
                             receiver=agn.AssistenteUsuario,

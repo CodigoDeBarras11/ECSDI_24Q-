@@ -46,6 +46,7 @@ AssistenteUsuario = Agent('AssistenteUsuario',
 
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'
 usuario = None
 mss_cnt = 0
 port = 5000
@@ -200,10 +201,8 @@ def generate_feedback_form(products):
     for product in products:
         form_html += """
         <h4>{}
-        <input type="hidden" name="product_uri" value="{}">
-
-        <input type="number" id="rating_{}" name="rating_{}" min="1" max="5" required></h4><br>
-        """.format(product["name"], product["uri"], product["uri"], product["uri"], product["uri"])
+        <input type="number" id="rating_{}" name="{}" min="1" max="5" required></h4><br>
+        """.format(product["name"], product["uri"], product["uri"])
 
     form_html += """
         <input type="submit" value="Submit Feedback">
@@ -226,11 +225,11 @@ def feedback():
         feedback_data = request.form
         feedback_graph = Graph()
         for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
+            val = URIRef(val)
             feedback_graph.add((val, ECSDI.valorada_por, usuario))
             prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
             feedback_graph.add((val, ECSDI.feedback_de, prod))
-            punt = feedback_data.get('rating_'+ prod)
-            print(punt)
+            punt = feedback_data.get(prod)
             cache_feedback.remove((val, ECSDI.feedback_de, prod))
             cache_feedback.remove((val, ECSDI.valorada_por, usuario))
             feedback_graph.add((val, ECSDI.valoracion, Literal(punt)))
@@ -290,8 +289,9 @@ def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:
 
 @app.route("/recomendados")
 def productos_recomendados():
-    graforecomendaciones = Graph
-    if path.exists("cache_recomendados.ttl"): graforecomendaciones.parse("busquedas.ttl", format="turtle")
+    graforecomendaciones = Graph()
+    if path.exists("cache_recomendados.ttl"): 
+        graforecomendaciones.parse(source="cache_recomendados.ttl", format="turtle")
     else:
         session['mensaje'] = "No tienes productos recomendados"
         return redirect(url_for('userIndex'))
@@ -342,7 +342,10 @@ def productos_recomendados():
                 product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
                 if(product['vendedor']): product['data'] +=',' + product['vendedor']
                 products[prod] =product
-    if(present):return render_template('products.html', products=products)
+
+    if(present):
+        graforecomendaciones.serialize("cache_recomendados.ttl", format="turtle")
+        return render_template('products.html', products=products)
     else:
         session['mensaje'] = "No tienes productos recomendados"
         return redirect(url_for('userIndex'))
