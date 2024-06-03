@@ -281,14 +281,19 @@ def comunicacion():
                 if accion == ECSDI.RespuestaFeedback:
                     
                     cliente = gm.value(subject=content, predicate=ECSDI.valorada_por)
+                    print("accion")
                     for valoracion_s in gm.subjects(predicate=ECSDI.valorada_por, object=cliente):
-                        valoracion = gm.value(subject=valoracion_s, predicate=ECSDI.valoracion)
-                        producto = gm.value(subject=valoracion_s, predicate=ECSDI.feedback_de)
-                        valoraciones.append(valoracion)
-                        productos.append(producto)
+                        if(valoracion_s != content):
+                            print(valoracion_s)
+                            valoracion = gm.value(subject=valoracion_s, predicate=ECSDI.valoracion)
+                            print(valoracion)
+                            producto = gm.value(subject=valoracion_s, predicate=ECSDI.feedback_de)
+                            print(producto)
+                            valoraciones.append(valoracion)
+                            productos.append(producto)
                     
-                    print(valoraciones)
-                    print(productos)
+                    #print(valoraciones)
+                    #print(productos)
                     store_feedback(valoraciones, productos, cliente)
                     graph = build_message(
                             gmess=Graph(),
@@ -326,7 +331,7 @@ def store_feedback(valoraciones, productos, cliente):
         g.add((feedback_uri, ECSDI.valoracion, valoracion))
         last_id += 1
    
-    g.serialize("bd/feecback.ttl", format="turtle")
+    g.serialize("bd/feedback.ttl", format="turtle")
 
 
 

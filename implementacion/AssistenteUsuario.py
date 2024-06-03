@@ -228,6 +228,7 @@ def feedback():
         feedback_data = request.form
         print(feedback_data)
         feedback_graph = Graph()
+        feedback_graph.bind('ECSDI', ECSDI)
         for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
             #val = URIRef(val)
             print(val)
@@ -247,7 +248,7 @@ def feedback():
         resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|EXPERIENCIAUSUARIO'}).text
         if 'OK' in resp:
             feedbackadd = resp[4:]
-        message.serialize('')
+        message.serialize('debug.ttl', format = 'turtle')
         resposta = send_message(message,feedbackadd + '/comm')
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
         session['mensaje'] =  "Gracias por tu opinion"
