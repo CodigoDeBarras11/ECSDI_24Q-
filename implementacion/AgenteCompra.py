@@ -130,13 +130,14 @@ def responder_peticion_devolucion(comprador, producto):
 
     return devolucion, precio, vendido_por
 
-def registrar_fecha_compra(compra_id, date): #cuandos envia
+def registrar_fecha_compra(compra, date):
     grafo_compras = Graph()
     grafo_compras.parse("bd/compras.ttl", format="turtle")
-
+    compra = URIRef(compra)
     for s, p, o in grafo_compras.triples((None, RDF.type, ECSDI.Compra)):
-        id = grafo_compras.value(subject=s, predicate=ECSDI.id)
-        if str(compra_id) == str(id):
+        print(s)
+        print(compra)
+        if s == compra:
             fecha = grafo_compras.value(subject=s, predicate=ECSDI.fechaHora)
             if str(fecha) == "None":
                 grafo_compras.set((s, ECSDI.fechaHora, Literal(date)))
@@ -421,12 +422,49 @@ def comunicacion():
 
 
             elif accion == ECSDI.ProductoEnviado:
-                #se registra la fecha de compra y se cobra el producto al usuario
-                compra_id = gm.value(subject=receiver_uri, predicate=ECSDI.Compra)
-                fecha = gm.value(subject=receiver_uri, predicate=ECSDI.fechaHora)
-                registrar_fecha_compra(compra_id, fecha)
-                mss_cnt += 1
-                return Response(status=200)
+                #se recibe el identificador de compra de productos enviados
+                #se actualiza su fecha de compra y se cobran
+                """por cada compra
+                compra = "aa"
+                comprado_por = "a"
+                vendido_por = "b"
+                cantidad = "c"
+
+                hoy = datetime.today()
+                hoy = hoy.strftime("%d/%m/%Y")
+                registrar_fecha_compra(compra, hoy)
+
+                receiver_uri = agn.AgenteContabilidad
+                receiver_address = get_agent("CONTABILIDAD")
+                print(receiver_address)
+
+                content_graph = Graph()
+                content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
+                content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
+                content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
+                            
+                msg_graph = build_message(
+                    gmess=content_graph,
+                    perf=ACL.request,
+                    sender=AgenteCompra.uri,
+                    receiver=receiver_uri,
+                    content=agn.ProductoEnviado,
+                    msgcnt=mss_cnt
+                )
+                response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
+                """
+                r_graph = build_message(
+                    gmess=Graph(),
+                    perf=ACL.agree,
+                    sender=AgenteCompra.uri,
+                    receiver=agn.AgenteCentrosLogisticos,
+                    content=agn.ProductoEnviado,
+                    msgcnt=mss_cnt
+                )
+
+                return r_graph.serialize(format='xml')
+
 
 
             elif accion == ECSDI.PeticionDevolucion:
@@ -527,8 +565,6 @@ if __name__ == '__main__':
 
     if 'OK' in resp:
         print(f'COMPRA {AgenteCompraId} successfully registered')
-        
-
 
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text

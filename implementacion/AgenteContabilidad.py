@@ -188,14 +188,29 @@ def comunicacion():
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
             
             if accion == ECSDI.ProductoEnviado:
-                user_id = gm.value(subject=receiver_uri, predicate=ECSDI.id_usuario)
-                retirar = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
-                update_money(user_id, retirar, "compra")
-                return Response(status=200)
+                print("compra")
+                cliente = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
+                tienda = gm.value(subject=receiver_uri, predicate=ECSDI.vendido_por)
+                cantidad = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
+
+                print(cliente)
+                print(tienda)
+                print(cantidad)
+                update_money(cliente, tienda, cantidad, "compra")
+                r_graph = build_message(
+                    gmess=Graph(),
+                    perf=ACL.agree,
+                    sender=AgenteContabilidad.uri,
+                    receiver=agn.AgenteDevolucion,
+                    content=ECSDI.RespuestaDevolucion,
+                    msgcnt=mss_cnt
+                )
+                mss_cnt += 1
+                return r_graph.serialize(format='xml')
                 
 
             elif accion == ECSDI.RespuestaDevolucion:
-                print("Hola")
+                print("reembolso")
                 cliente = gm.value(subject=receiver_uri, predicate=ECSDI.comprado_por)
                 tienda = gm.value(subject=receiver_uri, predicate=ECSDI.vendido_por)
                 cantidad = gm.value(subject=receiver_uri, predicate=ECSDI.precio)
