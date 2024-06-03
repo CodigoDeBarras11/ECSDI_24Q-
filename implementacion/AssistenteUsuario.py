@@ -197,18 +197,21 @@ def generate_feedback_form(products):
     <h1>Please give Feedback on the following products</h1>
     <form action="/feedback" method="POST">
     """
+    
     #products = [{"name": "iphone", "uri": "ecsdi"}]
     for product in products:
+        product['id'] = product['uri'].split('/')[1]
         form_html += """
         <h4>{}
-        <input type="number" id="rating_{}" name="{}" min="1" max="5" required></h4><br>
-        """.format(product["name"], product["uri"], product["uri"])
+        <label for="rating_{}"/>
+        <input type="number" id="product" name="{}" min="1" max="5" required></h4><br>
+        """.format(product["name"], product["uri"], product["id"])
 
     form_html += """
         <input type="submit" value="Submit Feedback">
     </form>
     """
-    #<label for="rating_{}">Rating (1-5):</label>
+    #
     return form_html
 
 @app.route("/feedback", methods=['GET', 'POST'])
@@ -223,13 +226,18 @@ def feedback():
 
     if request.method == 'POST':
         feedback_data = request.form
+        print(feedback_data)
         feedback_graph = Graph()
         for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
-            val = URIRef(val)
+            #val = URIRef(val)
+            print(val)
             feedback_graph.add((val, ECSDI.valorada_por, usuario))
             prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
+            print(prod)
             feedback_graph.add((val, ECSDI.feedback_de, prod))
-            punt = feedback_data.get(prod)
+            id = prod.split('/')[1]
+            punt = feedback_data.get(id)
+            print(punt)
             cache_feedback.remove((val, ECSDI.feedback_de, prod))
             cache_feedback.remove((val, ECSDI.valorada_por, usuario))
             feedback_graph.add((val, ECSDI.valoracion, Literal(punt)))
@@ -239,6 +247,7 @@ def feedback():
         resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|EXPERIENCIAUSUARIO'}).text
         if 'OK' in resp:
             feedbackadd = resp[4:]
+        message.serialize('')
         resposta = send_message(message,feedbackadd + '/comm')
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
         session['mensaje'] =  "Gracias por tu opinion"
@@ -515,15 +524,11 @@ async def busca():
 
 @app.route('/userOptions')
 def userIndex():
-    mensaje = session.get('mensaje', '')
-    if mensaje: session['mensaje'].clear()
-    return render_template('user.html', mensaje = mensaje)
+    return render_template('user.html')
 
 @app.route('/')
 def index():
-    mensaje = session.get('mensaje', '')
-    if mensaje: session['mensaje'].clear()
-    return render_template('index.html', mensaje = mensaje)
+    return render_template('index.html')
 
 def getuserref(username:str):
     users_graph = Graph()
