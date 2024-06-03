@@ -85,7 +85,7 @@ def get_count():
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("20:17").do(send_info_to_accounting)
+    schedule.every().day.at("10:45").do(send_info_to_accounting)
 
     # Verificar si es la hora programada
     # Run the scheduler
@@ -142,7 +142,7 @@ def send_info_to_accounting():
             response_graph = send_message(gmess=graph, address=receiver_address)
 
 
-def escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latitud, longitud, pesos):
+def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso):
     # Crear el grafo y namespaces
     
     g = Graph()
@@ -177,11 +177,9 @@ def escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latit
     productos_agregados = []
     pesos_agregados = []
     # Añadir productos verificados al grafo del pedido
-    for producto, peso, compra in zip(productos, pesos, compras):
+    for producto in productos:
         if producto in productos_disponibles:
             g.add((pedido_uri, ECSDI.productos_enviados, producto))
-            g.add((pedido_uri, ECSDI.peso, Literal(peso, datatype=XSD.float)))
-            g.add((pedido_uri, ECSDI.compra_a_enviar, compra))
             productos_agregados.append(producto)
             pesos_agregados.append(peso)
     
@@ -194,6 +192,7 @@ def escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latit
         g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(prioridadEntrega, datatype=XSD.integer)))
         fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=int(prioridadEntrega))
         g.add((pedido_uri, ECSDI.fechaHora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
+        g.add((pedido_uri, ECSDI.compra_a_enviar, Literal(compra, datatype=XSD.string)))
         g.add((pedido_uri, ECSDI.CentroLogistico, Literal(centroLogistico, datatype=XSD.string)))
 
     g.serialize("bd/pedido.ttl", format="turtle")
@@ -449,9 +448,16 @@ def comunicacion():
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
-                   
+                    print("------------------------")
+                    print(compras)
+                    print("------------------------")
+                    print(productos)
+                    print("------------------------")
+                    print(pesos)
+                    print("------------------------")
+                    print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
                     productos_entregables = escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latitud, longitud, pesos)
-                
+                    print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
                     prepararLotes(centroLogistico, prioridadEntrega, productos, pesos)
 
                     productos_node = BNode()

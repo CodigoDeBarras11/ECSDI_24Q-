@@ -102,8 +102,8 @@ def get_agent(agente):
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("23:13").do(pedir_feedback_a_asistente)
-    #schedule.every().day.at("09:00").do(recomendar_productos_a_asistente)
+    schedule.every().day.at("10:50").do(pedir_feedback_a_asistente)
+    schedule.every().day.at("10:52").do(recomendar_productos_a_asistente)
 
     # Verificar si es la hora programada
     while True:
@@ -441,7 +441,7 @@ def run_scheduler_in_background():
 
 if __name__ == '__main__':
     #pedir_feedback_a_asistente()
-    recomendar_productos_a_asistente()
+    #recomendar_productos_a_asistente()
     run_scheduler_in_background()
 
     hostaddr = hostname = socket.gethostname()

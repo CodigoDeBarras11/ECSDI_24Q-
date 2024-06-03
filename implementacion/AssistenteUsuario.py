@@ -310,15 +310,15 @@ def productos_recomendados():
         if max_price:
             gm.add((peticionbusquda, ECSDI.max_precio, Literal(max_price)))
             graforecomendaciones.remove((busqueda, ECSDI.max_precio, Literal(max_price)))
-        min_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_price)
+        min_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_precio)
         if min_price:
             gm.add((peticionbusquda, ECSDI.min_precio, Literal(min_price)))
             graforecomendaciones.remove((busqueda, ECSDI.min_precio, Literal(min_price)))
-        max_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_weight)
+        max_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_peso)
         if max_weight:
             gm.add((peticionbusquda, ECSDI.max_peso, Literal(max_weight)))
             graforecomendaciones.remove((busqueda, ECSDI.max_peso, Literal(max_weight)))
-        min_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_weight)
+        min_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_peso)
         if min_weight:
             gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
             graforecomendaciones.remove((busqueda, ECSDI.min_peso, Literal(min_weight)))
