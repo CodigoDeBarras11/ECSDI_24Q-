@@ -375,9 +375,11 @@ async def comunicacion():
                 content = msgdic['content']
                 accion = grafo.value(subject=content, predicate=RDF.type)
                 if accion == ECSDI.PeticionFeedback:
-                    producto = grafo.value(subject=content, predicate=ECSDI.feedback_de)
-                    cliente = grafo.value(subject=content, predicate=ECSDI.valorada_por)
-                    cahear_feedback(cliente, producto)
+                    for client in grafo.subjects(predicate= RDF.type, object= ECSDI.Cliente):
+                        for val in grafo.subjects(predicate=ECSDI.valorada_por, object=client):
+                            producto = grafo.value(subject=val, predicate=ECSDI.feedback_de)
+                            cahear_feedback(client, producto)
+                    
                     gr = build_message(Graph(),
                         ACL['confirm'],
                         sender=AssistenteUsuario.uri,
