@@ -17,6 +17,8 @@ Asume que el agente de registro esta en el puerto 9000
 from os import getcwd, path
 import sys
 import os
+import schedule
+import time
 import requests
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
@@ -72,6 +74,51 @@ def get_count():
     mss_cnt += 1
     return mss_cnt
 
+def schedule_tasks():
+    # Programar la tarea diaria a las 8:00 AM
+    schedule.every().day.at("08:00").do(pedir_feedback_a_assistente)
+
+    # Verificar si es la hora programada
+    while True:
+        now = time.localtime()
+        if now.tm_hour == 8 and now.tm_min == 0 and now.tm_sec == 0:
+            # Es la hora programada, ejecutar la tarea
+            schedule.run_pending()
+        time.sleep(60)
+
+def pedir_feedback_a_assistente():
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+
+    g = Graph()
+    g.parse("compra.ttl", format="ttl")
+
+    fecha_objetivo = datetime.now().date()
+
+    
+    r_gmess = Graph()
+    for compra in g.subjects(RDF.type, ECSDI.Compra):
+        fecha_literal = g.value(compra, ECSDI.fechaHora)
+        if fecha_literal:
+            fecha_compra = datetime.strptime(fecha_literal, "%Y-%m-%d").date()
+            if fecha_literal+ timedelta(days=8) == fecha_objetivo:
+                cliente_uri = g.value(compra, ECSDI.comprado_por)
+                productos_uris = list(g.objects(compra, ECSDI.productos))
+                r_gmess.add( ECSDI.feedback_de)
+                r_gmess.add(productos_uris, ECSDI.productos)
+
+
+    r_graph = build_message(
+        gmess=r_gmess,
+        perf=ACL.agree,
+        sender=AgenteExperiencia.uri,
+        receiver=agn.AgenteCompra,
+        content=ECSDI.Producto_Enviado,
+        msgcnt=mss_cnt
+    )
+    mss_cnt += 1
+    r_graph.serialize(format='xml')
+
+
 
 @app.route("/comm")
 def comunicacion():
@@ -115,34 +162,6 @@ def comunicacion():
                 if accion == ECSDI.Feedback:
                     store_feedback(valoraciones, productos, cliente)
 
-def get_feedback_products():
-    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-
-    g = Graph()
-    g.parse("compra.ttl", format="ttl")
-
-    fecha_objetivo = (datetime.now() + timedelta(days=8)).date()
-
-    resultados = []
-
-    for compra in g.subjects(RDF.type, ECSDI.Compra):
-        fecha_literal = g.value(compra, ECSDI.fechaHora)
-        if fecha_literal:
-            try:
-                # Suponiendo que el formato es ISO 8601
-                fecha_compra = datetime.strptime(str(fecha_literal), "%Y-%m-%dT%H:%M:%S")
-                if fecha_compra.date() == fecha_objetivo.date():
-                    cliente = g.value(compra, ECSDI.comprado_por)
-                    productos = list(g.objects(compra, ECSDI.Producto))
-                    resultados.append({
-                        "cliente": cliente,
-                        "productos": productos
-                    })
-            except ValueError:
-                continue
-
-    return resultados
-
 def store_feedback(valoraciones, productos, cliente):
     g = Graph()
     file_path = "bd/feedback.ttl"
@@ -162,8 +181,8 @@ def store_feedback(valoraciones, productos, cliente):
         g.set((agn.last_id, XSD.positiveInteger, Literal(last_id)))
         feedback_uri = ECSDI.Feedback +'/'+ str(last_id+1)
         g.add((feedback_uri, RDF.type, ECSDI.Feedback))
-        g.add((feedback_uri, ECSDI.usuari, cliente))
-        g.add((feedback_uri, ECSDI.producto, producto))
+        g.add((feedback_uri, ECSDI.valorado_por, cliente))
+        g.add((feedback_uri, ECSDI.feedback_de, producto))
         g.add((feedback_uri, ECSDI.valoracion, valoracion))
         last_id += 1
     with open("bd/feecback.ttl", "w") as f:
