@@ -20,6 +20,7 @@ import os
 import schedule
 import time
 import requests
+import random
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
 import socket
@@ -91,7 +92,7 @@ def pedir_feedback_a_asistente():
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
 
     g = Graph()
-    g.parse("compra.ttl", format="ttl")
+    g.parse("bd/compra.ttl", format="ttl")
 
     fecha_objetivo = datetime.now().date()
 
@@ -101,7 +102,7 @@ def pedir_feedback_a_asistente():
         fecha_literal = g.value(compra, ECSDI.fechaHora)
         if fecha_literal:
             fecha_compra = datetime.strptime(fecha_literal, "%Y-%m-%d").date()
-            if fecha_literal+ timedelta(days=8) == fecha_objetivo:
+            if fecha_literal+ timedelta(days=3) == fecha_objetivo:
                 cliente_uri = g.value(compra, ECSDI.comprado_por)
                 productos_uris = list(g.objects(compra, ECSDI.productos))
                 r_gmess.add( ECSDI.feedback_de)
@@ -119,7 +120,41 @@ def pedir_feedback_a_asistente():
     mss_cnt += 1
     r_graph.serialize(format='xml')
 
-def recomendar_productos_a_asistente:
+
+def recomendar_productos_a_asistente():
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+
+    g = Graph()
+    g.parse("busqueda.ttl", format="ttl")
+
+    clientes_uris = set()
+
+    for busqueda in g.subjects(RDF.type, ECSDI.Busqueda):
+        cliente_uri = g.value(busqueda, ECSDI.buscado_por)
+        if cliente_uri:
+            clientes_uris.add(cliente_uri)
+
+    for cliente_uri in clientes_uris:
+        busquedas_cliente = list(g.subjects(ECSDI.buscado_por, cliente_uri))
+        if busquedas_cliente:
+            busqueda_aleatoria = random.choice(busquedas_cliente)
+            # Obtener los valores de los atributos de la búsqueda aleatoria
+            atributos_busqueda = {}
+            for predicado, objeto in g.predicate_objects(busqueda_aleatoria):
+                # Excluir los atributos 'id' y 'buscado_por'
+                if str(predicado) != str(ECSDI.id) and str(predicado) != str(ECSDI.buscado_por):
+                    # Guardar cada atributo en una variable separada
+                    if str(predicado) == str(ECSDI.max_peso):
+                        max_peso = objeto
+                    elif str(predicado) == str(ECSDI.max_precio):
+                        max_precio = objeto
+                    elif str(predicado) == str(ECSDI.min_precio):
+                        min_precio = objeto
+                    elif str(predicado) == str(ECSDI.min_peso):
+                        min_peso = objeto
+                    elif str(predicado) == str(ECSDI.tipoproducto):
+                        tipoproducto = objeto
+            
 
 
 @app.route("/comm")
@@ -157,13 +192,16 @@ def comunicacion():
                 gr = build_message(Graph(), ACL['not-understood'], sender=AgenteExperiencia.uri, msgcnt=get_count())
             
             else:
-                content = msgdic['content'] 
+                info = msgdic['info'] 
                 # Averiguamos el tipo de la accion
-                accion = gm.value(subject=content, predicate=RDF.type)
+                accion = gm.value(subject=info, predicate=RDF.type)
 
                 if accion == ECSDI.PeticionFeedback:
+                    valoraciones = gm.value(subject=info, predicate=ECSDI.valoracion)
+                    productos = gm.value(subject=info, predicate=ECSDI.productos)
+                    cliente = gm.value(subject=info, predicate=ECSDI.Cliente)
                     store_feedback(valoraciones, productos, cliente)
-                elsif ac:
+                
                 
 
 def store_feedback(valoraciones, productos, cliente):
