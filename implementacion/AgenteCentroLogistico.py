@@ -15,6 +15,7 @@ Asume que el agente de registro esta en el puerto 9000
 """
 
 from os import getcwd, path
+import os
 import sys
 import datetime
 import schedule
@@ -90,7 +91,7 @@ def schedule_tasks():
 
 def send_info_to_accounting():
     g = Graph()
-    g.parse("pedidos.ttl", format="turtle")
+    g.parse("bd/pedidos.ttl", format="turtle")
 
     now = datetime.datetime.now().date()
 
@@ -135,33 +136,49 @@ def send_info_to_accounting():
 
 def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso):
     # Crear el grafo y namespaces
+    
     g = Graph()
-    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-    AGN = Namespace("http://www.agentes.org#")
-    g.bind("ECSDI", ECSDI)
+    file_path = "bd/pedido.ttl"
+    if not os.path.exists(file_path):
+        g.add((agn.last_id, XSD.positiveInteger, Literal(0)))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True) 
+        g.serialize(file_path, format="turtle")
+
+    g.parse("bd/pedido.ttl", format="turtle")
+    g.bind('ECSDI', ECSDI)
+    last_id = g.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+    
+    
+    
+    
+    #g = Graph()
+    #ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+    #AGN = Namespace("http://www.agentes.org#")
+    #g.bind("ECSDI", ECSDI)
 
     # Cargar el grafo existente desde el archivo si existe
-    try:
-        g.parse("pedido.ttl", format="turtle")
-    except FileNotFoundError:
-        pass
+    #try:
+        #g.parse("pedido.ttl", format="turtle")
+    #except FileNotFoundError:
+        #pass
 
     # Leer el valor actual de searchid
-    searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
-    searchid = int(searchid_value) if searchid_value else 0
+    #searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
+    #searchid = int(searchid_value) if searchid_value else 0
 
     # Incrementar el valor de searchid
-    searchid += 1
+    last_id += 1
 
     # Actualizar el valor en el grafo
-    g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
+    g.set((agn.last_id, XSD.positiveInteger, Literal(last_id)))
 
     # Definir la URI de tu pedido
-    pedido_uri = ECSDI[f'Pedido/{searchid}']
+    #pedido_uri = ECSDI[f'Pedido/{last_id}']
+    pedido_uri = ECSDI.Pedido +'/'+ str(last_id+1)
 
     # Cargar el grafo del centro logístico
     centro_logistico_grafo = Graph()
-    centro_logistico_grafo.parse("centroLogisticos.ttl", format="turtle")
+    centro_logistico_grafo.parse("centros_logisticos.ttl", format="turtle")
 
     # Verificar productos en el centro logístico
     productos_centro_logistico = centro_logistico_grafo.objects(subject=centroLogistico, predicate=ECSDI.productos)
@@ -180,7 +197,7 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
     if productos_agregados:
         # Añadir triples al grafo para el pedido
         g.add((pedido_uri, RDF.type, ECSDI.Pedido))
-        g.add((pedido_uri, ECSDI.id, Literal(searchid, datatype=XSD.integer)))
+        g.add((pedido_uri, ECSDI.id, Literal(last_id, datatype=XSD.integer)))
         g.add((pedido_uri, ECSDI.latitud, Literal(latitud, datatype=XSD.decimal)))
         g.add((pedido_uri, ECSDI.longitud, Literal(longitud, datatype=XSD.decimal)))
         g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(prioridadEntrega, datatype=XSD.integer)))
@@ -190,7 +207,7 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
         g.add((pedido_uri, ECSDI.centrologistico, Literal(centroLogistico, datatype=XSD.string)))
 
     # Serializar el grafo en formato Turtle y guardarlo en un archivo
-    with open("pedido.ttl", "w") as f:
+    with open("bd/pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
     peso = pesos_agregados
     return productos_agregados
@@ -265,7 +282,7 @@ def escribirALote(centroLogID, prioridadEntrega, productos, pesos):
     g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
 
     lote_uri = ECSDI[f'Lote/{searchid}']
-    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
+    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=int(prioridadEntrega))
 
     # Añadir triples al grafo
     g.add((lote_uri, RDF.type, ECSDI.Lote))
@@ -333,7 +350,7 @@ def prepararLotes(centroLogID, prioridadEntrega, productos, pesos):
     g.parse("lote.ttl", format="turtle")
 
     fecha_hoy = datetime.datetime.now()
-    fecha_entrega = fecha_hoy + datetime.timedelta(days=prioridadEntrega)
+    fecha_entrega = fecha_hoy + datetime.timedelta(days=int(prioridadEntrega))
     fecha_entrega_dt = fecha_entrega.isoformat()
 
     lotes = []
@@ -425,7 +442,9 @@ def comunicacion():
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
+                    print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
                     productos_entregables = escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso)
+                    print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
                     prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
 
                     productos_node = BNode()
