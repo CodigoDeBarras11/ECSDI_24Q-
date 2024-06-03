@@ -170,7 +170,7 @@ def recomendar_productos_a_asistente():
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
 
     g = Graph()
-    g.parse("busqueda.ttl", format="ttl")
+    g.parse("busquedas.ttl", format="ttl")
 
     clientes_uris = set()
 
@@ -208,7 +208,7 @@ def recomendar_productos_a_asistente():
 
                     ng = Graph()
                     ng.add((agn.ProductosRecomendados, RDF.type, ECSDI.ProductosRecomendados))
-                    ng.add((agn.ProductosRecomendados, ECSDI.Cliente, cliente_uri))
+                    ng.add((agn.ProductosRecomendados, ECSDI.buscado_por, cliente_uri))
                     if max_peso:
                         ng.add((agn.ProductosRecomendados, ECSDI.max_peso, max_peso))
                     if max_precio:
@@ -216,12 +216,12 @@ def recomendar_productos_a_asistente():
                     if min_peso:
                         ng.add((agn.ProductosRecomendados, ECSDI.min_peso, min_peso))
                     if min_precio:
-                        ng.add((agn.ProductosRecomendados, ECSDI.max_precio, max_precio))
+                        ng.add((agn.ProductosRecomendados, ECSDI.min_precio, min_precio))
                     if tipoproducto:
                         ng.add((agn.ProductosRecomendados, ECSDI.tipoproducto, tipoproducto))
 
 
-                    receiver_address = get_agent("ASSISTENTEUSUARIO")
+                    receiver_address = get_agent("ASSISTANT")
                     if receiver_address != "NOT FOUND":
 
                         graph = build_message(
@@ -272,15 +272,24 @@ def comunicacion():
                 gr = build_message(Graph(), ACL['not-understood'], sender=AgenteExperiencia.uri, msgcnt=get_count())
             
             else:
-                info = msgdic['info'] 
+                content = msgdic['content'] 
                 # Averiguamos el tipo de la accion
-                accion = gm.value(subject=info, predicate=RDF.type)
+                accion = gm.value(subject=content, predicate=RDF.type)
 
-                if accion == ECSDI.PeticionFeedback:
-                    valoraciones = gm.value(subject=info, predicate=ECSDI.valoracion)
-                    productos = gm.value(subject=info, predicate=ECSDI.productos)
-                    cliente = gm.value(subject=info, predicate=ECSDI.Cliente)
+                if accion == ECSDI.RespuestaFeedback:
+                    valoraciones = gm.value(subject=content, predicate=ECSDI.valoracion)
+                    productos = gm.value(subject=content, predicate=ECSDI.productos)
+                    cliente = gm.value(subject=content, predicate=ECSDI.Cliente)
                     store_feedback(valoraciones, productos, cliente)
+                    graph = build_message(
+                            gmess=graph(),
+                            perf=ACL.agree,
+                            sender=AgenteExperiencia.uri,
+                            receiver=agn.AssistenteUsuario,
+                            content=agn.RespuestaFeedback,
+                            msgcnt=get_count()
+                    )
+                    return graph.serialize(format='xml')
                 
                 
 
@@ -423,7 +432,7 @@ def run_scheduler_in_background():
 
 if __name__ == '__main__':
     #pedir_feedback_a_asistente()
-
+    recomendar_productos_a_asistente()
     run_scheduler_in_background()
 
     hostaddr = hostname = socket.gethostname()

@@ -253,7 +253,7 @@ def feedback():
 
 def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     grafobusquedas = Graph()
-    if path.exists("cache_recomendados.ttl"): grafobusquedas.parse("busquedas.ttl", format="turtle")
+    if path.exists("cache_recomendados.ttl"): grafobusquedas.parse("cache_recomendados.ttl", format="turtle")
     else :
         grafobusquedas.add((agn.lastid, XSD.positiveInteger, Literal(0)))
         grafobusquedas.bind('ECSDI', ECSDI)
