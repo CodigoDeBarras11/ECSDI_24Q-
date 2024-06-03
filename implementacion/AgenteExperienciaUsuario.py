@@ -138,11 +138,16 @@ def pedir_feedback_a_asistente():
 
     ng = Graph()
     ng.add((agn.PeticionFeedback, RDF.type, ECSDI.PeticionFeedback))
+    i = 0
     for compra in compras_to_send:
         cliente_uri = g.value(compra, ECSDI.comprado_por)
         producto_uri = g.value(compra, ECSDI.Producto)
-        ng.add((agn.PeticionFeedback, ECSDI.valorada_por, cliente_uri))
-        ng.add((agn.PeticionFeedback, ECSDI.feedback_de, producto_uri))
+        peticionFeedback = agn.PeticionFeedback + str(i)
+        ng.add((peticionFeedback, ECSDI.valorada_por, cliente_uri))
+        ng.add((peticionFeedback, ECSDI.feedback_de, producto_uri))
+        i = i + 1
+        
+    print(ng.serialize(format='ttl'))
 
     print("hola")
     if compras_to_send:
