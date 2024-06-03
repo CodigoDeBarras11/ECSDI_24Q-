@@ -26,7 +26,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal
+from rdflib import Namespace, Graph, RDF, Literal, BNode
 from flask import Flask, request
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -34,6 +34,7 @@ from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 from rdflib.namespace import XSD
+from rdflib.collection import Collection
 
 __author__ = 'javier'
 
@@ -415,24 +416,27 @@ def comunicacion():
 
                     centroLogistico = gm.value(subject=content, predicate=ECSDI.CentroLogistico)
                     compra = gm.value(subject=content, predicate=ECSDI.Compra)
-                    productos = gm.value(subject=content, predicate=ECSDI.Producto)
+                    productos = gm.value(subject=content, predicate=ECSDI.productos)
                     prioridadEntrega = gm.value(subject=content, predicate=ECSDI.prioridadEntrega)
                     peso = gm.value(subject=content, predicate=ECSDI.peso)
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
-                    escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud)
+                    productos_entregables = escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud)
                     prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
 
-                    if no todos los productos:
-                        r_graph = build_message(
-                        gmess=Graph(), #aqui lista con los sujetos que quedan por enviar
+                    productos_node = BNode()
+                    Collection(r_gmess, productos_node, productos_entregables)
+                    r_gmess.add((agn.ProductosEntregables, ECSDI.productos, productos_node))
+                    r_graph = build_message(
+                        gmess=r_gmess,
                         perf=ACL.agree, 
                         sender=AgenteCentroLogistico.uri,
                         receiver=agn.AgenteCompra,
                         content=agn.ProductosEntregables,
                         msgcnt=mss_cnt
                     )
+                    
                     mss_cnt += 1
                     return r_graph.serialize(format='xml')
                     
