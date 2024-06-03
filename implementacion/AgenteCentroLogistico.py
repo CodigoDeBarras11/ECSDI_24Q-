@@ -438,7 +438,7 @@ def comunicacion():
                         perf=ACL.agree, 
                         sender=AgenteCentroLogistico.uri,
                         receiver=agn.AgenteCompra,
-                        content=ECSDI.ProductosEntregables,
+                        content=agn.ProductosEntregables,
                         msgcnt=mss_cnt
                     )
                     mss_cnt += 1

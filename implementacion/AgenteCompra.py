@@ -228,7 +228,7 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
     #print("---------------")
     #print(centros_ordenados)
 
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     for centro_logistico in centros_ordenados:
         gmess = Graph()
         gmess.add((agn.CentrosLogisticos, RDF.type, ECSDI.ProductosEnviar))
@@ -254,13 +254,13 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
         Collection(gmess, precios_node, precios)
         gmess.add((agn.CentrosLogisticos, ECSDI.precio, precios_node))
 
-        print("---------------")
-        print(gmess.serialize(format='ttl'))
-        print("---------------")
+        #print("---------------")
+        #print(gmess.serialize(format='ttl'))
+        #print("---------------")
     
         receiver_uri = agn.CentrosLogisticos
         receiver_address = get_agent("CENTROLOGISTICO")
-        print(receiver_address)
+        #print(receiver_address)
 
         msg_graph = build_message(
             gmess=gmess,
@@ -270,16 +270,12 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
             content=agn.CentrosLogisticos,
             msgcnt=mss_cnt
         )
-        response_graph1 = send_message(gmess=msg_graph, address=receiver_address)
-        
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    """for sujeto, precio, peso, producto in zip(sujetos, precios, pesos, productos):
-        print("---------------")
-        print(sujeto)
-        print(precio)
-        print(peso)
-        print(producto)
-        print("---------------")"""
+        response_graph = send_message(gmess=msg_graph, address=receiver_address)
+        productos_entregados = response_graph.value(subject=agn.ProductosEntregables, predicate=ECSDI.productos)
+        print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+        print(productos_entregados)
+        print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+    #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 @app.route("/comm")
 def comunicacion():
