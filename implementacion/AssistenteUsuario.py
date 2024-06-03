@@ -293,19 +293,25 @@ def productos_recomendados():
         gm.add((peticionbusquda, RDF.type, ECSDI.PeticionBusqueda))
         product_type = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.tipoproducto)
         gm.add((peticionbusquda, ECSDI.tipoproducto, Literal(product_type)))
+        graforecomendaciones.remove((busqueda, ECSDI.tipoproducto, Literal(product_type)))
         max_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_precio)
         if max_price:
             gm.add((peticionbusquda, ECSDI.max_precio, Literal(max_price)))
+            graforecomendaciones.remove((busqueda, ECSDI.max_precio, Literal(max_price)))
         min_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_price)
         if min_price:
             gm.add((peticionbusquda, ECSDI.min_precio, Literal(min_price)))
+            graforecomendaciones.remove((busqueda, ECSDI.min_precio, Literal(min_price)))
         max_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_weight)
         if max_weight:
             gm.add((peticionbusquda, ECSDI.max_peso, Literal(max_weight)))
+            graforecomendaciones.remove((busqueda, ECSDI.max_peso, Literal(max_weight)))
         min_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_weight)
         if min_weight:
             gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
+            graforecomendaciones.remove((busqueda, ECSDI.min_peso, Literal(min_weight)))
         gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
+        graforecomendaciones.remove((busqueda, ECSDI.buscado_por, usuario))
         msg = build_message(gm, ACL.request, sender=AssistenteUsuario.uri, receiver=agn.AgenteBusqueda, content= peticionbusquda, msgcnt=mss_cnt)
         searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
         if 'OK' in searchadd:
