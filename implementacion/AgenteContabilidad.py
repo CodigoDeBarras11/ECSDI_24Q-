@@ -132,9 +132,8 @@ def update_money(cliente, tienda, cantidad, accion):
         if cliente_existe and tienda_existe:
             break
 
-    last_id = 0
+    last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
     if not cliente_existe:
-        last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) 
         banco = ECSDI.CuentaBancaria +'/'+ str(last_id+1) 
         cuenta_usuario = cliente
         grafo_banco.add((banco, ECSDI.pertenece_a, cuenta_usuario)) 
@@ -142,7 +141,7 @@ def update_money(cliente, tienda, cantidad, accion):
         cantidad_negativa = "-" + cantidad
         grafo_banco.add((banco, ECSDI.balance, Literal(cantidad_negativa)))
     if not tienda_existe:
-        if not cliente_existe: last_id = grafo_banco.value(subject=agn.last_id, predicate=XSD.positiveInteger) + 1
+        if not cliente_existe: last_id = last_id + 1
         cuenta_tienda = tienda
         banco = ECSDI.CuentaBancaria +'/'+ str(last_id+1) 
         grafo_banco.add((banco, ECSDI.pertenece_a, cuenta_tienda)) 

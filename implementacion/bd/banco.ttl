@@ -6,6 +6,9 @@
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/1> ECSDI:balance "-195.0" ;
     ECSDI:pertenece_a <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> .
 
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/2> ECSDI:balance "195.0" ;
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/2> ECSDI:balance "-1329.0" ;
     ECSDI:pertenece_a <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CuentaBancaria/3> ECSDI:balance "0.0" ;
+    ECSDI:pertenece_a <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> .
 

@@ -268,41 +268,43 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
         receiver_address = get_agent("CENTROLOGISTICO")
         #print(receiver_address)
 
-        msg_graph = build_message(
-            gmess=gmess,
-            perf=ACL.request,
-            sender=AgenteCompra.uri,
-            receiver=receiver_uri,
-            content=agn.CentrosLogisticos,
-            msgcnt=mss_cnt
-        )
-        response_graph = send_message(gmess=msg_graph, address=receiver_address)
-        productos_entregables_nodo = response_graph.value(subject=agn.ProductosEntregables, predicate=ECSDI.productos)
-        productos_entregables_collection = Collection(response_graph, productos_entregables_nodo)
-        productos_entregables = []
-        productos_entregables.extend(productos_entregables_collection)
-        print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
-        print(productos_entregables)
-        print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+        if receiver_address != "NOT FOUND":
 
-        n_productos = []
-        n_sujetos = []
-        n_precios = []
-        n_pesos = []
-        for producto, sujeto, precio, peso in zip(productos, sujetos, precios, pesos):
-            if producto not in productos_entregables:
-                n_productos.append(producto)
-                n_sujetos.append(sujeto)
-                n_precios.append(precio)
-                n_pesos.append(peso)
-        productos = n_productos
-        print("CCCCCCCCCCCCCCCCCCCCCCCC")
-        print(productos)
-        print("CCCCCCCCCCCCCCCCCCCCCCCC")
-        sujetos = n_sujetos
-        precios = n_precios
-        pesos = n_pesos
-        if not productos: break
+            msg_graph = build_message(
+                gmess=gmess,
+                perf=ACL.request,
+                sender=AgenteCompra.uri,
+                receiver=receiver_uri,
+                content=agn.CentrosLogisticos,
+                msgcnt=mss_cnt
+            )
+            response_graph = send_message(gmess=msg_graph, address=receiver_address)
+            productos_entregables_nodo = response_graph.value(subject=agn.ProductosEntregables, predicate=ECSDI.productos)
+            productos_entregables_collection = Collection(response_graph, productos_entregables_nodo)
+            productos_entregables = []
+            productos_entregables.extend(productos_entregables_collection)
+            print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+            print(productos_entregables)
+            print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+
+            n_productos = []
+            n_sujetos = []
+            n_precios = []
+            n_pesos = []
+            for producto, sujeto, precio, peso in zip(productos, sujetos, precios, pesos):
+                if producto not in productos_entregables:
+                    n_productos.append(producto)
+                    n_sujetos.append(sujeto)
+                    n_precios.append(precio)
+                    n_pesos.append(peso)
+            productos = n_productos
+            print("CCCCCCCCCCCCCCCCCCCCCCCC")
+            print(productos)
+            print("CCCCCCCCCCCCCCCCCCCCCCCC")
+            sujetos = n_sujetos
+            precios = n_precios
+            pesos = n_pesos
+            if not productos: break
 
     #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
@@ -479,21 +481,23 @@ def comunicacion():
                     receiver_uri = agn.AgenteContabilidad
                     receiver_address = get_agent("CONTABILIDAD")
 
-                    content_graph = Graph()
-                    content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
-                    content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
-                    content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
-                    content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
-                    
-                    msg_graph = build_message(
-                        gmess=content_graph,
-                        perf=ACL.request,
-                        sender=AgenteCompra.uri,
-                        receiver=receiver_uri,
-                        content=agn.PeticionDevolucion,
-                        msgcnt=mss_cnt
-                    )
-                    response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
+                    if receiver_address != "NOT FOUND":
+
+                        content_graph = Graph()
+                        content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
+                        content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                        content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
+                        content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
+                        
+                        msg_graph = build_message(
+                            gmess=content_graph,
+                            perf=ACL.request,
+                            sender=AgenteCompra.uri,
+                            receiver=receiver_uri,
+                            content=agn.PeticionDevolucion,
+                            msgcnt=mss_cnt
+                        )
+                        response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
 
                 
                 grafo_compras.serialize("bd/compras.ttl", format="turtle")

@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#last_id> xsd:positiveInteger 4 .
+<http://www.agentes.org#last_id> xsd:positiveInteger 8 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/1> a ECSDI:Compra ;
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/30> ;
@@ -37,5 +37,41 @@
     ECSDI:fechaHora "2024-06-03" ;
     ECSDI:peso "582.0435" ;
     ECSDI:precio "71.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/5> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/40> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "1616.645" ;
+    ECSDI:precio "2973.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/6> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "1541.606" ;
+    ECSDI:precio "1979.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/7> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/22> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:devuelta "0" ;
+    ECSDI:fechaHora "None" ;
+    ECSDI:peso "1526.078" ;
+    ECSDI:precio "1035.0" ;
+    ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/8> a ECSDI:Compra ;
+    ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/34> ;
+    ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:devuelta "1" ;
+    ECSDI:fechaHora "2024-06-01" ;
+    ECSDI:peso "1016.822" ;
+    ECSDI:precio "762.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
 

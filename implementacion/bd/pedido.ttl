@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#last_id> xsd:positiveInteger 54 .
+<http://www.agentes.org#last_id> xsd:positiveInteger 57 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/10> a ECSDI:Pedido ;
     ECSDI:CentroLogistico "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3"^^xsd:string ;
@@ -389,6 +389,37 @@
         <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/30>,
         <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48>,
         <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/9> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/55> a ECSDI:Pedido ;
+    ECSDI:CentroLogistico "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1"^^xsd:string ;
+    ECSDI:compra_a_enviar "[rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/7'), rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/6'), rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/5'), rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/8')]"^^xsd:string ;
+    ECSDI:fechaHora "2024-06-08T21:50:52.099902"^^xsd:dateTime ;
+    ECSDI:id 55 ;
+    ECSDI:latitud 555.0 ;
+    ECSDI:longitud 222.0 ;
+    ECSDI:prioridadEntrega 5 ;
+    ECSDI:productos_enviados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/22>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/34> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/56> a ECSDI:Pedido ;
+    ECSDI:CentroLogistico "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3"^^xsd:string ;
+    ECSDI:compra_a_enviar "[rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/6'), rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/5')]"^^xsd:string ;
+    ECSDI:fechaHora "2024-06-08T21:51:00.387759"^^xsd:dateTime ;
+    ECSDI:id 56 ;
+    ECSDI:latitud 555.0 ;
+    ECSDI:longitud 222.0 ;
+    ECSDI:prioridadEntrega 5 ;
+    ECSDI:productos_enviados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/40> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/57> a ECSDI:Pedido ;
+    ECSDI:CentroLogistico "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/2"^^xsd:string ;
+    ECSDI:compra_a_enviar "[rdflib.term.URIRef('urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/6')]"^^xsd:string ;
+    ECSDI:fechaHora "2024-06-08T21:51:08.689587"^^xsd:dateTime ;
+    ECSDI:id 57 ;
+    ECSDI:latitud 555.0 ;
+    ECSDI:longitud 222.0 ;
+    ECSDI:prioridadEntrega 5 ;
+    ECSDI:productos_enviados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/6> a ECSDI:Pedido ;
     ECSDI:CentroLogistico "urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1"^^xsd:string ;

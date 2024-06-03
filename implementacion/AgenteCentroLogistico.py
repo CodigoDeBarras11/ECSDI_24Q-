@@ -85,7 +85,7 @@ def get_count():
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("20:17").do(send_info_to_accounting)
+    schedule.every().day.at("21:49").do(send_info_to_accounting)
 
     # Verificar si es la hora programada
     # Run the scheduler

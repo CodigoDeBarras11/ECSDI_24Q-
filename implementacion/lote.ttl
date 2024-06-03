@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#searchid> xsd:positiveInteger 61 .
+<http://www.agentes.org#searchid> xsd:positiveInteger 64 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Lote/1> a ECSDI:Lote ;
     ECSDI:centro_logistico <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1> ;
@@ -402,6 +402,31 @@
         <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48>,
         <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/9> ;
     ECSDI:transportista <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/1> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Lote/62> a ECSDI:Lote ;
+    ECSDI:centro_logistico <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1> ;
+    ECSDI:fechahora "2024-06-08T21:50:52.145322"^^xsd:dateTime ;
+    ECSDI:id 62 ;
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/22>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/34>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/40>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> ;
+    ECSDI:transportista <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/1> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Lote/63> a ECSDI:Lote ;
+    ECSDI:centro_logistico <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3> ;
+    ECSDI:fechahora "2024-06-08T21:51:00.441278"^^xsd:dateTime ;
+    ECSDI:id 63 ;
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/40>,
+        <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> ;
+    ECSDI:transportista <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/2> .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Lote/64> a ECSDI:Lote ;
+    ECSDI:centro_logistico <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/2> ;
+    ECSDI:fechahora "2024-06-08T21:51:08.736667"^^xsd:dateTime ;
+    ECSDI:id 64 ;
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> ;
+    ECSDI:transportista <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/3> .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Lote/7> a ECSDI:Lote ;
     ECSDI:centro_logistico <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3> ;
