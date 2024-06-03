@@ -173,6 +173,32 @@ def compra():
     return render_template('products.html', products=products)
 
 
+def cahear_feedback(user, product):
+    cache_feedback = Graph()
+    if path.exists("feedback_cache.ttl"):
+        cache_feedback.parse("feedback_cache.ttl", format="turtle")
+    else:
+        cache_feedback.bind('ECSDI', ECSDI)
+        cache_feedback.add((agn.lastid, XSD.positiveInteger, Literal(0)))
+
+    lastid = cache_feedback.value(subject=agn.lastid, predicate=XSD.positiveInteger)
+    feddback = ECSDI.PeticionFeedback + '/'+str(lastid)
+    #cache_feedback.add((feddback, ECSDI.id, Literal(lastid)))
+    cache_feedback.add((feddback, RDF.type, ECSDI.PeticionFeedback))
+    cache_feedback.add((feddback, ECSDI.feedback_de, product))
+    cache_feedback.add((feddback, ECSDI.valorada_por, user))
+
+    cache_feedback.set((agn.lastid, XSD.positiveInteger,Literal(lastid+1)))
+    cache_feedback.serialize("feedback_cache.ttl", format="turtle")
+
+@app.route("/dar_feedback")
+def feedback():
+    if path.exists("feedback_cache.ttl"):
+        cache_feedback = Graph()
+        cache_feedback.parse("feedback_cache.ttl", format="turtle")
+        valoraciones = cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario)
+        print(valoraciones[0])
+
 @app.route("/comm")
 async def comunicacion():
     """
@@ -213,12 +239,16 @@ async def comunicacion():
             if 'content' in msgdic:
                 content = msgdic['content']
                 accion = grafo.value(subject=content, predicate=RDF.type)
-                if accion == ECSDI.PeticionBusqueda:
-                   gr = build_message(Graph(),
-                        ACL['inform'],
+                if accion == ECSDI.PeticionFeedback:
+                    producto = grafo.value(subject=content, predicate=ECSDI.Producto)
+                    cliente = grafo.value(subject=content, predicate=ECSDI.Cliente)
+                    cahear_feedback(cliente, producto)
+                    gr = build_message(Graph(),
+                        ACL['confirm'],
                         sender=AssistenteUsuario.uri,
                         msgcnt=mss_cnt,
-                        receiver=msgdic['sender'])
+                        receiver= agn.AgenteExperienciaUsuario
+                        )
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
 
