@@ -76,7 +76,8 @@ def get_count():
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("08:00").do(pedir_feedback_a_assistente)
+    schedule.every().day.at("08:00").do(pedir_feedback_a_asistente)
+    schedule.every().day.at("09:00").do(recomendar_productos_a_asistente)
 
     # Verificar si es la hora programada
     while True:
@@ -86,7 +87,7 @@ def schedule_tasks():
             schedule.run_pending()
         time.sleep(60)
 
-def pedir_feedback_a_assistente():
+def pedir_feedback_a_asistente():
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
 
     g = Graph()
@@ -118,6 +119,7 @@ def pedir_feedback_a_assistente():
     mss_cnt += 1
     r_graph.serialize(format='xml')
 
+def recomendar_productos_a_asistente:
 
 
 @app.route("/comm")
@@ -159,8 +161,10 @@ def comunicacion():
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=content, predicate=RDF.type)
 
-                if accion == ECSDI.Feedback:
+                if accion == ECSDI.PeticionFeedback:
                     store_feedback(valoraciones, productos, cliente)
+                elsif ac:
+                
 
 def store_feedback(valoraciones, productos, cliente):
     g = Graph()
