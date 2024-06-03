@@ -133,7 +133,7 @@ def send_info_to_accounting():
     return r_graph.serialize(format='xml')
 
 
-def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud):
+def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso):
     # Crear el grafo y namespaces
     g = Graph()
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
@@ -169,11 +169,13 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
     # Crear un set de productos disponibles en el centro logístico
     productos_disponibles = set(productos_centro_logistico)
     productos_agregados = []
+    pesos_agregados = []
     # Añadir productos verificados al grafo del pedido
     for producto in productos:
         if producto in productos_disponibles:
             g.add((pedido_uri, ECSDI.productos_enviados, producto))
             productos_agregados.append(producto)
+            pesos_agregados.append(peso)
     
     if productos_agregados:
         # Añadir triples al grafo para el pedido
@@ -190,6 +192,7 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
     # Serializar el grafo en formato Turtle y guardarlo en un archivo
     with open("pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
+    peso = pesos_agregados
     return productos_agregados
 
 
@@ -422,7 +425,7 @@ def comunicacion():
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
-                    productos_entregables = escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud)
+                    productos_entregables = escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso)
                     prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
 
                     productos_node = BNode()
