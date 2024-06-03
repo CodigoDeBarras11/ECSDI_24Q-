@@ -134,6 +134,12 @@ def recomendar_productos_a_asistente():
         if cliente_uri:
             clientes_uris.add(cliente_uri)
 
+    max_peso = None
+    max_precio = None
+    min_precio = None
+    min_peso = None
+    tipoproducto = None
+
     for cliente_uri in clientes_uris:
         busquedas_cliente = list(g.subjects(ECSDI.buscado_por, cliente_uri))
         if busquedas_cliente:
