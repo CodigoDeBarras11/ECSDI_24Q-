@@ -254,7 +254,7 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
         print(gmess.serialize(format='ttl'))
         print("---------------")
     
-        receiver_uri = agn.AgenteCentroLogistico
+        receiver_uri = agn.CentrosLogisticos
         receiver_address = get_agent("CENTROLOGISTICO")
         print(receiver_address)
 
