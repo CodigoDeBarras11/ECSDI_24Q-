@@ -233,7 +233,9 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
         gmess = Graph()
         gmess.add((agn.CentrosLogisticos, RDF.type, ECSDI.ProductosEnviar))
         gmess.add((agn.CentrosLogisticos, ECSDI.CentroLogistico, centro_logistico[0]))
-        gmess.add((agn.CentrosLogisticos, ECSDI.prioridadEntrega, Literal(prioridad_de_entrega)))
+        gmess.add((agn.CentrosLogisticos, ECSDI.latitud, Literal(lat_us)))
+        gmess.add((agn.CentrosLogisticos, ECSDI.longitud, Literal(lon_us)))
+        
 
         productos_node = BNode()
         Collection(gmess, productos_node, productos)
