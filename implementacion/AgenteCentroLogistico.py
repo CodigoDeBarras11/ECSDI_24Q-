@@ -411,7 +411,7 @@ def comunicacion():
             else:
                 content = msgdic['content'] 
                 # Averiguamos el tipo de la accion
-                accion = gm.value(subject=receiver_uri, predicate=RDF.type)
+                accion = gm.value(subject=content, predicate=RDF.type)
 
                 if accion == ECSDI.ProductosEnviar: 
                     r_gmess = Graph()
