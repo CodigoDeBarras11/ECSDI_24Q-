@@ -143,10 +143,11 @@ def pedir_feedback_a_asistente():
         cliente_uri = g.value(compra, ECSDI.comprado_por)
         producto_uri = g.value(compra, ECSDI.Producto)
         peticionFeedback = agn.PeticionFeedback + str(i)
+        ng.add((cliente_uri, RDF.type, ECSDI.Cliente))
         ng.add((peticionFeedback, ECSDI.valorada_por, cliente_uri))
         ng.add((peticionFeedback, ECSDI.feedback_de, producto_uri))
         i = i + 1
-        
+
     print(ng.serialize(format='ttl'))
 
     print("hola")
@@ -302,12 +303,12 @@ def store_feedback(valoraciones, productos, cliente):
         g.set((agn.last_id, XSD.positiveInteger, Literal(last_id)))
         feedback_uri = ECSDI.Feedback +'/'+ str(last_id+1)
         g.add((feedback_uri, RDF.type, ECSDI.Feedback))
-        g.add((feedback_uri, ECSDI.valorado_por, cliente))
+        g.add((feedback_uri, ECSDI.valorada_por, cliente))
         g.add((feedback_uri, ECSDI.feedback_de, producto))
         g.add((feedback_uri, ECSDI.valoracion, valoracion))
         last_id += 1
-    with open("bd/feecback.ttl", "w") as f:
-        f.write(g.serialize(format="turtle"))
+   
+    g.serialize("bd/feecback.ttl", format="turtle")
 
 
 
@@ -421,7 +422,7 @@ def run_scheduler_in_background():
 
 
 if __name__ == '__main__':
-    pedir_feedback_a_asistente()
+    #pedir_feedback_a_asistente()
 
     run_scheduler_in_background()
 

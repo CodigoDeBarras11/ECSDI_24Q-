@@ -247,7 +247,7 @@ def feedback():
         presente = True
         prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
         prodname = product_graph.value(subject=prod, predicate=ECSDI.nombre)
-        product_graph.append({"name": prodname, "uri": prod})
+        productos.append({"name": prodname, "uri": prod})
     if(presente): return render_template_string(generate_feedback_form(productos))
     else: return redirect(url_for('userIndex'), mensaje = "No tienes productos para valorar")
 
