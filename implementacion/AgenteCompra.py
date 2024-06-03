@@ -206,7 +206,7 @@ def get_agent(agente):
         return "NOT FOUND"
 
 
-def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
+def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, prioridad_de_entrega):
     grafo_centroLogisticos = Graph()
     try:
         grafo_centroLogisticos.parse("centros_logisticos.ttl", format="turtle")
@@ -233,6 +233,7 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
         gmess = Graph()
         gmess.add((agn.CentrosLogisticos, RDF.type, ECSDI.ProductosEnviar))
         gmess.add((agn.CentrosLogisticos, ECSDI.CentroLogistico, centro_logistico[0]))
+        gmess.add((agn.CentrosLogisticos, ECSDI.prioridadEntrega, Literal(prioridad_de_entrega)))
 
         productos_node = BNode()
         Collection(gmess, productos_node, productos)
@@ -402,7 +403,7 @@ def comunicacion():
                 print(precio_total)
                 print(fecha_de_entrega_provisional)
 
-                enviar_productos(sujetos, precios, pesos, productos, latitud, longitud)
+                enviar_productos(sujetos, precios, pesos, productos, latitud, longitud, prioridad_de_entrega)
                 
                 r_gmess = Graph()
                 r_gmess.add((agn.InformacionProvisionalEntrega, RDF.type, ECSDI.InformacionProvisionalEntrega))
