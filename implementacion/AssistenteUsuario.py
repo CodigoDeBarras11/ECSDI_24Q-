@@ -226,19 +226,21 @@ def feedback():
         feedback_data = request.form
         feedback_graph = Graph()
         for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
+            feedback_graph.add((val, ECSDI.valorada_por, usuario))
             prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
             feedback_graph.add((val, ECSDI.feedback_de, prod))
             punt = feedback_data.get('rating_'+ prod)
+            print(punt)
             cache_feedback.remove((val, ECSDI.feedback_de, prod))
             cache_feedback.remove((val, ECSDI.valorada_por, usuario))
             feedback_graph.add((val, ECSDI.valoracion, Literal(punt)))
         feedback_graph.add((agn.RespuestaFeedback, RDF.type, ECSDI.RespuestaFeedback))
         feedback_graph.add((agn.RespuestaFeedback, ECSDI.valorada_por, usuario))
-        message = build_message(feedback_graph, ACL['inform'], sender = AssistenteUsuario.uri, receiver=agn.AgenteExperienciaUsuario, content=agn.RespuestaFeedback)
+        message = build_message(feedback_graph, perf=ACL.request, sender = AssistenteUsuario.uri, receiver=agn.AgenteExperienciaUsuario, content=agn.RespuestaFeedback)
         resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|EXPERIENCIAUSUARIO'}).text
         if 'OK' in resp:
             feedbackadd = resp[4:]
-        resposta = send_message(message,feedbackadd)
+        resposta = send_message(message,feedbackadd + '/comm')
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
         session['mensaje'] =  "Gracias por tu opinion"
         return redirect(url_for('userIndex'))

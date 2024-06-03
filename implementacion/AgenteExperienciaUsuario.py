@@ -245,9 +245,9 @@ def comunicacion():
     global dsgraph
     global mss_cnt
 
-
-    message = request.args.get('content', '')  #
-    print(message)
+    print("-------------------------------")
+    message = request.args['content']
+    #print(message)
     gm = Graph()
     gm.parse(data=message, format='xml') 
     msgdic = get_message_properties(gm)
@@ -275,11 +275,20 @@ def comunicacion():
                 content = msgdic['content'] 
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=content, predicate=RDF.type)
+                valoraciones = []
+                productos = []
 
                 if accion == ECSDI.RespuestaFeedback:
-                    valoraciones = gm.value(subject=content, predicate=ECSDI.valoracion)
-                    productos = gm.value(subject=content, predicate=ECSDI.productos)
-                    cliente = gm.value(subject=content, predicate=ECSDI.Cliente)
+                    
+                    cliente = gm.value(subject=content, predicate=ECSDI.valorada_por)
+                    for valoracion_s in gm.subjects(predicate=ECSDI.valorada_por, object=cliente):
+                        valoracion = gm.value(subject=valoracion_s, predicate=ECSDI.valoracion)
+                        producto = gm.value(subject=valoracion_s, predicate=ECSDI.feedback_de)
+                        valoraciones.append(valoracion)
+                        productos.append(producto)
+                    
+                    print(valoraciones)
+                    print(productos)
                     store_feedback(valoraciones, productos, cliente)
                     graph = build_message(
                             gmess=graph(),
@@ -432,7 +441,7 @@ def run_scheduler_in_background():
 
 if __name__ == '__main__':
     #pedir_feedback_a_asistente()
-    recomendar_productos_a_asistente()
+    #recomendar_productos_a_asistente()
     run_scheduler_in_background()
 
     hostaddr = hostname = socket.gethostname()

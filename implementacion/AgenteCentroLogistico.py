@@ -448,16 +448,9 @@ def comunicacion():
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
-                    print("------------------------")
-                    print(compras)
-                    print("------------------------")
-                    print(productos)
-                    print("------------------------")
-                    print(pesos)
-                    print("------------------------")
-                    print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+                   
                     productos_entregables = escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latitud, longitud, pesos)
-                    print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+                
                     prepararLotes(centroLogistico, prioridadEntrega, productos, pesos)
 
                     productos_node = BNode()
