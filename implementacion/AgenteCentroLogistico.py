@@ -431,7 +431,18 @@ def comunicacion():
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
                     escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud)
                     prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
-                
+
+                    if no todos los productos:
+                        r_graph = build_message(
+                        gmess=Graph(), #aqui lista con los sujetos que quedan por enviar
+                        perf=ACL.agree, 
+                        sender=AgenteCentroLogistico.uri,
+                        receiver=agn.AgenteCompra,
+                        content=ECSDI.ProductosEntregables,
+                        msgcnt=mss_cnt
+                    )
+                    mss_cnt += 1
+                    return r_graph.serialize(format='xml')
                     
                 
     return "p"
