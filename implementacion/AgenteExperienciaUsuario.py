@@ -112,6 +112,7 @@ def get_user_products(user):
     }
     """
     results = purchases_graph.query(query)
+    
 
     products = []
     for row in results:
@@ -124,21 +125,23 @@ def get_user_products(user):
 
 def generate_feedback_form(products):
     form_html = """
-    <h1>Product Feedback</h1>
+    <h1>Please give Feedback on the following products</h1>
     <form action="/submit_feedback" method="POST">
     """
+    #products = [{"name": "iphone", "uri": "ecsdi"}]
     for product in products:
         form_html += """
-        <h3>{}</h3>
+        <h4>{}
         <input type="hidden" name="product_uri" value="{}">
-        <label for="rating_{}">Rating (1-5):</label>
-        <input type="number" id="rating_{}" name="rating_{}" min="1" max="5" required><br>
+
+        <input type="number" id="rating_{}" name="rating_{}" min="1" max="5" required></h4><br>
         """.format(product["name"], product["uri"], product["uri"], product["uri"], product["uri"])
 
     form_html += """
         <input type="submit" value="Submit Feedback">
     </form>
     """
+    #<label for="rating_{}">Rating (1-5):</label>
     return form_html
 
 def store_feedback(feedback_data):
@@ -156,6 +159,9 @@ def store_feedback(feedback_data):
 
     feedback_graph.serialize("feedback.ttl", format="turtle")
 
+@app.route("/")
+def index():
+    return render_template_string(generate_feedback_form())
 
 @app.route("/Stop")
 def stop():

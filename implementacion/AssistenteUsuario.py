@@ -2,7 +2,7 @@ from os import getcwd, path
 import sys
 sys.path.append(path.dirname(getcwd()))
 from formularios import formbusca, formcompra, formlogin, formproduct, shopform
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, render_template_string, request, redirect, url_for
 import requests
 import socket
 from docs.ecsdi import ECSDI
@@ -87,7 +87,7 @@ def anadirProducto():
     print(request.form)
     if request.method == 'POST' and form.validate():
         createorUpdateproduct(form.data)
-        return redirect(url_for('index'))
+        return redirect(url_for('index'), mensaje = "Producto registrado")
     return render_template('addProduct.html', form = form)
     
 @app.route('/devolucion', methods=['GET', 'POST'])
@@ -184,20 +184,73 @@ def cahear_feedback(user, product):
     lastid = cache_feedback.value(subject=agn.lastid, predicate=XSD.positiveInteger)
     feddback = ECSDI.PeticionFeedback + '/'+str(lastid)
     #cache_feedback.add((feddback, ECSDI.id, Literal(lastid)))
-    cache_feedback.add((feddback, RDF.type, ECSDI.PeticionFeedback))
+    #cache_feedback.add((feddback, RDF.type, ECSDI.PeticionFeedback))
     cache_feedback.add((feddback, ECSDI.feedback_de, product))
     cache_feedback.add((feddback, ECSDI.valorada_por, user))
 
     cache_feedback.set((agn.lastid, XSD.positiveInteger,Literal(lastid+1)))
     cache_feedback.serialize("feedback_cache.ttl", format="turtle")
 
-@app.route("/dar_feedback")
+def generate_feedback_form(products):
+    form_html = """
+    <h1>Please give Feedback on the following products</h1>
+    <form action="/feedback" method="POST">
+    """
+    #products = [{"name": "iphone", "uri": "ecsdi"}]
+    for product in products:
+        form_html += """
+        <h4>{}
+        <input type="hidden" name="product_uri" value="{}">
+
+        <input type="number" id="rating_{}" name="rating_{}" min="1" max="5" required></h4><br>
+        """.format(product["name"], product["uri"], product["uri"], product["uri"], product["uri"])
+
+    form_html += """
+        <input type="submit" value="Submit Feedback">
+    </form>
+    """
+    #<label for="rating_{}">Rating (1-5):</label>
+    return form_html
+
+@app.route("/feedback")
 def feedback():
+    valoraciones = None
+    cache_feedback = Graph()
     if path.exists("feedback_cache.ttl"):
-        cache_feedback = Graph()
         cache_feedback.parse("feedback_cache.ttl", format="turtle")
-        valoraciones = cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario)
-        print(valoraciones[0])
+    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos para valorar")
+
+    if request.method == 'POST':
+        feedback_data = request.form
+        feedback_graph = Graph()
+        for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
+            prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
+            feedback_graph.add((val, ECSDI.feedback_de, prod))
+            punt = feedback_data.get('rating_'+ prod)
+            cache_feedback.remove((val, ECSDI.feedback_de, prod))
+            cache_feedback.remove((val, ECSDI.valorada_por, usuario))
+            feedback_graph.add((val, ECSDI.valoracion, Literal(punt)))
+        feedback_graph.add((agn.RespuestaFeedback, RDF.type, ECSDI.RespuestaFeedback))
+        feedback_graph.add((agn.RespuestaFeedback, ECSDI.valorada_por, usuario))
+        message = build_message(feedback_graph, ACL['inform'], sender = AssistenteUsuario.uri, receiver=agn.AgenteExperienciaUsuario, content=agn.RespuestaFeedback)
+        resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in resp:
+            feedbackadd = resp[4:]
+        resposta = send_message(message,feedbackadd)
+        cache_feedback.serialize("feedback_cache.ttl", format="turtle")
+    
+    product_graph = Graph()
+    product_graph.parse("product.ttl", format="turtle")
+    productos = []
+    for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
+        prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
+        prodname = product_graph.value(subject=prod, predicate=ECSDI.nombre)
+        product_graph.append({"name": prodname, "uri": prod})
+    return render_template_string(generate_feedback_form(productos))
+
+    
+
+       
 
 @app.route("/comm")
 async def comunicacion():
@@ -450,9 +503,6 @@ if 'OK' in resp:
     #print('adress:'+solveradd)
     print(f'ASSISTANT {solverid} successfully registered')
     # Buscamos el logger si existe en el registro
-    '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
-    if 'OK' in loggeradd:
-        logger = loggeradd[4:]'''
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     # Ponemos en marcha el servidor Flask
     app.run(host=hostname, port=port, debug=False, use_reloader=False, threaded = True)
