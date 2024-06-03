@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#searchid> xsd:positiveInteger 69 .
+<http://www.agentes.org#searchid> xsd:positiveInteger 72 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/0> a ECSDI:Busqueda ;
     ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> ;
@@ -334,9 +334,24 @@
     ECSDI:id 68 ;
     ECSDI:tipoproducto "Computer" .
 
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/69> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 69 ;
+    ECSDI:tipoproducto "Blender" .
+
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/7> a ECSDI:Busqueda ;
     ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
     ECSDI:id 7 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/70> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 70 ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/71> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:id 71 ;
     ECSDI:tipoproducto "Blender" .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Busqueda/8> a ECSDI:Busqueda ;
