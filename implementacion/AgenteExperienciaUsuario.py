@@ -171,9 +171,7 @@ def store_feedback(valoraciones, productos, cliente):
 
 
 
-
- return "p"
-
+"""
 @app.route("/request_feedback")
 def request_feedback():
     user = request.args.get('user') #obtener el usuario
@@ -195,15 +193,15 @@ def get_user_products(user):
     if path.exists("compra.ttl"):
         purchases_graph.parse("compra.ttl", format="turtle")
 
-    query = """
-    PREFIX ecsdi: <http://www.agentes.org#>
-    SELECT ?product ?name
-    WHERE {
-        ?purchase ecsdi:comprado_por <""" + user + """> .
-        ?purchase ecsdi:contieneProducto ?product .
-        ?product ecsdi:nombre ?name .
-    }
-    """
+    query = 
+    #PREFIX ecsdi: <http://www.agentes.org#>
+    #SELECT ?product ?name
+    #WHERE {
+    #    ?purchase ecsdi:comprado_por < + user + > .
+    #    ?purchase ecsdi:contieneProducto ?product .
+    #    ?product ecsdi:nombre ?name .
+    #}
+    
     results = purchases_graph.query(query)
     
 
@@ -217,23 +215,23 @@ def get_user_products(user):
     return products
 
 def generate_feedback_form(products):
-    form_html = """
-    <h1>Please give Feedback on the following products</h1>
-    <form action="/submit_feedback" method="POST">
-    """
+    form_html = 
+    #<h1>Please give Feedback on the following products</h1>
+    #<form action="/submit_feedback" method="POST">
+    
     #products = [{"name": "iphone", "uri": "ecsdi"}]
     for product in products:
-        form_html += """
+        form_html += 
         <h4>{}
         <input type="hidden" name="product_uri" value="{}">
 
         <input type="number" id="rating_{}" name="rating_{}" min="1" max="5" required></h4><br>
-        """.format(product["name"], product["uri"], product["uri"], product["uri"], product["uri"])
+        .format(product["name"], product["uri"], product["uri"], product["uri"], product["uri"])
 
-    form_html += """
+    form_html += 
         <input type="submit" value="Submit Feedback">
     </form>
-    """
+    
     #<label for="rating_{}">Rating (1-5):</label>
     return form_html
 
@@ -257,12 +255,10 @@ def index():
     return render_template_string(generate_feedback_form())
 @app.route("/Stop")
 def stop():
-    """
-    Entrypoint that stops the agent
-    """
     tidyup()
     shutdown_server()
     return "Stopping Server"
+"""
 
 
 def tidyup():
