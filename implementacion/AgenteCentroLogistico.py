@@ -132,7 +132,7 @@ def send_info_to_accounting():
     return r_graph.serialize(format='xml')
 
 
-def escribirAPedido(prioridadEntrega, productos, compraID, latitud, longitud):
+def escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud):
     #crear pedido
     g = Graph()
     # Definir el namespace de tu ontología ECSDI
@@ -168,17 +168,13 @@ def escribirAPedido(prioridadEntrega, productos, compraID, latitud, longitud):
 
     # Añadir triples al grafo
     g.add((pedido_uri, RDF.type, ECSDI.Pedido))
-    g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer)))  # Id del pedido
-    g.add((pedido_uri, ECSDI.latitud, latitud))  # Latitud
-    g.add((pedido_uri, ECSDI.longitud, longitud))  # Longitud
-    g.add((pedido_uri, ECSDI.metodoPago, metodoPago))  # Método de pago
-    g.add((pedido_uri, ECSDI.prioridadEntrega, prioridadEntrega))  # Prioridad de entrega
+    g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer))) 
+    g.add((pedido_uri, ECSDI.latitud, latitud)) 
+    g.add((pedido_uri, ECSDI.longitud, longitud)) 
+    g.add((pedido_uri, ECSDI.prioridadEntrega, prioridadEntrega))  
     fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
-    g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))  # Prioridad de entrega
-
-    # Definir la URI de la compra asociada al pedido
-    compra_uri = ECSDI[f'Compra/{compraID}']
-    g.add((pedido_uri, ECSDI.compra_a_enviar, compra_uri))
+    g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))  
+    g.add((pedido_uri, ECSDI.compra_a_enviar, compra))
     for producto in productos:
         producto_uri = URIRef(producto['uri'])
         g.add((pedido_uri, ECSDI.productos_enviados, producto_uri))
@@ -417,7 +413,7 @@ def comunicacion():
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-                if accion == ECSDI.Productos_A_Enviar: 
+                if accion == ECSDI.ProductosEnviar: 
                     r_gmess = Graph()
               
                     print(message)
@@ -425,9 +421,12 @@ def comunicacion():
                     centroLogistico = gm.value(subject=content, predicate=ECSDI.CentroLogistico)
                     compra = gm.value(subject=content, predicate=ECSDI.Compra)
                     productos = gm.value(subject=content, predicate=ECSDI.Producto)
-                    prioridadEntrega = gm.value(subject=content, predicate=ECSDI.)
-
-                    escribirAPedido()
+                    prioridadEntrega = gm.value(subject=content, predicate=ECSDI.prioridadEntrega)
+                    peso = gm.value(subject=content, predicate=ECSDI.peso)
+                    precio = gm.value(subject=content, predicate=ECSDI.precio)
+                    latitud =
+                    longitud = 
+                    escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud)
                     prepararLotes()
                 
                     
