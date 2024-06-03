@@ -255,7 +255,7 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us):
         print("---------------")
     
         receiver_uri = agn.AgenteCentroLogistico
-        receiver_address = get_agent("AgenteCentroLogistico")
+        receiver_address = get_agent("CENTROLOGISTICO")
         print(receiver_address)
 
         msg_graph = build_message(
