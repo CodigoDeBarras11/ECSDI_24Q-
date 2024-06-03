@@ -5,7 +5,7 @@
 
  Translated to RDFlib from ontology urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8
 
- :Date 03/06/2024 11:36:04
+ :Date 03/06/2024 12:59:59
 """
 from rdflib import URIRef
 from rdflib.namespace import ClosedNamespace

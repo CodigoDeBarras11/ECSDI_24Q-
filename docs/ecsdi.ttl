@@ -94,7 +94,8 @@
 
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#centro_logistico
 :centro_logistico rdf:type owl:ObjectProperty ;
-                  rdfs:domain :Lote ;
+                  rdfs:domain <http://webprotege.stanford.edu/Pedido> ,
+                              :Lote ;
                   rdfs:range <http://webprotege.stanford.edu/CentroLogistico> .
 
 
@@ -210,8 +211,8 @@
 ###  http://webprotege.stanford.edu/metodoPago
 <http://webprotege.stanford.edu/metodoPago> rdf:type owl:DatatypeProperty ;
                                             rdfs:subPropertyOf owl:topDataProperty ;
-                                            rdfs:domain <http://webprotege.stanford.edu/InfoUsuarioEntrega> ,
-                                                        <http://webprotege.stanford.edu/Pedido> ;
+                                            rdfs:domain <http://webprotege.stanford.edu/Compra> ,
+                                                        <http://webprotege.stanford.edu/InfoUsuarioEntrega> ;
                                             rdfs:range <http://webprotege.stanford.edu/TPago> ;
                                             rdfs:comment "TPago (enumeration): tarjeta de credito, transferencia bancaria, etc" ;
                                             rdfs:label "metodoPago" .
