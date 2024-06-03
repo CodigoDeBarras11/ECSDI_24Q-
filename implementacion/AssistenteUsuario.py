@@ -238,6 +238,7 @@ def feedback():
             feedbackadd = resp[4:]
         resposta = send_message(message,feedbackadd)
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
+
         return redirect(url_for('userIndex'), mensaje = "Gracias por tu opinion")
     
     product_graph = Graph()
