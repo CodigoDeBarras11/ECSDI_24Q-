@@ -126,6 +126,12 @@
            rdfs:range <http://webprotege.stanford.edu/Producto> .
 
 
+###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#productos_enviados
+:productos_enviados rdf:type owl:ObjectProperty ;
+                    rdfs:domain <http://webprotege.stanford.edu/Pedido> ;
+                    rdfs:range <http://webprotege.stanford.edu/Producto> .
+
+
 ###  urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8#transportista
 :transportista rdf:type owl:ObjectProperty ;
                rdfs:domain :Lote ;
@@ -167,6 +173,7 @@
                                            rdfs:domain <http://webprotege.stanford.edu/Compra> ,
                                                        <http://webprotege.stanford.edu/InfoEnvio> ,
                                                        <http://webprotege.stanford.edu/InformacionProvisionalEntrega> ,
+                                                       <http://webprotege.stanford.edu/Pedido> ,
                                                        <http://webprotege.stanford.edu/RecordatorioPedirFeedback> ,
                                                        <http://webprotege.stanford.edu/RespuestaTransporte> ,
                                                        :Lote ;

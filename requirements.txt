@@ -7,3 +7,4 @@ matplotlib
 pif
 flask-wtf
 babel
+schedule
