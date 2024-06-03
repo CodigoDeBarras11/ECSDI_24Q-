@@ -176,8 +176,7 @@ def escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud):
     g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))  
     g.add((pedido_uri, ECSDI.compra_a_enviar, compra))
     for producto in productos:
-        producto_uri = URIRef(producto['uri'])
-        g.add((pedido_uri, ECSDI.productos_enviados, producto_uri))
+        g.add((pedido_uri, ECSDI.productos_enviados, producto))
 
 
     temp_ttl = g.serialize(format="turtle")
@@ -240,7 +239,7 @@ def negociarTransportista(fecha_entrega_dt):
 
 
 
-def escribirALote(centroLogID, prioridadEntrega, productos):
+def escribirALote(centroLogID, prioridadEntrega, productos, pesos):
         #crear pedido
     g = Graph()
     # Definir el namespace de tu ontología ECSDI
@@ -285,13 +284,14 @@ def escribirALote(centroLogID, prioridadEntrega, productos):
     g.add((lote_uri, ECSDI.transportista, transp_uri))
     #Un for para añadir todos los productos al lote
     peso_actual = 0
-    for producto in productos:
-        producto_peso = float(producto['peso'])  # Asumiendo que cada producto tiene un atributo 'peso'
+    while productos and pesos:
+        producto_uri = URIRef(productos[0])
+        producto_peso = float(pesos[0])
         if peso_actual + producto_peso <= MaxPesoLote:
             peso_actual += producto_peso
-            producto_uri = URIRef(producto['uri'])
-            productos.pop(0)
             g.add((lote_uri, ECSDI.productos, producto_uri))
+            productos.pop(0)
+            pesos.pop(0)
         else:
             # Si el producto no cabe en el lote actual, guardamos el lote actual y creamos uno nuevo
             searchid += 1
@@ -302,7 +302,9 @@ def escribirALote(centroLogID, prioridadEntrega, productos):
             g.add((lote_uri, ECSDI.fechahora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
             g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
             peso_actual = producto_peso
-            g.add((lote_uri, ECSDI.productos, URIRef(producto['uri'])))
+            g.add((lote_uri, ECSDI.productos, producto_uri))
+            productos.pop(0)
+            pesos.pop(0)
 
     temp_ttl = g.serialize(format="turtle")
 
@@ -324,7 +326,7 @@ def escribirALote(centroLogID, prioridadEntrega, productos):
     with open("lote.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
 
-def prepararLotes(prioridadEntrega, productos, centroLogID):
+def prepararLotes(centroLogID, prioridadEntrega, productos, pesos):
     #consultar MaxPesoLote
     #leer el último lote con la fecha de entrega de no lleno a ver si cabe más productos.
     #en caso que faltan productos para poner a lotes, crear un lote nuevo.
@@ -351,23 +353,24 @@ def prepararLotes(prioridadEntrega, productos, centroLogID):
     # Buscar lotes que cumplan con las condiciones
     for lote_id, lote_fechahora, lote_peso, lote_uri in lotes:
         if lote_fechahora == fecha_entrega_dt:
-            while productos and lote_peso < MaxPesoLote:
-                producto = productos[0]  
-                producto_peso = float(producto['peso'])  
-                
+            while productos and pesos and lote_peso < MaxPesoLote:
+                producto_uri = URIRef(productos[0])
+                producto_peso = float(pesos[0])
+
                 if lote_peso + producto_peso <= MaxPesoLote:
-                    producto_uri = URIRef(producto['uri'])
                     g.add((lote_uri, ECSDI.productos, producto_uri))
                     lote_peso += producto_peso
                     productos.pop(0)
+                    pesos.pop(0)
                     if lote_peso == MaxPesoLote:
-                        break  
+                        break
                 else:
                     break
             break
 
+
     if productos:
-        escribirALote(centroLogID, prioridadEntrega, productos)
+        escribirALote(centroLogID, prioridadEntrega, productos, pesos)
                    
                    
                    #el primero producto que se puede añadir al lote se añade
@@ -424,10 +427,10 @@ def comunicacion():
                     prioridadEntrega = gm.value(subject=content, predicate=ECSDI.prioridadEntrega)
                     peso = gm.value(subject=content, predicate=ECSDI.peso)
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
-                    latitud =
-                    longitud = 
+                    latitud = gm.value(subject=content, predicate=ECSDI.latitud)
+                    longitud = gm.value(subject=content, predicate=ECSDI.longitud)
                     escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud)
-                    prepararLotes()
+                    prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
                 
                     
                 
