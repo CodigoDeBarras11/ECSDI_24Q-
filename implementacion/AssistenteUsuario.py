@@ -232,7 +232,7 @@ def feedback():
         feedback_graph.add((agn.RespuestaFeedback, RDF.type, ECSDI.RespuestaFeedback))
         feedback_graph.add((agn.RespuestaFeedback, ECSDI.valorada_por, usuario))
         message = build_message(feedback_graph, ACL['inform'], sender = AssistenteUsuario.uri, receiver=agn.AgenteExperienciaUsuario, content=agn.RespuestaFeedback)
-        resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        resp = requests.get(diraddress + '/message', params={'message': 'SEARCH|EXPERIENCIAUSUARIO'}).text
         if 'OK' in resp:
             feedbackadd = resp[4:]
         resposta = send_message(message,feedbackadd)
