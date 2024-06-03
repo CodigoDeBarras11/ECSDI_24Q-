@@ -16,7 +16,7 @@ Asume que el agente de registro esta en el puerto 9000
 
 from os import getcwd, path
 import sys
-
+import os
 import requests
 sys.path.append(path.dirname(getcwd()))
 from multiprocessing import Process, Queue
@@ -31,6 +31,7 @@ from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
+from datetime import datetime, timedelta
 
 __author__ = 'javier'
 
@@ -45,7 +46,7 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteExperiencia',
+AgenteExperiencia = Agent('AgenteExperiencia',
                        agn.AgenteExperiencia,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
@@ -66,6 +67,11 @@ cola1 = Queue()
 
 app = Flask(__name__)
 
+def get_count():
+    global mss_cnt
+    mss_cnt += 1
+    return mss_cnt
+
 
 @app.route("/comm")
 def comunicacion():
@@ -78,8 +84,95 @@ def comunicacion():
 
     message = request.args.get('content', '')  #
     print(message)
+    gm = Graph()
+    gm.parse(data=message, format='xml') 
+    msgdic = get_message_properties(gm)
 
-    return "p"
+    gr = None
+
+    if msgdic is None:
+        # Si no es, respondemos que no hemos entendido el mensaje
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgenteExperiencia.uri, msgcnt=get_count())
+    else:
+        if msgdic['performative'] != ACL.request:
+            # Si no es un request, respondemos que no hemos entendido el mensaje
+            gr = build_message(Graph(),
+                               ACL['not-understood'],
+                               sender=DirectoryAgent.uri,
+                               msgcnt=get_count())
+        else:
+            perf = msgdic['performative']
+
+            if perf != ACL.request:
+                # Si no es un request, respondemos que no hemos entendido el mensaje
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgenteExperiencia.uri, msgcnt=get_count())
+            
+            else:
+                content = msgdic['content'] 
+                # Averiguamos el tipo de la accion
+                accion = gm.value(subject=content, predicate=RDF.type)
+
+                if accion == ECSDI.Feedback:
+                    store_feedback(valoraciones, productos, cliente)
+
+def get_feedback_products():
+    ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
+
+    g = Graph()
+    g.parse("compra.ttl", format="ttl")
+
+    fecha_objetivo = (datetime.now() + timedelta(days=8)).date()
+
+    resultados = []
+
+    for compra in g.subjects(RDF.type, ECSDI.Compra):
+        fecha_literal = g.value(compra, ECSDI.fechaHora)
+        if fecha_literal:
+            try:
+                # Suponiendo que el formato es ISO 8601
+                fecha_compra = datetime.strptime(str(fecha_literal), "%Y-%m-%dT%H:%M:%S")
+                if fecha_compra.date() == fecha_objetivo.date():
+                    cliente = g.value(compra, ECSDI.comprado_por)
+                    productos = list(g.objects(compra, ECSDI.Producto))
+                    resultados.append({
+                        "cliente": cliente,
+                        "productos": productos
+                    })
+            except ValueError:
+                continue
+
+    return resultados
+
+def store_feedback(valoraciones, productos, cliente):
+    g = Graph()
+    file_path = "bd/feedback.ttl"
+    if not os.path.exists(file_path):
+        g.add((agn.last_id, XSD.positiveInteger, Literal(0)))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True) 
+        g.serialize(file_path, format="turtle")
+
+    g.parse("bd/feedback.ttl", format="turtle")
+    g.bind('ECSDI', ECSDI)
+    last_id = g.value(subject=agn.last_id, predicate=XSD.positiveInteger)
+    last_id += 1
+
+    # Actualizar el valor en el grafo
+
+    for producto, valoracion in zip(productos, valoraciones):
+        g.set((agn.last_id, XSD.positiveInteger, Literal(last_id)))
+        feedback_uri = ECSDI.Feedback +'/'+ str(last_id+1)
+        g.add((feedback_uri, RDF.type, ECSDI.Feedback))
+        g.add((feedback_uri, ECSDI.usuari, cliente))
+        g.add((feedback_uri, ECSDI.producto, producto))
+        g.add((feedback_uri, ECSDI.valoracion, valoracion))
+        last_id += 1
+    with open("bd/feecback.ttl", "w") as f:
+        f.write(g.serialize(format="turtle"))
+
+
+
+
+ return "p"
 
 @app.route("/request_feedback")
 def request_feedback():
@@ -162,7 +255,6 @@ def store_feedback(feedback_data):
 @app.route("/")
 def index():
     return render_template_string(generate_feedback_form())
-
 @app.route("/Stop")
 def stop():
     """
