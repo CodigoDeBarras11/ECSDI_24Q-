@@ -1,7 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<http://www.agentes.org#lastid> xsd:positiveInteger 19 .
+<http://www.agentes.org#lastid> xsd:positiveInteger 27 .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/0> a ECSDI:Busqueda ;
     ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> ;
@@ -67,10 +67,59 @@
     ECSDI:max_precio "None" ;
     ECSDI:tipoproducto "Blender" .
 
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/19> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/2> a ECSDI:Busqueda ;
     ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
     ECSDI:max_peso "None" ;
     ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/20> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/21> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/22> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/23> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/24> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Blender" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/25> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/0> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:tipoproducto "Computer" .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/26> a ECSDI:Busqueda ;
+    ECSDI:buscado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/2> ;
+    ECSDI:max_peso "None" ;
+    ECSDI:max_precio "None" ;
+    ECSDI:min_precio "80.0" ;
     ECSDI:tipoproducto "Blender" .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8ProductosRecomendados/3> a ECSDI:Busqueda ;

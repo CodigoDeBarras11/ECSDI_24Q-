@@ -191,8 +191,12 @@ def recomendar_productos_a_asistente():
             busqueda_aleatoria = random.choice(busquedas_cliente)
             # Obtener los valores de los atributos de la búsqueda aleatoria
             atributos_busqueda = {}
+            ng = Graph()
+            ng.add((agn.ProductosRecomendados, RDF.type, ECSDI.ProductosRecomendados))
+            ng.add((agn.ProductosRecomendados, ECSDI.buscado_por, cliente_uri))
             for predicado, objeto in g.predicate_objects(busqueda_aleatoria):
                 # Excluir los atributos 'id' y 'buscado_por'
+                
                 if str(predicado) != str(ECSDI.id) and str(predicado) != str(ECSDI.buscado_por):
                     # Guardar cada atributo en una variable separada
                     if str(predicado) == str(ECSDI.max_peso):
@@ -206,9 +210,6 @@ def recomendar_productos_a_asistente():
                     elif str(predicado) == str(ECSDI.tipoproducto):
                         tipoproducto = objeto
 
-                    ng = Graph()
-                    ng.add((agn.ProductosRecomendados, RDF.type, ECSDI.ProductosRecomendados))
-                    ng.add((agn.ProductosRecomendados, ECSDI.buscado_por, cliente_uri))
                     if max_peso:
                         ng.add((agn.ProductosRecomendados, ECSDI.max_peso, max_peso))
                     if max_precio:
@@ -221,19 +222,18 @@ def recomendar_productos_a_asistente():
                         ng.add((agn.ProductosRecomendados, ECSDI.tipoproducto, tipoproducto))
 
 
-                    receiver_address = get_agent("ASSISTANT")
-                    if receiver_address != "NOT FOUND":
+            receiver_address = get_agent("ASSISTANT")
+            if receiver_address != "NOT FOUND":
+                graph = build_message(
+                    gmess=ng,
+                    perf=ACL.request,
+                    sender=AgenteExperiencia.uri,
+                    receiver=agn.AssistenteUsuario,
+                    content=agn.ProductosRecomendados,
+                    msgcnt=get_count()
+                )
 
-                        graph = build_message(
-                            gmess=ng,
-                            perf=ACL.request,
-                            sender=AgenteExperiencia.uri,
-                            receiver=agn.AssistenteUsuario,
-                            content=agn.ProductosRecomendados,
-                            msgcnt=get_count()
-                        )
-
-                        response_graph = send_message(gmess=graph, address=receiver_address)
+            response_graph = send_message(gmess=graph, address=receiver_address)        
                 
 
 
@@ -441,7 +441,7 @@ def run_scheduler_in_background():
 
 if __name__ == '__main__':
     #pedir_feedback_a_asistente()
-    #recomendar_productos_a_asistente()
+    recomendar_productos_a_asistente()
     run_scheduler_in_background()
 
     hostaddr = hostname = socket.gethostname()
