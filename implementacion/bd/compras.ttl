@@ -16,7 +16,7 @@
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> ;
     ECSDI:devuelta "0" ;
-    ECSDI:fechaHora "2024-06-03" ;
+    ECSDI:fechaHora "2024-05-31" ;
     ECSDI:peso "852.7503" ;
     ECSDI:precio "65.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
@@ -25,7 +25,7 @@
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> ;
     ECSDI:devuelta "1" ;
-    ECSDI:fechaHora "2024-06-03" ;
+    ECSDI:fechaHora "2024-06-01" ;
     ECSDI:peso "834.5564" ;
     ECSDI:precio "80.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .
@@ -52,7 +52,7 @@
     ECSDI:Producto <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58> ;
     ECSDI:comprado_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/9> ;
     ECSDI:devuelta "0" ;
-    ECSDI:fechaHora "None" ;
+    ECSDI:fechaHora "2024-06-03" ;
     ECSDI:peso "1541.606" ;
     ECSDI:precio "1979.0" ;
     ECSDI:vendido_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Tienda/0> .

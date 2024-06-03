@@ -36,6 +36,7 @@ from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 from datetime import datetime, timedelta
 from rdflib.collection import Collection
+import threading
 
 __author__ = 'javier'
 
@@ -66,6 +67,20 @@ dsgraph = Graph()
 
 cola1 = Queue()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
+                    default=False)
+parser.add_argument('--verbose', help="Genera un log de la comunicacion del servidor web", action='store_true',
+                    default=False)
+parser.add_argument('--port', type=int, help="Puerto de comunicacion del agente")
+parser.add_argument('--dir', default=None, help="Direccion del servicio de directorio")
+
+args = parser.parse_args()
+if args.dir is None:
+    diraddress =  'http://'+hostname+':9000'
+else:
+    diraddress = args.dir
+
 
 
 
@@ -87,22 +102,20 @@ def get_agent(agente):
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("22:09").do(pedir_feedback_a_asistente)
+    schedule.every().day.at("23:13").do(pedir_feedback_a_asistente)
     #schedule.every().day.at("09:00").do(recomendar_productos_a_asistente)
 
     # Verificar si es la hora programada
     while True:
-        now = time.localtime()
-        if now.tm_hour == 8 and now.tm_min == 0 and now.tm_sec == 0:
-            # Es la hora programada, ejecutar la tarea
-            schedule.run_pending()
-        time.sleep(60)
+        schedule.run_pending()
+        time.sleep(1)
+
 
 def pedir_feedback_a_asistente():
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
 
     g = Graph()
-    g.parse("bd/compra.ttl", format="ttl")
+    g.parse("bd/compras.ttl", format="ttl")
 
     fecha_objetivo = datetime.now().date()
     compras_to_send = []
@@ -110,20 +123,30 @@ def pedir_feedback_a_asistente():
     for compra in g.subjects(RDF.type, ECSDI.Compra):
         fecha_literal = g.value(compra, ECSDI.fechaHora)
         if fecha_literal:
-            fecha_compra = datetime.strptime(fecha_literal, "%Y-%m-%d").date()
-            if fecha_compra + timedelta(days=3) == fecha_objetivo:
-                compras_to_send.append(compra) 
+            fecha_string = str(fecha_literal)
+            if fecha_string != "None":
+                fecha_compra = datetime.strptime(fecha_string, '%Y-%m-%d')
+                fecha_recomendacion = fecha_compra + timedelta(days=0)
+                fecha_recomendacion = fecha_recomendacion.date()
+                #fecha_recomendacion = datetime.strptime(str(fecha_recomendacion), '%Y-%m-%d')
+                print("----------------------")
+                print(fecha_objetivo)
+                print(fecha_recomendacion)
+                print("----------------------")
+                if fecha_recomendacion == fecha_objetivo:
+                    compras_to_send.append(compra) 
 
     ng = Graph()
     ng.add((agn.PeticionFeedback, RDF.type, ECSDI.PeticionFeedback))
     for compra in compras_to_send:
         cliente_uri = g.value(compra, ECSDI.comprado_por)
         producto_uri = g.value(compra, ECSDI.Producto)
-        ng.add((agn.PeticionFeedback, ECSDI.Cliente, cliente_uri))
-        ng.add((agn.PeticionFeedback, ECSDI.Producto, producto_uri))
+        ng.add((agn.PeticionFeedback, ECSDI.valorada_por, cliente_uri))
+        ng.add((agn.PeticionFeedback, ECSDI.feedback_de, producto_uri))
 
+    print("hola")
     if compras_to_send:
-        receiver_address = get_agent("ASSISTENTEUSUARIO")
+        receiver_address = get_agent("ASSISTANT")
         if receiver_address != "NOT FOUND":
             graph = build_message(
                 gmess=ng,
@@ -133,7 +156,7 @@ def pedir_feedback_a_asistente():
                 content=agn.PeticionFeedback,
                 msgcnt=get_count()
             )
-
+            print("enviar")
             response_graph = send_message(gmess=graph, address=receiver_address)
 
 
@@ -386,14 +409,23 @@ def agentbehavior1(cola):
     """
     pass
 
+def run_scheduler_in_background():
+    scheduler_thread = threading.Thread(target=schedule_tasks)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+
 
 if __name__ == '__main__':
+    pedir_feedback_a_asistente()
+
+    run_scheduler_in_background()
+
     hostaddr = hostname = socket.gethostname()
     AgenteExperienciaAdd = f'http://{hostaddr}:{port}'
     AgenteExperienciaId = hostaddr.split('.')[0] + '-' + str(port)
-    mess = f'REGISTER|{AgenteExperienciaId},CENTROLOGISTICO,{AgenteExperienciaAdd}'
+    mess = f'REGISTER|{AgenteExperienciaId},EXPERIENCIAUSUARIO,{AgenteExperienciaAdd}'
 
-    diraddress = "http://"+hostname+":9000"
+    #diraddress = "http://"+hostname+":9000"
     done = False
     while not done:
         try:

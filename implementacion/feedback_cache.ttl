@@ -1,0 +1,8 @@
+@prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.agentes.org#lastid> xsd:positiveInteger 1 .
+
+<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8PeticionFeedback/0> ECSDI:feedback_de <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/30> ;
+    ECSDI:valorada_por <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Cliente/7> .
+
