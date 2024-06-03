@@ -2,7 +2,7 @@ from os import getcwd, path
 import sys
 sys.path.append(path.dirname(getcwd()))
 from formularios import formbusca, formcompra, formlogin, formproduct, shopform
-from flask import Flask, render_template, render_template_string, request, redirect, url_for
+from flask import Flask, render_template, render_template_string, request, redirect, url_for, session
 import requests
 import socket
 from docs.ecsdi import ECSDI
@@ -87,7 +87,8 @@ def anadirProducto():
     print(request.form)
     if request.method == 'POST' and form.validate():
         createorUpdateproduct(form.data)
-        return redirect(url_for('index'), mensaje = "Producto registrado")
+        session['mensaje'] = "Producto registrado"
+        return redirect(url_for('index'))
     return render_template('addProduct.html', form = form)
     
 @app.route('/devolucion', methods=['GET', 'POST'])
@@ -217,7 +218,9 @@ def feedback():
     cache_feedback = Graph()
     if path.exists("feedback_cache.ttl"):
         cache_feedback.parse("feedback_cache.ttl", format="turtle")
-    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos para valorar")
+    else: 
+        session['mensaje'] = "No tienes productos para valorar"
+        return redirect(url_for('userIndex'))
 
     if request.method == 'POST':
         feedback_data = request.form
@@ -237,7 +240,8 @@ def feedback():
             feedbackadd = resp[4:]
         resposta = send_message(message,feedbackadd)
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
-        return redirect(url_for('userIndex'), mensaje = "Gracias por tu opinion")
+        session['mensaje'] =  "Gracias por tu opinion"
+        return redirect(url_for('userIndex'))
     
     product_graph = Graph()
     product_graph.parse("product.ttl", format="turtle")
@@ -249,7 +253,11 @@ def feedback():
         prodname = product_graph.value(subject=prod, predicate=ECSDI.nombre)
         productos.append({"name": prodname, "uri": prod})
     if(presente): return render_template_string(generate_feedback_form(productos))
-    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos para valorar")
+    session['mensaje'] = "Gracias por tu opinión"
+    return redirect(url_for('userIndex'))
+
+# En la vista de destino (userIndex)
+    
 
 def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
     grafobusquedas = Graph()
@@ -282,7 +290,9 @@ def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:
 def productos_recomendados():
     graforecomendaciones = Graph
     if path.exists("cache_recomendados.ttl"): graforecomendaciones.parse("busquedas.ttl", format="turtle")
-    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos recomendados")
+    else:
+        session['mensaje'] = "No tienes productos recomendados"
+        return redirect(url_for('userIndex'))
     products = {}
     present = False
     for busqueda in graforecomendaciones.subjects(predicate=ECSDI.buscado_por, object=usuario):
@@ -331,7 +341,9 @@ def productos_recomendados():
                 if(product['vendedor']): product['data'] +=',' + product['vendedor']
                 products[prod] =product
     if(present):return render_template('products.html', products=products)
-    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos recomendados")
+    else:
+        session['mensaje'] = "No tienes productos recomendados"
+        return redirect(url_for('userIndex'))
     
 
 @app.route("/comm")
@@ -498,11 +510,15 @@ async def busca():
 
 @app.route('/userOptions')
 def userIndex():
-    return render_template('user.html')
+    mensaje = session.get('mensaje', '')
+    if mensaje: session['mensaje'].clear()
+    return render_template('user.html', mensaje = mensaje)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    mensaje = session.get('mensaje', '')
+    if mensaje: session['mensaje'].clear()
+    return render_template('index.html', mensaje = mensaje)
 
 def getuserref(username:str):
     users_graph = Graph()
