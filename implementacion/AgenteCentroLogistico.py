@@ -413,19 +413,19 @@ def comunicacion():
                 gr = build_message(Graph(), ACL['not-understood'], sender=AgenteCentroLogistico.uri, msgcnt=get_count())
             
             else:
-                receiver_uri = msgdic['receiver'] #receiver_uri
+                content = msgdic['content'] 
                 # Averiguamos el tipo de la accion
                 accion = gm.value(subject=receiver_uri, predicate=RDF.type)
 
-                if accion == ECSDI.Pedido: 
+                if accion == ECSDI.Productos_A_Enviar: 
                     r_gmess = Graph()
               
-                    print(receiver_uri)
                     print(message)
 
-                    centroLogisticoID = 
-                    compraID =
-                    
+                    centroLogistico = gm.value(subject=content, predicate=ECSDI.CentroLogistico)
+                    compra = gm.value(subject=content, predicate=ECSDI.Compra)
+                    productos = gm.value(subject=content, predicate=ECSDI.Producto)
+                    prioridadEntrega = gm.value(subject=content, predicate=ECSDI.)
 
                     escribirAPedido()
                     prepararLotes()
