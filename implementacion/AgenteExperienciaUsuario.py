@@ -87,8 +87,8 @@ def get_agent(agente):
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("08:00").do(pedir_feedback_a_asistente)
-    schedule.every().day.at("09:00").do(recomendar_productos_a_asistente)
+    schedule.every().day.at("22:09").do(pedir_feedback_a_asistente)
+    #schedule.every().day.at("09:00").do(recomendar_productos_a_asistente)
 
     # Verificar si es la hora programada
     while True:
@@ -105,38 +105,36 @@ def pedir_feedback_a_asistente():
     g.parse("bd/compra.ttl", format="ttl")
 
     fecha_objetivo = datetime.now().date()
+    compras_to_send = []
 
-    
-    r_gmess = Graph()
     for compra in g.subjects(RDF.type, ECSDI.Compra):
         fecha_literal = g.value(compra, ECSDI.fechaHora)
         if fecha_literal:
             fecha_compra = datetime.strptime(fecha_literal, "%Y-%m-%d").date()
-            if fecha_literal+ timedelta(days=3) == fecha_objetivo:
-                cliente_uri = g.value(compra, ECSDI.comprado_por)
-                productos_uris = list(g.objects(compra, ECSDI.productos))
-                r_gmess.add( ECSDI.feedback_de)
-                r_gmess.add(productos_uris, ECSDI.productos)
+            if fecha_compra + timedelta(days=3) == fecha_objetivo:
+                compras_to_send.append(compra) 
 
-                ng = Graph()
-                ng.add((agn.PeticionFeedback, RDF.type, ECSDI.PeticionFeedback))
-                ng.add((agn.PeticionFeedback, ECSDI.Cliente, cliente_uri))
-                productos_node = BNode()
-                Collection(ng, productos_node, productos_uris)
-                ng.add((agn.PeticionFeedback, ECSDI.Producto, productos_node))
+    ng = Graph()
+    ng.add((agn.PeticionFeedback, RDF.type, ECSDI.PeticionFeedback))
+    for compra in compras_to_send:
+        cliente_uri = g.value(compra, ECSDI.comprado_por)
+        producto_uri = g.value(compra, ECSDI.Producto)
+        ng.add((agn.PeticionFeedback, ECSDI.Cliente, cliente_uri))
+        ng.add((agn.PeticionFeedback, ECSDI.Producto, producto_uri))
 
-                receiver_address = get_agent("ASSISTENTEUSUARIO")
+    if compras_to_send:
+        receiver_address = get_agent("ASSISTENTEUSUARIO")
+        if receiver_address != "NOT FOUND":
+            graph = build_message(
+                gmess=ng,
+                perf=ACL.request,
+                sender=AgenteExperiencia.uri,
+                receiver=agn.AssistenteUsuario,
+                content=agn.PeticionFeedback,
+                msgcnt=get_count()
+            )
 
-                graph = build_message(
-                    gmess=ng,
-                    perf=ACL.request,
-                    sender=AgenteExperiencia.uri,
-                    receiver=agn.AssistenteUsuario,
-                    content=agn.Producto_Enviado,
-                    msgcnt=get_count()
-                )
-
-                response_graph = send_message(gmess=graph, address=receiver_address)
+            response_graph = send_message(gmess=graph, address=receiver_address)
 
 
 def recomendar_productos_a_asistente():
@@ -195,17 +193,18 @@ def recomendar_productos_a_asistente():
 
 
                     receiver_address = get_agent("ASSISTENTEUSUARIO")
+                    if receiver_address != "NOT FOUND":
 
-                    graph = build_message(
-                        gmess=ng,
-                        perf=ACL.request,
-                        sender=AgenteExperiencia.uri,
-                        receiver=agn.AssistenteUsuario,
-                        content=agn.Producto_Enviado,
-                        msgcnt=get_count()
-                    )
+                        graph = build_message(
+                            gmess=ng,
+                            perf=ACL.request,
+                            sender=AgenteExperiencia.uri,
+                            receiver=agn.AssistenteUsuario,
+                            content=agn.ProductosRecomendados,
+                            msgcnt=get_count()
+                        )
 
-                    response_graph = send_message(gmess=graph, address=receiver_address)
+                        response_graph = send_message(gmess=graph, address=receiver_address)
                 
 
 
