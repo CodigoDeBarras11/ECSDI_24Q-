@@ -132,28 +132,22 @@ def send_info_to_accounting():
     return r_graph.serialize(format='xml')
 
 
-def escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud):
-    #crear pedido
+def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud):
+    # Crear el grafo y namespaces
     g = Graph()
-    # Definir el namespace de tu ontología ECSDI
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-    g.bind("ECSDI", ECSDI)
-
-
     AGN = Namespace("http://www.agentes.org#")
+    g.bind("ECSDI", ECSDI)
 
     # Cargar el grafo existente desde el archivo si existe
     try:
         g.parse("pedido.ttl", format="turtle")
     except FileNotFoundError:
-        pass  # Si el archivo no existe, continuamos con un grafo vacío
+        pass
 
     # Leer el valor actual de searchid
     searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
-    if searchid_value is None:
-        searchid = 0
-    else:
-        searchid = int(searchid_value)
+    searchid = int(searchid_value) if searchid_value else 0
 
     # Incrementar el valor de searchid
     searchid += 1
@@ -161,43 +155,41 @@ def escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud):
     # Actualizar el valor en el grafo
     g.set((AGN.searchid, XSD.positiveInteger, Literal(searchid)))
 
-
-
     # Definir la URI de tu pedido
     pedido_uri = ECSDI[f'Pedido/{searchid}']
 
-    # Añadir triples al grafo
-    g.add((pedido_uri, RDF.type, ECSDI.Pedido))
-    g.add((pedido_uri, ECSDI.id, Literal(1, datatype=XSD.integer))) 
-    g.add((pedido_uri, ECSDI.latitud, latitud)) 
-    g.add((pedido_uri, ECSDI.longitud, longitud)) 
-    g.add((pedido_uri, ECSDI.prioridadEntrega, prioridadEntrega))  
-    fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
-    g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))  
-    g.add((pedido_uri, ECSDI.compra_a_enviar, compra))
+    # Cargar el grafo del centro logístico
+    centro_logistico_grafo = Graph()
+    centro_logistico_grafo.parse("centroLogisticos.ttl", format="turtle")
+
+    # Verificar productos en el centro logístico
+    productos_centro_logistico = centro_logistico_grafo.objects(subject=centroLogistico, predicate=ECSDI.productos)
+
+    # Crear un set de productos disponibles en el centro logístico
+    productos_disponibles = set(productos_centro_logistico)
+    productos_agregados = []
+    # Añadir productos verificados al grafo del pedido
     for producto in productos:
-        g.add((pedido_uri, ECSDI.productos_enviados, producto))
-
-
-    temp_ttl = g.serialize(format="turtle")
-
-    # Reemplazar la línea del searchid con el formato deseado
-    temp_ttl_lines = temp_ttl.split('\n')
-    with open("pedido.ttl", "r") as f:
-        original_lines = f.readlines()
-
-    for i, line in enumerate(original_lines):
-        if "AGN:searchid" in line:
-            original_lines[i] = f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n'
-            break
-    else:
-        # Si no se encuentra, añadir al final
-        original_lines.append(f'<http://www.agentes.org#searchid> xsd:positiveInteger {searchid} .\n')
-
+        if producto in productos_disponibles:
+            g.add((pedido_uri, ECSDI.productos_enviados, producto))
+            productos_agregados.append(producto)
+    
+    if productos_agregados:
+        # Añadir triples al grafo para el pedido
+        g.add((pedido_uri, RDF.type, ECSDI.Pedido))
+        g.add((pedido_uri, ECSDI.id, Literal(searchid, datatype=XSD.integer)))
+        g.add((pedido_uri, ECSDI.latitud, Literal(latitud, datatype=XSD.decimal)))
+        g.add((pedido_uri, ECSDI.longitud, Literal(longitud, datatype=XSD.decimal)))
+        g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(prioridadEntrega, datatype=XSD.integer)))
+        fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
+        g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
+        g.add((pedido_uri, ECSDI.compra_a_enviar, Literal(compra, datatype=XSD.string)))
+        g.add((pedido_uri, ECSDI.centrologistico, Literal(centroLogistico, datatype=XSD.string)))
 
     # Serializar el grafo en formato Turtle y guardarlo en un archivo
     with open("pedido.ttl", "w") as f:
         f.write(g.serialize(format="turtle"))
+    return productos_agregados
 
 
 def negociarTransportista(fecha_entrega_dt):
@@ -429,7 +421,7 @@ def comunicacion():
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
-                    escribirAPedido(compra, productos, prioridadEntrega, latitud, longitud)
+                    escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud)
                     prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
 
                     if no todos los productos:

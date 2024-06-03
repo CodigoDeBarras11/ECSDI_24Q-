@@ -9,7 +9,7 @@
     ECSDI:nombre "Centro Barcelona" ;
     ECSDI:latitud 20 ;
     ECSDI:longitud 20 ;
-    ECSDI:productos_almacenados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/1>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3>, 
@@ -67,7 +67,7 @@
     ECSDI:nombre "Centro Sabadell" ;
     ECSDI:latitud 100 ;
     ECSDI:longitud 50 ;
-    ECSDI:productos_almacenados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/4>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/6>, 
@@ -131,7 +131,7 @@
     ECSDI:nombre "Centro Terrassa" ;
     ECSDI:latitud 200 ;
     ECSDI:longitud 130 ;
-    ECSDI:productos_almacenados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
+    ECSDI:productos <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/1>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3>, 
