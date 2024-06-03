@@ -24,8 +24,8 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import Namespace, Graph, RDF, Literal
-from flask import Flask, request
+from rdflib import XSD, Namespace, Graph, RDF, Literal
+from flask import Flask, render_template_string, request
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
@@ -83,8 +83,8 @@ def comunicacion():
 
 @app.route("/request_feedback")
 def request_feedback():
-    user = //request.args.get('user') obtener el usuario
-    products = //get_user_products(user) obtener los productos comprados por el usuario en x días y no tienen feedback
+    user = request.args.get('user') #obtener el usuario
+    products = get_user_products(user) #obtener los productos comprados por el usuario en x días y no tienen feedback
     if not products:
         return "No products found for user."
 
@@ -98,7 +98,7 @@ def submit_feedback():
     return "Thank you for your feedback!"
 
 def get_user_products(user):
-    compra_graph = Graph()
+    purchases_graph = Graph()
     if path.exists("compra.ttl"):
         purchases_graph.parse("compra.ttl", format="turtle")
 
