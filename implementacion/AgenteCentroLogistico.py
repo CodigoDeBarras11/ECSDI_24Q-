@@ -39,7 +39,7 @@ __author__ = 'javier'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9013
+port = 9015
 
 #Peso maximo de un lote
 MaxPesoLote = 100
