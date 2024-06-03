@@ -353,7 +353,7 @@ if __name__ == '__main__':
     print('DS Hostname =', hostaddr)
 
     if 'OK' in resp:
-        print(f'CENTROLOGISTICO {AgenteExperienciaId} successfully registered')
+        print(f'Experiencia {AgenteExperienciaId} successfully registered')
         
         # Buscamos el logger si existe en el registro
         loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
