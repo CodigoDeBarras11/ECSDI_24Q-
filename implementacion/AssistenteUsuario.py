@@ -172,7 +172,6 @@ def compra():
             return render_template("envio.html",  form = formcompra.BuyForm(envios = araycompras))
     return render_template('products.html', products=products)
 
-
 def cahear_feedback(user, product):
     cache_feedback = Graph()
     if path.exists("feedback_cache.ttl"):
@@ -212,7 +211,7 @@ def generate_feedback_form(products):
     #<label for="rating_{}">Rating (1-5):</label>
     return form_html
 
-@app.route("/feedback")
+@app.route("/feedback", methods=['GET', 'POST'])
 def feedback():
     valoraciones = None
     cache_feedback = Graph()
@@ -238,21 +237,96 @@ def feedback():
             feedbackadd = resp[4:]
         resposta = send_message(message,feedbackadd)
         cache_feedback.serialize("feedback_cache.ttl", format="turtle")
-
         return redirect(url_for('userIndex'), mensaje = "Gracias por tu opinion")
     
     product_graph = Graph()
     product_graph.parse("product.ttl", format="turtle")
     productos = []
+    presente = False
     for val in cache_feedback.subjects(predicate=ECSDI.valorada_por, object=usuario):
+        presente = True
         prod = cache_feedback.value(subject=val, predicate=ECSDI.feedback_de)
         prodname = product_graph.value(subject=prod, predicate=ECSDI.nombre)
         product_graph.append({"name": prodname, "uri": prod})
-    return render_template_string(generate_feedback_form(productos))
+    if(presente): return render_template_string(generate_feedback_form(productos))
+    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos para valorar")
 
+def registrar_busqueda(user, product_class:str, min_price:float=None, max_price:float=None, min_weight:float=None, max_weight:float=None):
+    grafobusquedas = Graph()
+    if path.exists("cache_recomendados.ttl"): grafobusquedas.parse("busquedas.ttl", format="turtle")
+    else :
+        grafobusquedas.add((agn.lastid, XSD.positiveInteger, Literal(0)))
+        grafobusquedas.bind('ECSDI', ECSDI)
+    search_id = grafobusquedas.value(subject=agn.lastid, predicate=XSD.positiveInteger)
+    busqueda = ECSDI.ProductosRecomendados+'/'+str(search_id)
+    grafobusquedas.add((busqueda, RDF.type, ECSDI.Busqueda))
+    #grafobusquedas.add((busqueda, ECSDI.id, Literal(search_id)))
+    if product_class != 'None':
+        grafobusquedas.add((busqueda, ECSDI.tipoproducto, Literal(product_class)))
+    if max_price:
+        grafobusquedas.add((busqueda, ECSDI.max_precio, Literal(max_price)))
+    if min_price not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_precio, Literal(min_price)))
+    if max_weight:
+        grafobusquedas.add((busqueda, ECSDI.max_peso, Literal(max_weight)))
+    if min_weight not in ('None', 0, None):
+        grafobusquedas.add((busqueda, ECSDI.min_peso, Literal(min_weight)))
+    user = ECSDI.Cliente + '/'+ user.split('/')[-1]
+    #print(user)
+    grafobusquedas.add((busqueda, ECSDI.buscado_por, user))
+    grafobusquedas.set((agn.lastid, XSD.positiveInteger, Literal(search_id+1)))
+    grafobusquedas.serialize("cache_recomendados.ttl", format="turtle")
+
+
+@app.route("/recomendados")
+def productos_recomendados():
+    graforecomendaciones = Graph
+    if path.exists("cache_recomendados.ttl"): graforecomendaciones.parse("busquedas.ttl", format="turtle")
+    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos recomendados")
+    products = {}
+    present = False
+    for busqueda in graforecomendaciones.subjects(predicate=ECSDI.buscado_por, object=usuario):
+        present = True
+        gm = Graph()
+        gm.bind('ECSDI', ECSDI)
+        peticionbusquda =  agn.peticionbusqueda
+        gm.add((peticionbusquda, RDF.type, ECSDI.PeticionBusqueda))
+        product_type = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.tipoproducto)
+        gm.add((peticionbusquda, ECSDI.tipoproducto, Literal(product_type)))
+        max_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_precio)
+        if max_price:
+            gm.add((peticionbusquda, ECSDI.max_precio, Literal(max_price)))
+        min_price = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_price)
+        if min_price:
+            gm.add((peticionbusquda, ECSDI.min_precio, Literal(min_price)))
+        max_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.max_weight)
+        if max_weight:
+            gm.add((peticionbusquda, ECSDI.max_peso, Literal(max_weight)))
+        min_weight = graforecomendaciones.value(subject=busqueda, predicate= ECSDI.min_weight)
+        if min_weight:
+            gm.add((peticionbusquda, ECSDI.min_peso, Literal(min_weight)))
+        gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
+        msg = build_message(gm, ACL.request, sender=AssistenteUsuario.uri, receiver=agn.AgenteBusqueda, content= peticionbusquda, msgcnt=mss_cnt)
+        searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
+        if 'OK' in searchadd:
+            busqueda = searchadd[4:]
+            productos = send_message(msg,busqueda + '/comm')
+            
+            for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
+                product = {
+                    "id": productos.value(subject=prod, predicate=ECSDI.id),
+                    "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
+                    "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
+                    "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
+                    "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
+                    "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
+                }
+                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
+                if(product['vendedor']): product['data'] +=',' + product['vendedor']
+                products[prod] =product
+    if(present):return render_template('products.html', products=products)
+    else: return redirect(url_for('userIndex'), mensaje = "No tienes productos recomendados")
     
-
-       
 
 @app.route("/comm")
 async def comunicacion():
@@ -295,15 +369,29 @@ async def comunicacion():
                 content = msgdic['content']
                 accion = grafo.value(subject=content, predicate=RDF.type)
                 if accion == ECSDI.PeticionFeedback:
-                    producto = grafo.value(subject=content, predicate=ECSDI.Producto)
-                    cliente = grafo.value(subject=content, predicate=ECSDI.Cliente)
+                    producto = grafo.value(subject=content, predicate=ECSDI.feedback_de)
+                    cliente = grafo.value(subject=content, predicate=ECSDI.valorada_por)
                     cahear_feedback(cliente, producto)
                     gr = build_message(Graph(),
                         ACL['confirm'],
                         sender=AssistenteUsuario.uri,
                         msgcnt=mss_cnt,
                         receiver= agn.AgenteExperienciaUsuario
-                        )
+                    )
+                elif accion == ECSDI.ProductosRecomendados:
+                    product_type = str(grafo.value(subject=content, predicate=ECSDI.tipoproducto))
+                    max_price= str(grafo.value(subject=content, predicate=ECSDI.max_precio))
+                    min_price =str(grafo.value(subject=content, predicate=ECSDI.min_precio))
+                    max_weight= str(grafo.value(subject=content, predicate=ECSDI.max_peso))
+                    min_weight= str(grafo.value(subject=content, predicate=ECSDI.min_peso))
+                    user = str(grafo.value(subject=content, predicate=ECSDI.buscado_por))
+                    registrar_busqueda(user, product_type, min_price, max_price, min_weight, max_weight)
+                    gr = build_message(Graph(),
+                        ACL['agree'],
+                        sender=AssistenteUsuario.uri,
+                        msgcnt=mss_cnt,
+                        receiver= agn.AgenteExperienciaUsuario
+                    )
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AssistenteUsuario.uri, msgcnt=mss_cnt)
 

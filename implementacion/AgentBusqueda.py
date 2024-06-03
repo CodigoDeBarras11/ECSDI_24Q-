@@ -133,15 +133,10 @@ def comunicacion():
                 content = msgdic['content']
                 accion = grafobusquedas.value(subject=content, predicate=RDF.type)
                 if accion == ECSDI.PeticionBusqueda:
-                    #if (accion, ECSDI.tipoproducto) in grafobusquedas:
                     product_type = str(grafobusquedas.value(subject=content, predicate=ECSDI.tipoproducto))
-                    #if (accion, ECSDI.max_precio) in grafobusquedas:
                     max_price= str(grafobusquedas.value(subject=content, predicate=ECSDI.max_precio))
-                    #if (accion, ECSDI.min_precio) in grafobusquedas:
                     min_price =str(grafobusquedas.value(subject=content, predicate=ECSDI.min_precio))
-                    #if (accion, ECSDI.max_peso) in grafobusquedas:
                     max_weight= str(grafobusquedas.value(subject=content, predicate=ECSDI.max_peso))
-                    #if (accion, ECSDI.min_peso) in grafobusquedas:
                     min_weight= str(grafobusquedas.value(subject=content, predicate=ECSDI.min_peso))
                     user = str(grafobusquedas.value(subject=content, predicate=ECSDI.buscado_por))
                     if(min_price != 'None'): min_price = float(min_price)
