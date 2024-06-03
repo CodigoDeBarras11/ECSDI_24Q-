@@ -36,7 +36,7 @@ __author__ = 'javier'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9013
+port = 9016
 
 agn = Namespace("http://www.agentes.org#")
 
@@ -45,8 +45,8 @@ mss_cnt = 0
 
 # Datos del Agente
 
-AgentePersonal = Agent('AgenteSimple',
-                       agn.AgenteSimple,
+AgentePersonal = Agent('AgenteExperiencia',
+                       agn.AgenteExperiencia,
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
@@ -182,13 +182,33 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Launch the behaviors
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
+    hostaddr = hostname = socket.gethostname()
+    AgenteExperienciaAdd = f'http://{hostaddr}:{port}'
+    AgenteExperienciaId = hostaddr.split('.')[0] + '-' + str(port)
+    mess = f'REGISTER|{AgenteExperienciaId},CENTROLOGISTICO,{AgenteExperienciaAdd}'
 
-    # Launch the server
-    app.run(host=hostname, port=port)
+    diraddress = "http://"+hostname+":9000"
+    done = False
+    while not done:
+        try:
+            resp = requests.get(diraddress + '/message', params={'message': mess}).text
+            done = True
+        except ConnectionError:
+            pass
+    print('DS Hostname =', hostaddr)
 
-    # Wait for the behaviors to finish
-    ab1.join()
-    print('The End')
+    if 'OK' in resp:
+        print(f'CENTROLOGISTICO {AgenteExperienciaId} successfully registered')
+        
+        # Buscamos el logger si existe en el registro
+        loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
+        if 'OK' in loggeradd:
+            logger = loggeradd[4:]
+
+        # Ponemos en marcha el servidor Flask
+        app.run(host=hostname, port=port, debug=False, use_reloader=False)
+
+        mess = f'UNREGISTER|{AgenteExperienciaId}'
+        requests.get(diraddress + '/message', params={'message': mess})
+    else:
+        print('Unable to register')
