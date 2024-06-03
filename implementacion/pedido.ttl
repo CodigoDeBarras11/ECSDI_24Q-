@@ -13,37 +13,6 @@
     ECSDI:fechaEntrega ;
     ECSDI:productos_enviados <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/1>,
                             <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/2>,
-                            <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3>.
-
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/2> a ECSDI:Pedido ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/2> ;
-    ECSDI:id 1 ;
-    ECSDI:latitud 1e+01 ;
-    ECSDI:longitud 2e+01 ;
-    ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 .
-
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/3> a ECSDI:Pedido ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/3> ;
-    ECSDI:id 1 ;
-    ECSDI:latitud 1e+01 ;
-    ECSDI:longitud 2e+01 ;
-    ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 .
-
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/4> a ECSDI:Pedido ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/4> ;
-    ECSDI:id 1 ;
-    ECSDI:latitud 1e+01 ;
-    ECSDI:longitud 2e+01 ;
-    ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 .
-
-<urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Pedido/5> a ECSDI:Pedido ;
-    ECSDI:compra_a_enviar <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Compra/5> ;
-    ECSDI:id 1 ;
-    ECSDI:latitud 1e+01 ;
-    ECSDI:longitud 2e+01 ;
-    ECSDI:metodoPago "tarjeta" ;
-    ECSDI:prioridadEntrega 1 .
+                            <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/3>,
+                            .
 

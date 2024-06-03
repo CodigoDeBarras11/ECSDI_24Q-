@@ -5,7 +5,8 @@
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/1> a ECSDI:Transportista ;
     ECSDI:id 1 ;
-    ECSDI:nombre "Juan" .
+    ECSDI:nombre "Juan" ;
+    .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Transportista/2> a ECSDI:Transportista ;
     ECSDI:id 2 ;

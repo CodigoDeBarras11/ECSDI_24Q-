@@ -423,6 +423,10 @@ def comunicacion():
                     print(receiver_uri)
                     print(message)
 
+                    centroLogisticoID = 
+                    compraID =
+                    
+
                     escribirAPedido()
                     prepararLotes()
                 
@@ -462,7 +466,7 @@ if __name__ == '__main__':
     AgenteCentroLogisticoId = hostaddr.split('.')[0] + '-' + str(port)
     mess = f'REGISTER|{AgenteCentroLogisticoId},CENTROLOGISTICO,{AgenteCentroLogisticoAdd}'
 
-    diraddress = "http://localhost:9000"
+    diraddress = "http://"+hostname+":9000"
     done = False
     while not done:
         try:
