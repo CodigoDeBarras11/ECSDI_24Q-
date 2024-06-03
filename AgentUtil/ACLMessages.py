@@ -32,7 +32,7 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
     :return:
     """
  
-    print(gmess)
+    #print(gmess)
     # Añade los elementos del speech act al grafo del mensaje
     mssid = f'message-{sender.__hash__()}-{msgcnt:04}'
     # No podemos crear directamente una instancia en el namespace ACL ya que es un ClosedNamedspace
@@ -47,7 +47,7 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
     if content is not None:
         gmess.add((ms, ACL.content, content))
 
-    print(gmess)
+    #print(gmess)
     return gmess
 
 
@@ -59,12 +59,9 @@ def send_message(gmess, address):
     
 
     msg = gmess.serialize(format='xml')
-    print(msg)
+    #print(msg)
     r = requests.get(address, params={'content': msg})
     gr = Graph()
-    print("-----------------")
-    print(r.text)
-    print("-----------------")
     gr.parse(data=r.text, format='xml')
     return gr
 

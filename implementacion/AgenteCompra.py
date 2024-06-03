@@ -32,7 +32,8 @@ from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
-from datetime import datetime, timedelta
+import time
+import datetime
 import math
 import base64
 import argparse
@@ -93,10 +94,15 @@ def get_count():
 def check_date(fechas, precios, vendedores, sujetos):
     for fecha, precio, vendedor, sujeto in zip(fechas, precios, vendedores, sujetos):
         if str(fecha) != "None":
-            fecha_time = datetime.strptime(fecha, '%d/%m/%Y')
-            hoy = datetime.today()
-            diferencia = hoy - fecha_time
-            if diferencia.days <= 15: return True, precio, vendedor, sujeto
+           
+            fecha1 = fecha.split("-")
+            fecha2 = [int(part) for part in fecha1]
+
+            hoy = [int(part) for part in str(datetime.datetime.now().date()).split("-")]
+
+            diferencia_days = (hoy[0] - fecha2[0]) * 365 + (hoy[1] - fecha2[1]) * 30 + (hoy[2] - fecha2[2])
+            if diferencia_days <= 15: return True, precio, vendedor, sujeto
+    
     return False, None, None, None
 
 
@@ -271,10 +277,33 @@ def enviar_productos(sujetos, precios, pesos, productos, lat_us, lon_us, priorid
             msgcnt=mss_cnt
         )
         response_graph = send_message(gmess=msg_graph, address=receiver_address)
-        productos_entregados = response_graph.value(subject=agn.ProductosEntregables, predicate=ECSDI.productos)
+        productos_entregables_nodo = response_graph.value(subject=agn.ProductosEntregables, predicate=ECSDI.productos)
+        productos_entregables_collection = Collection(response_graph, productos_entregables_nodo)
+        productos_entregables = []
+        productos_entregables.extend(productos_entregables_collection)
         print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
-        print(productos_entregados)
+        print(productos_entregables)
         print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
+
+        n_productos = []
+        n_sujetos = []
+        n_precios = []
+        n_pesos = []
+        for producto, sujeto, precio, peso in zip(productos, sujetos, precios, pesos):
+            if producto not in productos_entregables:
+                n_productos.append(producto)
+                n_sujetos.append(sujeto)
+                n_precios.append(precio)
+                n_pesos.append(peso)
+        productos = n_productos
+        print("CCCCCCCCCCCCCCCCCCCCCCCC")
+        print(productos)
+        print("CCCCCCCCCCCCCCCCCCCCCCCC")
+        sujetos = n_sujetos
+        precios = n_precios
+        pesos = n_pesos
+        if not productos: break
+
     #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 @app.route("/comm")
@@ -291,8 +320,9 @@ def comunicacion():
     gm = Graph()
     gm.parse(data=message, format='xml') 
     msgdic = get_message_properties(gm)
-
+    print("CACATUA")
     gr = None
+    print(msgdic)
 
     if msgdic is None:
         # Si no es, respondemos que no hemos entendido el mensaje
@@ -313,7 +343,8 @@ def comunicacion():
             #print(receiver_uri)
             # Averiguamos el tipo de la accion
             accion = gm.value(subject=receiver_uri, predicate=RDF.type)
-            #print(accion)
+            print("////////////////////")
+            print(accion)
             if accion == ECSDI.PeticionCompra:
                 
                 r_gmess = Graph()
@@ -374,7 +405,8 @@ def comunicacion():
                 grafo_compras = Graph()
                 grafo_compras.parse("bd/compras.ttl", format="turtle")
                 precio_total = 0
-                fecha_de_entrega_provisional = datetime.today() + timedelta(days=int(prioridad_de_entrega))
+                fecha_hoy = datetime.datetime.now()
+                fecha_de_entrega_provisional = fecha_hoy + datetime.timedelta(days=int(prioridad_de_entrega))
                 n_graph = Graph()#recorrer centros logisticos por cercania, iteras hasta que no me queden productos
                 productos = []
                 precios = []
@@ -424,36 +456,49 @@ def comunicacion():
             elif accion == ECSDI.ProductoEnviado:
                 #se recibe el identificador de compra de productos enviados
                 #se actualiza su fecha de compra y se cobran
-                """por cada compra
-                compra = "aa"
-                comprado_por = "a"
-                vendido_por = "b"
-                cantidad = "c"
+                
+                for s, p, o in gm.triples((agn.CompraEnviada, ECSDI.Compra, None)):
+                    compras_nodo = gm.value(subject=s, predicate=ECSDI.Compra)
+                    compras_collection = Collection(gm, compras_nodo)
+                    compras = []
+                    compras.extend(compras_collection)
+                   
+                #print("------------------")
+                #print(compras)
+                #print("------------------")
 
-                hoy = datetime.today()
-                hoy = hoy.strftime("%d/%m/%Y")
-                registrar_fecha_compra(compra, hoy)
+                grafo_compras = Graph()
+                grafo_compras.parse("bd/compras.ttl", format="turtle")
+                for compra in compras:
+                    hoy = datetime.datetime.now().date()
+                    grafo_compras.set((compra, ECSDI.fechaHora, Literal(str(hoy))))
+                    comprado_por = grafo_compras.value(compra, ECSDI.comprado_por)
+                    vendido_por = grafo_compras.value(compra, ECSDI.vendido_por)
+                    cantidad = grafo_compras.value(compra, ECSDI.precio)
 
-                receiver_uri = agn.AgenteContabilidad
-                receiver_address = get_agent("CONTABILIDAD")
-                print(receiver_address)
+                    receiver_uri = agn.AgenteContabilidad
+                    receiver_address = get_agent("CONTABILIDAD")
 
-                content_graph = Graph()
-                content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
-                content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
-                content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
-                content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
-                            
-                msg_graph = build_message(
-                    gmess=content_graph,
-                    perf=ACL.request,
-                    sender=AgenteCompra.uri,
-                    receiver=receiver_uri,
-                    content=agn.ProductoEnviado,
-                    msgcnt=mss_cnt
-                )
-                response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
-                """
+                    content_graph = Graph()
+                    content_graph.add((receiver_uri, RDF.type, ECSDI.ProductoEnviado))
+                    content_graph.add((receiver_uri, ECSDI.comprado_por, comprado_por))
+                    content_graph.add((receiver_uri, ECSDI.vendido_por, vendido_por))
+                    content_graph.add((receiver_uri, ECSDI.precio, Literal(cantidad)))
+                    
+                    msg_graph = build_message(
+                        gmess=content_graph,
+                        perf=ACL.request,
+                        sender=AgenteCompra.uri,
+                        receiver=receiver_uri,
+                        content=agn.PeticionDevolucion,
+                        msgcnt=mss_cnt
+                    )
+                    response_graph1 = send_message(gmess=msg_graph, address=receiver_address) 
+
+                
+                grafo_compras.serialize("bd/compras.ttl", format="turtle")
+               
+
                 r_graph = build_message(
                     gmess=Graph(),
                     perf=ACL.agree,

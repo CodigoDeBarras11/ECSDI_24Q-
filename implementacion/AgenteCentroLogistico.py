@@ -26,6 +26,7 @@ from multiprocessing import Process, Queue
 import socket
 import argparse
 from AgentUtil.Logging import config_logger
+import re
 
 from rdflib import Namespace, Graph, RDF, Literal, BNode
 from flask import Flask, request
@@ -36,6 +37,7 @@ from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 from rdflib.namespace import XSD
 from rdflib.collection import Collection
+import threading
 
 __author__ = 'javier'
 
@@ -44,12 +46,15 @@ hostname = socket.gethostname()
 port = 9015
 
 #Peso maximo de un lote
-MaxPesoLote = 100
+MaxPesoLote = 10000
 
 agn = Namespace("http://www.agentes.org#")
 
 # Contador de mensajes
 mss_cnt = 0
+
+# Logging
+logger = config_logger(level=1)
 
 # Datos del Agente
 
@@ -69,6 +74,7 @@ g = Graph()
 
 cola1 = Queue()
 
+mss_cnt = 0
 
 app = Flask(__name__)
 
@@ -79,59 +85,61 @@ def get_count():
 
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
-    schedule.every().day.at("08:00").do(send_info_to_accounting)
+    schedule.every().day.at("20:17").do(send_info_to_accounting)
 
     # Verificar si es la hora programada
+    # Run the scheduler
     while True:
-        now = time.localtime()
-        if now.tm_hour == 8 and now.tm_min == 0 and now.tm_sec == 0:
-            # Es la hora programada, ejecutar la tarea
-            schedule.run_pending()
-        time.sleep(60)
+        schedule.run_pending()
+        time.sleep(1)
+
+def get_agent(agente):
+    mess = f'SEARCH|{agente},1'  
+    response = requests.get(f"{diraddress}/message", params={'message': mess})
+    response = response.text.split(" ")
+    if "OK" in response[0]:
+        return f'{response[1]}/comm'
+    else:
+        return "NOT FOUND"
 
 def send_info_to_accounting():
     g = Graph()
-    g.parse("bd/pedidos.ttl", format="turtle")
+    g.parse("bd/pedido.ttl", format="turtle")
 
     now = datetime.datetime.now().date()
+    
+    for s, p, o in g.triples((None, RDF.type, ECSDI.Pedido)):
+        compras = g.value(s, ECSDI.compra_a_enviar)
+        fecha = g.value(s, ECSDI.fechaHora)
+        fecha = fecha.split('T')
+       
+        if str(now) == str(fecha[0]): 
+            pattern = re.compile(r"rdflib\.term\.URIRef\('([^']+)'\)")
+            compras_list = pattern.findall(compras)
+            compras_uris = [URIRef(compra) for compra in compras_list]
+            print("------------")
+            print(compras_uris)
+            print("------------")
+            
+            ng = Graph()
+            ng.add((agn.Producto_Enviado, RDF.type, ECSDI.ProductoEnviado))
+            compras_node = BNode()
+            Collection(ng, compras_node, compras_uris)
+            ng.add((agn.CompraEnviada, ECSDI.Compra, compras_node))
 
-    current_date = f"{now.tm_year}-{now.tm_mon}-{now.tm_mday}"
-    query = """
-    PREFIX ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8>
-    SELECT ?compra_id ?productos_enviados
-    WHERE {
-        ?pedido a ECSDI:Pedido ;
-                ECSDI:compra_a_enviar ?compra ;
-                ECSDI:productos_enviados ?productos_enviados ;
-                ECSDI:fechaEntrega ?fecha_entrega .
-        BIND(STRAFTER(str(?compra), "Compra/") as ?compra_id)
-        FILTER (?fecha_entrega = "%s"^^xsd:date)
-    }
-    """ % now
+            receiver_uri = agn.AgenteCompra
+            receiver_address = get_agent("COMPRA")
+   
+            graph = build_message(
+                gmess=ng,
+                perf=ACL.request,
+                sender=AgenteCentroLogistico.uri,
+                receiver=agn.AgenteCompra,
+                content=agn.Producto_Enviado,
+                msgcnt=get_count()
+            )
 
-    results = g.query(query)
-
-    compra_ids = [str(row[0]) for row in results]
-    productos_enviados = [str(row[1]) for row in results]
-    r_gmess = Graph()
-
-    for compra_id, productos in zip(compra_ids, productos_enviados):
-        compra_uri = ECSDI[compra_id]
-        productos_list = productos.split(',')
-        for producto_uri in productos_list:
-            r_gmess.add((compra_uri, ECSDI.Producto_Enviado, URIRef(producto_uri.strip())))
-
-
-    r_graph = build_message(
-        gmess=r_gmess,
-        perf=ACL.agree,
-        sender=AgenteCentroLogistico.uri,
-        receiver=agn.AgenteCompra,
-        content=ECSDI.Producto_Enviado,
-        msgcnt=mss_cnt
-    )
-    mss_cnt += 1
-    return r_graph.serialize(format='xml')
+            response_graph = send_message(gmess=graph, address=receiver_address)
 
 
 def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso):
@@ -148,24 +156,6 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
     g.bind('ECSDI', ECSDI)
     last_id = g.value(subject=agn.last_id, predicate=XSD.positiveInteger)
     
-    
-    
-    
-    #g = Graph()
-    #ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-    #AGN = Namespace("http://www.agentes.org#")
-    #g.bind("ECSDI", ECSDI)
-
-    # Cargar el grafo existente desde el archivo si existe
-    #try:
-        #g.parse("pedido.ttl", format="turtle")
-    #except FileNotFoundError:
-        #pass
-
-    # Leer el valor actual de searchid
-    #searchid_value = g.value(subject=AGN.searchid, predicate=XSD.positiveInteger)
-    #searchid = int(searchid_value) if searchid_value else 0
-
     # Incrementar el valor de searchid
     last_id += 1
 
@@ -173,8 +163,7 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
     g.set((agn.last_id, XSD.positiveInteger, Literal(last_id)))
 
     # Definir la URI de tu pedido
-    #pedido_uri = ECSDI[f'Pedido/{last_id}']
-    pedido_uri = ECSDI.Pedido +'/'+ str(last_id+1)
+    pedido_uri = ECSDI.Pedido +'/'+ str(last_id)
 
     # Cargar el grafo del centro logístico
     centro_logistico_grafo = Graph()
@@ -201,14 +190,12 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
         g.add((pedido_uri, ECSDI.latitud, Literal(latitud, datatype=XSD.decimal)))
         g.add((pedido_uri, ECSDI.longitud, Literal(longitud, datatype=XSD.decimal)))
         g.add((pedido_uri, ECSDI.prioridadEntrega, Literal(prioridadEntrega, datatype=XSD.integer)))
-        fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=prioridadEntrega)
-        g.add((pedido_uri, ECSDI.fechaEntrega, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
+        fecha_entrega = datetime.datetime.now() + datetime.timedelta(days=int(prioridadEntrega))
+        g.add((pedido_uri, ECSDI.fechaHora, Literal(fecha_entrega.isoformat(), datatype=XSD.dateTime)))
         g.add((pedido_uri, ECSDI.compra_a_enviar, Literal(compra, datatype=XSD.string)))
-        g.add((pedido_uri, ECSDI.centrologistico, Literal(centroLogistico, datatype=XSD.string)))
+        g.add((pedido_uri, ECSDI.CentroLogistico, Literal(centroLogistico, datatype=XSD.string)))
 
-    # Serializar el grafo en formato Turtle y guardarlo en un archivo
-    with open("bd/pedido.ttl", "w") as f:
-        f.write(g.serialize(format="turtle"))
+    g.serialize("bd/pedido.ttl", format="turtle")
     peso = pesos_agregados
     return productos_agregados
 
@@ -216,7 +203,6 @@ def escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitu
 def negociarTransportista(fecha_entrega_dt):
     g = Graph()
     ECSDI = Namespace("urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8")
-    AGN = Namespace("http://www.agentes.org#")
 
     try:
         g.parse("transportistas.ttl", format="turtle")
@@ -240,7 +226,15 @@ def negociarTransportista(fecha_entrega_dt):
 
     for s in lote_g.subjects(RDF.type, ECSDI.Lote):
         lote_fecha_entrega = lote_g.value(s, ECSDI.fechahora)
-        if lote_fecha_entrega and datetime.datetime.fromisoformat(str(lote_fecha_entrega)) == fecha_entrega_dt:
+        #print("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR") 
+        #print(fecha_entrega_dt)
+        #print(lote_fecha_entrega)
+        lote_fecha_entrega = lote_fecha_entrega.split('T')
+        #print(fecha_entrega_dt)
+        #print(lote_fecha_entrega[0])
+        #print("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+        if fecha_entrega_dt and lote_fecha_entrega[0] and str(fecha_entrega_dt) == str(lote_fecha_entrega[0]):
+            #print("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
             transportista_uri = lote_g.value(s, ECSDI.transportista)
             if transportista_uri in transportista_lotes:
                 transportista_lotes[transportista_uri] += 1
@@ -292,7 +286,7 @@ def escribirALote(centroLogID, prioridadEntrega, productos, pesos):
     # Asignar id de centroLog, Transp, Productos
     centroLog_uri = ECSDI[f'CentroLogistico/{centroLogID}']
     g.add((lote_uri, ECSDI.centro_logistico, centroLog_uri))
-    transpID = negociarTransportista()
+    transpID = negociarTransportista(fecha_entrega.date())
     transp_uri = ECSDI[f'Transportista/{transpID}']
     g.add((lote_uri, ECSDI.transportista, transp_uri))
     #Un for para añadir todos los productos al lote
@@ -435,17 +429,36 @@ def comunicacion():
                     print(message)
 
                     centroLogistico = gm.value(subject=content, predicate=ECSDI.CentroLogistico)
-                    compra = gm.value(subject=content, predicate=ECSDI.Compra)
-                    productos = gm.value(subject=content, predicate=ECSDI.productos)
+                    compras_nodo = gm.value(subject=content, predicate=ECSDI.Compra)
+                    compras_collection = Collection(gm, compras_nodo)
+                    compras = []
+                    compras.extend(compras_collection)
+                    
+                    productos_nodo = gm.value(subject=content, predicate=ECSDI.productos)
+                    productos_collection = Collection(gm, productos_nodo)
+                    productos = []
+                    productos.extend(productos_collection)
+
                     prioridadEntrega = gm.value(subject=content, predicate=ECSDI.prioridadEntrega)
-                    peso = gm.value(subject=content, predicate=ECSDI.peso)
+                    pesos_nodo = gm.value(subject=content, predicate=ECSDI.peso)
+                    pesos_collection = Collection(gm, pesos_nodo)
+                    pesos = []
+                    pesos.extend(pesos_collection)
+
                     precio = gm.value(subject=content, predicate=ECSDI.precio)
                     latitud = gm.value(subject=content, predicate=ECSDI.latitud)
                     longitud = gm.value(subject=content, predicate=ECSDI.longitud)
+                    print("------------------------")
+                    print(compras)
+                    print("------------------------")
+                    print(productos)
+                    print("------------------------")
+                    print(pesos)
+                    print("------------------------")
                     print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
-                    productos_entregables = escribirAPedido(centroLogistico, compra, productos, prioridadEntrega, latitud, longitud, peso)
+                    productos_entregables = escribirAPedido(centroLogistico, compras, productos, prioridadEntrega, latitud, longitud, pesos)
                     print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
-                    prepararLotes(centroLogistico, prioridadEntrega, productos, peso)
+                    prepararLotes(centroLogistico, prioridadEntrega, productos, pesos)
 
                     productos_node = BNode()
                     Collection(r_gmess, productos_node, productos_entregables)
@@ -490,8 +503,15 @@ def agentbehavior1(cola):
     """
     pass
 
+def run_scheduler_in_background():
+    scheduler_thread = threading.Thread(target=schedule_tasks)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+
 
 if __name__ == '__main__':
+    run_scheduler_in_background()
+
     hostaddr = hostname = socket.gethostname()
     AgenteCentroLogisticoAdd = f'http://{hostaddr}:{port}'
     AgenteCentroLogisticoId = hostaddr.split('.')[0] + '-' + str(port)
