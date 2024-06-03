@@ -14,6 +14,7 @@ from rdflib import Graph, URIRef
 import requests
 from rdflib.namespace import RDF, OWL
 from AgentUtil.ACL import ACL
+import base64
 
 
 def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt=0):
@@ -30,6 +31,8 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
     :param msgcnt: numero de mensaje
     :return:
     """
+ 
+    print(gmess)
     # Añade los elementos del speech act al grafo del mensaje
     mssid = f'message-{sender.__hash__()}-{msgcnt:04}'
     # No podemos crear directamente una instancia en el namespace ACL ya que es un ClosedNamedspace
@@ -43,7 +46,8 @@ def build_message(gmess, perf, sender=None, receiver=None,  content=None, msgcnt
         gmess.add((ms, ACL.receiver, receiver))
     if content is not None:
         gmess.add((ms, ACL.content, content))
-        
+
+    print(gmess)
     return gmess
 
 
@@ -52,14 +56,16 @@ def send_message(gmess, address):
     Envia un mensaje usando un GET y retorna la respuesta como
     un grafo RDF
     """
+    
+
     msg = gmess.serialize(format='xml')
-    msg = gmess
+    print(msg)
     r = requests.get(address, params={'content': msg})
-
-    # Procesa la respuesta y la retorna como resultado como grafo
     gr = Graph()
+    print("-----------------")
+    print(r.text)
+    print("-----------------")
     gr.parse(data=r.text, format='xml')
-
     return gr
 
 

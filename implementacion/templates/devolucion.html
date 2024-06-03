@@ -1,0 +1,13 @@
+{% extends 'base.html'%}
+{% block header %}
+  <h1>{% block title %}Return a Product{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+{% from "formutils.html" import render_field %}
+<form method=post action="{{ url_for('devolucion') }}">
+  <dl>
+    {{ render_field(form.product_name) }}
+  </dl>
+  <p><input type=submit value=Submit>
+</form>
+{% endblock %}

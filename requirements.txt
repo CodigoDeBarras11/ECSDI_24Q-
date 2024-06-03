@@ -5,3 +5,6 @@ requests
 numpy
 matplotlib
 pif
+flask-wtf
+babel
+schedule

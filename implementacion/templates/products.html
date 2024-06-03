@@ -1,0 +1,30 @@
+{% extends 'base.html'%}
+{% block header %}
+  <h1>{% block title %}Index{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<table>
+<tr>
+    <th>name</th>
+    <th>price</th>
+    <th>weight</th>
+    <th>brand</th>
+</tr>
+{% if products %}
+<form action="{{ url_for('compra') }}" method='post'>
+{% for product in products %}
+<tr>
+    <td>{{product['name']}}</td>
+    <td>{{product['price']}}</td>
+    <td>{{product['weight']}}</td>
+    <td>{{product['brand']}}</td>
+    <td><input type="checkbox" name="products" value={{product['data']}} ></td>
+</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Comprar">
+</form>
+<form action="{{ url_for('busca') }}" method='GET'><button>Volver a buscar</button></form>
+{% endif %}
+{% endblock %}
