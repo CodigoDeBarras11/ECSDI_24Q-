@@ -1,6 +1,7 @@
 @prefix ECSDI: <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+
 <http://www.agentes.org#searchid> xsd:positiveInteger 3.
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/1> a ECSDI:CentroLogistico ;
@@ -58,8 +59,8 @@
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/47>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/48>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/49>,
-                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/55>,  
-    .
+                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/55>  
+.
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/2> a ECSDI:CentroLogistico ;
     ECSDI:id 2 ;
@@ -122,7 +123,7 @@
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/57>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/58>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/59>, 
-                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/60>, 
+                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/60>
     .
 
 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8CentroLogistico/3> a ECSDI:CentroLogistico ;
@@ -183,6 +184,7 @@
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
                                 <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
-                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>, 
-    .
+
+                                <urn:webprotege:ontology:ed5d344b-0a9b-49ed-9f57-1677bc1fcad8Producto/0>
+ .
    

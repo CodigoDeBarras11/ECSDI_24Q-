@@ -80,11 +80,6 @@ AgenteBusqueda = Agent('AgenteBusqueda',
                        'http://%s:%d/comm' % (hostname, port),
                        'http://%s:%d/Stop' % (hostname, port))
 
-# Directory agent address
-DirectoryAgent = Agent('DirectoryAgent',
-                       agn.Directory,
-                       'http://%s:9000/message' % diraddress,
-                       'http://%s:9000/Stop' % diraddress)
 
 # Global triplestore graph
 dsgraph = Graph()
@@ -159,7 +154,7 @@ def comunicacion():
                     else: max_weight = None
                     products = search_products(product_type, min_price, max_price, min_weight, max_weight)
                     registrar_busqueda(user,product_type,min_price, max_price, min_weight, max_weight)
-                    gr = build_message(products, ACL['inform'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt, receiver=msgdic['sender'], content=ECSDI.ResultadoBusqueda)
+                    gr = build_message(products, ACL.inform, sender=AgenteBusqueda.uri, msgcnt=mss_cnt, receiver=msgdic['sender'], content=ECSDI.ResultadoBusqueda)
                 else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
             else: gr = build_message(Graph(), ACL['not-understood'], sender=AgenteBusqueda.uri, msgcnt=mss_cnt)
 

@@ -2,7 +2,7 @@ from os import getcwd, path
 import sys
 sys.path.append(path.dirname(getcwd()))
 from formularios import formbusca, formcompra, formlogin, formproduct, shopform
-from flask import Flask, render_template, request, redirect, url_for,Blueprint
+from flask import Flask, render_template, request, redirect, url_for
 import requests
 import socket
 from docs.ecsdi import ECSDI
@@ -12,7 +12,7 @@ from AgentUtil.ACLMessages import *
 from AgentUtil.Agent import Agent
 from AgentUtil.Util import gethostname
 import argparse
-from AgentUtil.Logging import config_logger
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--open', help="Define si el servidor esta abierto al exterior o no", action='store_true',
@@ -84,7 +84,7 @@ def createorUpdateproduct(product):
 def anadirProducto():
     if not usuario: return redirect(url_for('loginShop'))
     form = formproduct.ProductForm(request.form)
-    print(form.data)
+    print(request.form)
     if request.method == 'POST' and form.validate():
         createorUpdateproduct(form.data)
         return redirect(url_for('index'))
@@ -113,12 +113,12 @@ def devolucion():
             response = send_message(msg, devol + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
-            acepted = response.value(subject=accion, predicate=ECSDI.acceptado)
+            acepted = response.value(subject=content, predicate=ECSDI.acceptado)
             veredicto = "Tu entrega ha sido "
-            metodo_devolucion = response.value(subject=accion, predicate=ECSDI.metodoDevolucion)
             if(acepted):
                 veredicto += "aceptada"
-                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto, info2 = "Metodo de devolucion" + metodo_devolucion)
+                mensaje_devolucion = response.value(subject=content, predicate=ECSDI.Mensajes)
+                return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto, info2 = mensaje_devolucion)
             else: 
                 veredicto += "denegada"
                 return render_template('InfoEntrega.html', titulo = "Resultado devolucion", info1 = veredicto)
@@ -144,10 +144,10 @@ def compra():
             product_graph.add((prod, RDF.type, ECSDI.Producto))
             if products[i]['name']:
                 product_graph.add((prod, ECSDI.nombre, Literal(products[i]['name'])))
-            if products[i]['id']:
+            if products[i]['id'] != 'None':
                 product_graph.add((prod, ECSDI.id, Literal(products[i]['id'])))
             else: 
-                products[i]['id'] = 0
+                products[i]['id'] = Literal(0)
                 product_graph.add((prod, ECSDI.id, Literal(0)))
             if products[i]['price']:
                 product_graph.add((prod, ECSDI.precio, Literal(products[i]['price'])))
@@ -169,12 +169,12 @@ def compra():
             accion = response.value(subject=content, predicate=RDF.type)
             araycompras = []
             for rescompra in response.subjects(predicate=RDF.type, object=ECSDI.Compra): araycompras.append(rescompra)
-            return render_template(url_for("envio"), araycompras)
+            return render_template("envio.html",  form = formcompra.BuyForm(envios = araycompras))
     return render_template('products.html', products=products)
 
 
 @app.route("/comm")
-def comunicacion():
+async def comunicacion():
     """
     Entrypoint de comunicacion del agente
     Simplemente retorna un objeto fijo que representa una
@@ -232,35 +232,45 @@ def comunicacion():
     return gr.serialize(format='xml')
 
 @app.route('/envio', methods=['GET', 'POST'])
-def envio(araycompras):
+def envio():
     form = formcompra.BuyForm(request.form)
     if request.method == 'POST' and form.validate():
+        araycompras = form.data.get('envios')
+        araycompras = araycompras.split(',')
+        print(araycompras)
         infoentrega = agn.infoentrega
         grafo_entrega = Graph()
+        grafo_entrega.bind('ECSDI', ECSDI)
         grafo_entrega.add((infoentrega, RDF.type, ECSDI.InfoUsuarioEntrega))
         grafo_entrega.add((infoentrega, ECSDI.latitud, Literal(form.data.get('shiping_latitude'))))
         grafo_entrega.add((infoentrega, ECSDI.longitud, Literal(form.data.get('shiping_longitude'))))
         grafo_entrega.add((infoentrega, ECSDI.metodoPago, Literal(form.data.get('payment_method'))))
         grafo_entrega.add((infoentrega, ECSDI.prioridadEntrega, Literal(form.data.get('shiping_priority'))))
         for env in  araycompras: 
+            env = URIRef(env.split('\'')[1])
+            print(env)
             grafo_entrega.add((env, RDF.type, ECSDI.Compra))
             grafo_entrega.add((infoentrega, ECSDI.compra_a_enviar, env))
         msg = build_message(grafo_entrega, ACL.request, sender=agn.AsistenteUsuario, receiver=agn.AgenteCompra, content=infoentrega, msgcnt=mss_cnt)
         compraadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|COMPRA'}).text
         if 'OK' in compraadd:
             compra = compraadd[4:]
+            #grafo_entrega.serialize("salida.ttl",format='turtle')
             response = send_message(msg, compra + '/comm')
             content = get_message_properties(response)['content']
             accion = response.value(subject=content, predicate=RDF.type)
-            precio = response.value(subject=accion, predicate=ECSDI.precio)
-            fecha_entrega = response.value(subject=accion, predicate=ECSDI.fechaHora)
-            render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar" + precio, info2 = "Va a llegar el" + fecha_entrega)
+            precio = response.value(subject=content, predicate=ECSDI.precio)
+            print(precio)
+            fecha_entrega = response.value(subject=content, predicate=ECSDI.fechaHora)
+            data = fecha_entrega.split('T')
+            print(data)
+            return render_template('InfoEntrega.html', titulo = "Info entrega Provisional", info1 = "Te va a costar " + precio, info2 = "Va a llegar el " + data[0])
 
         #productos = requests.get(AgenteCompra.address, params=form.data).json()
     return render_template('envio.html', form = form)
 
 @app.route('/busca', methods=['GET', 'POST'])
-def busca():
+async def busca():
     if not usuario: return redirect(url_for('loginUser'))
     form = formbusca.SearchForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -292,7 +302,7 @@ def busca():
             #print(len(productos.subjects(predicate=RDF.type, object=ECSDI.Producto)))
             for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
                 product = {
-                    "id": str(productos.value(subject=prod, predicate=ECSDI.id)),
+                    "id": productos.value(subject=prod, predicate=ECSDI.id),
                     "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
                     "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
                     "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
@@ -413,12 +423,10 @@ if 'OK' in resp:
     '''loggeradd = requests.get(diraddress + '/message', params={'message': 'SEARCH|LOGGER'}).text
     if 'OK' in loggeradd:
         logger = loggeradd[4:]'''
-
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     # Ponemos en marcha el servidor Flask
-    app.run(host=hostname, port=port, debug=False, use_reloader=False)
-
+    app.run(host=hostname, port=port, debug=False, use_reloader=False, threaded = True)
     mess = f'UNREGISTER|{solverid}'
     requests.get(diraddress + '/message', params={'message': mess})
 else:
     print('Unable to register')
-
