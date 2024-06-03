@@ -27,7 +27,7 @@ import socket
 import argparse
 from AgentUtil.Logging import config_logger
 
-from rdflib import XSD, Namespace, Graph, RDF, Literal
+from rdflib import XSD, Namespace, Graph, RDF, Literal, BNode
 from flask import Flask, render_template_string, request
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -35,6 +35,7 @@ from AgentUtil.Util import gethostname
 from AgentUtil.ACLMessages import *
 from docs.ecsdi import ECSDI
 from datetime import datetime, timedelta
+from rdflib.collection import Collection
 
 __author__ = 'javier'
 
@@ -75,6 +76,15 @@ def get_count():
     mss_cnt += 1
     return mss_cnt
 
+def get_agent(agente):
+    mess = f'SEARCH|{agente},1'  
+    response = requests.get(f"{diraddress}/message", params={'message': mess})
+    response = response.text.split(" ")
+    if "OK" in response[0]:
+        return f'{response[1]}/comm'
+    else:
+        return "NOT FOUND"
+
 def schedule_tasks():
     # Programar la tarea diaria a las 8:00 AM
     schedule.every().day.at("08:00").do(pedir_feedback_a_asistente)
@@ -108,17 +118,25 @@ def pedir_feedback_a_asistente():
                 r_gmess.add( ECSDI.feedback_de)
                 r_gmess.add(productos_uris, ECSDI.productos)
 
+                ng = Graph()
+                ng.add((agn.PeticionFeedback, RDF.type, ECSDI.PeticionFeedback))
+                ng.add((agn.PeticionFeedback, ECSDI.Cliente, cliente_uri))
+                productos_node = BNode()
+                Collection(ng, productos_node, productos_uris)
+                ng.add((agn.PeticionFeedback, ECSDI.Producto, productos_node))
 
-    r_graph = build_message(
-        gmess=r_gmess,
-        perf=ACL.agree,
-        sender=AgenteExperiencia.uri,
-        receiver=agn.AgenteCompra,
-        content=ECSDI.Producto_Enviado,
-        msgcnt=mss_cnt
-    )
-    mss_cnt += 1
-    r_graph.serialize(format='xml')
+                receiver_address = get_agent("ASSISTENTEUSUARIO")
+
+                graph = build_message(
+                    gmess=ng,
+                    perf=ACL.request,
+                    sender=AgenteExperiencia.uri,
+                    receiver=agn.AssistenteUsuario,
+                    content=agn.Producto_Enviado,
+                    msgcnt=get_count()
+                )
+
+                response_graph = send_message(gmess=graph, address=receiver_address)
 
 
 def recomendar_productos_a_asistente():
@@ -160,7 +178,35 @@ def recomendar_productos_a_asistente():
                         min_peso = objeto
                     elif str(predicado) == str(ECSDI.tipoproducto):
                         tipoproducto = objeto
-            
+
+                    ng = Graph()
+                    ng.add((agn.ProductosRecomendados, RDF.type, ECSDI.ProductosRecomendados))
+                    ng.add((agn.ProductosRecomendados, ECSDI.Cliente, cliente_uri))
+                    if max_peso:
+                        ng.add((agn.ProductosRecomendados, ECSDI.max_peso, max_peso))
+                    if max_precio:
+                        ng.add((agn.ProductosRecomendados, ECSDI.max_precio, max_precio))
+                    if min_peso:
+                        ng.add((agn.ProductosRecomendados, ECSDI.min_peso, min_peso))
+                    if min_precio:
+                        ng.add((agn.ProductosRecomendados, ECSDI.max_precio, max_precio))
+                    if tipoproducto:
+                        ng.add((agn.ProductosRecomendados, ECSDI.tipoproducto, tipoproducto))
+
+
+                    receiver_address = get_agent("ASSISTENTEUSUARIO")
+
+                    graph = build_message(
+                        gmess=ng,
+                        perf=ACL.request,
+                        sender=AgenteExperiencia.uri,
+                        receiver=agn.AssistenteUsuario,
+                        content=agn.Producto_Enviado,
+                        msgcnt=get_count()
+                    )
+
+                    response_graph = send_message(gmess=graph, address=receiver_address)
+                
 
 
 @app.route("/comm")
