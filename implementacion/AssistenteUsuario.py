@@ -305,7 +305,8 @@ def productos_recomendados():
     else:
         session['mensaje'] = "No tienes productos recomendados"
         return redirect(url_for('userIndex'))
-    products = {}
+    products = []
+    evaluar = {}
     present = False
     for busqueda in graforecomendaciones.subjects(predicate=ECSDI.buscado_por, object=usuario):
         present = True
@@ -335,6 +336,7 @@ def productos_recomendados():
         gm.add((peticionbusquda, ECSDI.buscado_por, usuario))
         graforecomendaciones.remove((busqueda, ECSDI.buscado_por, usuario))
         msg = build_message(gm, ACL.request, sender=AssistenteUsuario.uri, receiver=agn.AgenteBusqueda, content= peticionbusquda, msgcnt=mss_cnt)
+        graforecomendaciones.remove((busqueda, RDF.type, ECSDI.Busqueda))
         searchadd = requests.get(diraddress + '/message', params={'message': 'SEARCH|BUSCA'}).text
         if 'OK' in searchadd:
             busqueda = searchadd[4:]
@@ -342,16 +344,17 @@ def productos_recomendados():
             
             for prod in productos.subjects(predicate=RDF.type, object=ECSDI.Producto):
                 product = {
-                    "id": productos.value(subject=prod, predicate=ECSDI.id),
+                    "id": int(productos.value(subject=prod, predicate=ECSDI.id)),
                     "name": str(productos.value(subject=prod, predicate=ECSDI.nombre)),
                     "price": str(productos.value(subject=prod, predicate=ECSDI.precio)),
                     "weight": productos.value(subject=prod, predicate=ECSDI.peso).split(',')[0][1:],
                     "brand": str(productos.value(subject=prod, predicate=ECSDI.tieneMarca)),
                     "vendedor": productos.value(subject=prod, predicate=ECSDI.vendido_por)
                 }
-                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ product['id'] 
+                product['data'] =  product['name'] + ','+ str(product['price'])+ ',' + str(product['weight']) + ','+product['brand'] + ','+ str(product['id']) 
                 if(product['vendedor']): product['data'] +=',' + product['vendedor']
-                products[prod] =product
+                if(not evaluar.get(product['id'])): products.append(product)
+                else: evaluar[product['id']] =True
 
     if(present):
         graforecomendaciones.serialize("cache_recomendados.ttl", format="turtle")
